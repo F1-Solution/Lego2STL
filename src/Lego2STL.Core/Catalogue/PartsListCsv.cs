@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using Lego2STL.Core.Colors;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Core.Catalogue;
 
@@ -15,39 +16,65 @@ namespace Lego2STL.Core.Catalogue;
 /// a file edited and re-saved by a spreadsheet still loads whichever separator it chose.
 /// </para>
 /// <para>
-/// Column headings are fixed rather than translated, because this file is also an input:
-/// changing the headings with a display language would make yesterday's file unreadable.
+/// Column headings follow the display language, so the file reads naturally to whoever opens
+/// it. Reading does not depend on that: every wording the tool has ever written is recognised,
+/// in any language, and the columns are positional anyway, so a file written in one language
+/// loads perfectly well in another.
 /// </para>
 /// </remarks>
 public static class PartsListCsv
 {
     public const char DefaultDelimiter = ';';
 
+    /// <summary>The column order, once and for all. Only the wording changes with language.</summary>
+    private static readonly TextKey[] Columns =
+    [
+        TextKey.CsvId,
+        TextKey.CsvLegoCode,
+        TextKey.CsvBrickLinkCode,
+        TextKey.CsvColourName,
+        TextKey.CsvRgb,
+        TextKey.CsvQuantity,
+    ];
+
+    public static int ColumnCount => Columns.Length;
+
     /// <summary>Separators tried when detecting the format of a file being read.</summary>
     private static readonly char[] CandidateDelimiters = [';', ',', '\t'];
 
-    private static readonly string[] Headings =
-    [
-        "ID",
-        "Codice Lego",
-        "Codice BrickLink",
-        "Nome colore",
-        "Codice RGB",
-        "Quantita",
-    ];
+    /// <summary>
+    /// Heading rows recognised when reading: the columns as worded in every language the tool
+    /// speaks. A parts list is an input as well as an output, so a file written on an Italian
+    /// machine has to load on an English one and the other way round.
+    /// </summary>
+    private static readonly string[][] KnownHeadings =
+        [.. DisplayLanguages.All.Select(HeadingsFor)];
 
-    public static string Write(PartsList list, char delimiter = DefaultDelimiter)
+    /// <summary>The column names in one language.</summary>
+    public static string[] HeadingsFor(DisplayLanguage language)
     {
-        ArgumentNullException.ThrowIfNull(list);
-        return Write(list.Entries, delimiter);
+        var words = Strings.For(language);
+        return [.. Columns.Select(c => words[c])];
     }
 
-    public static string Write(IEnumerable<PartEntry> entries, char delimiter = DefaultDelimiter)
+    public static string Write(
+        PartsList list,
+        char delimiter = DefaultDelimiter,
+        DisplayLanguage language = DisplayLanguages.Fallback)
+    {
+        ArgumentNullException.ThrowIfNull(list);
+        return Write(list.Entries, delimiter, language);
+    }
+
+    public static string Write(
+        IEnumerable<PartEntry> entries,
+        char delimiter = DefaultDelimiter,
+        DisplayLanguage language = DisplayLanguages.Fallback)
     {
         ArgumentNullException.ThrowIfNull(entries);
 
         var sb = new StringBuilder();
-        sb.Append(string.Join(delimiter, Headings)).Append("\r\n");
+        sb.Append(string.Join(delimiter, HeadingsFor(language))).Append("\r\n");
 
         foreach (var e in entries)
         {
@@ -72,13 +99,18 @@ public static class PartsListCsv
         string path,
         PartsList list,
         char delimiter = DefaultDelimiter,
+        DisplayLanguage language = DisplayLanguages.Fallback,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
 
-        await File.WriteAllTextAsync(path, Write(list, delimiter), new UTF8Encoding(true), cancellationToken)
+        await File.WriteAllTextAsync(
+                path,
+                Write(list, delimiter, language),
+                new UTF8Encoding(true),
+                cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -146,7 +178,7 @@ public static class PartsListCsv
         foreach (var candidate in CandidateDelimiters)
         {
             var count = SplitRow(headerLine, candidate).Count;
-            if (count == Headings.Length)
+            if (count == ColumnCount)
             {
                 return candidate;
             }
@@ -161,25 +193,40 @@ public static class PartsListCsv
         return best;
     }
 
+    /// <summary>
+    /// True when the first line names the columns rather than holding data. A heading row in
+    /// any language the tool speaks settles it outright; otherwise anything that does not start
+    /// with a number is a heading, which covers a file whose headings a spreadsheet has renamed.
+    /// </summary>
     private static bool LooksLikeHeader(string line, char delimiter)
     {
         var fields = SplitRow(line, delimiter);
-        return fields.Count > 0 &&
-               !int.TryParse(fields[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
+
+        if (fields.Count == 0)
+        {
+            return false;
+        }
+
+        if (KnownHeadings.Any(known => known.SequenceEqual(fields.Select(f => f.Trim()), StringComparer.OrdinalIgnoreCase)))
+        {
+            return true;
+        }
+
+        return !int.TryParse(fields[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out _);
     }
 
     private static PartEntry ParseRow(List<string> f, int lineNumber, string line)
     {
-        if (f.Count < Headings.Length)
+        if (f.Count < ColumnCount)
         {
             throw new FormatException(
-                $"Line {lineNumber} has {f.Count} fields, expected {Headings.Length}: '{line}'");
+                $"Line {lineNumber} has {f.Count} fields, expected {ColumnCount}: '{line}'");
         }
 
         return new PartEntry(
             Id: ParseInt(f[0], lineNumber, "ID"),
-            PartNumber: RequireText(f[1], lineNumber, "Codice Lego"),
-            BrickLinkColorCode: ParseInt(f[2], lineNumber, "Codice BrickLink"),
+            PartNumber: RequireText(f[1], lineNumber, Strings.English[TextKey.CsvLegoCode]),
+            BrickLinkColorCode: ParseInt(f[2], lineNumber, Strings.English[TextKey.CsvBrickLinkCode]),
             ColorName: f[3],
             Rgb: ParseRgb(f[4], lineNumber),
             Quantity: ParseQuantity(f[5], lineNumber));
@@ -192,7 +239,7 @@ public static class PartsListCsv
 
     private static int ParseQuantity(string field, int lineNumber)
     {
-        var value = ParseInt(field, lineNumber, "Quantita");
+        var value = ParseInt(field, lineNumber, Strings.English[TextKey.CsvQuantity]);
         return value > 0
             ? value
             : throw new FormatException($"Line {lineNumber}: a quantity must be greater than zero, found {value}.");

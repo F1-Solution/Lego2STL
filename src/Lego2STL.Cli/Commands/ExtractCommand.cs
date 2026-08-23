@@ -5,6 +5,7 @@ using Lego2STL.Core.Colors;
 using Lego2STL.Core.Ocr;
 using Lego2STL.Core.Pdf;
 using Lego2STL.Core.Run;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Cli.Commands;
 
@@ -64,6 +65,7 @@ internal static class ExtractCommand
             parseResult.GetValue(outputDirectory),
             parseResult.GetValue(delimiter),
             parseResult.GetValue(listPages),
+            parseResult.GetValue(CommonOptions.Language),
             cancellationToken).ConfigureAwait(false));
 
         return command;
@@ -76,35 +78,36 @@ internal static class ExtractCommand
         DirectoryInfo? outputDirectory,
         string? delimiterText,
         bool listPagesOnly,
+        DisplayLanguage language,
         CancellationToken cancellationToken)
     {
+        var words = Strings.For(language);
+
         if (!input.Exists)
         {
-            Console.Error.WriteLine($"Error: no such file: {input.FullName}");
+            Console.Error.WriteLine($"{words[TextKey.MsgError]}: {words.Format(TextKey.MsgNoSuchFile, input.FullName)}");
             return Program.ExitFailure;
         }
 
         var delimiter = ParseDelimiter(delimiterText);
 
         using var document = PdfPageImageSource.Open(input.FullName);
-        Console.WriteLine($"{input.Name}: {document.PageCount} pages.");
+        Console.WriteLine(words.Format(TextKey.MsgPagesInDocument, input.Name, document.PageCount));
 
         if (listPagesOnly)
         {
-            await ListPagesAsync(document, cancellationToken).ConfigureAwait(false);
+            await ListPagesAsync(document, words, cancellationToken).ConfigureAwait(false);
             return Program.ExitOk;
         }
 
         if (string.IsNullOrWhiteSpace(pageRange))
         {
-            Console.Error.WriteLine(
-                "Error: no page range given. Pass one, e.g. \"2-5\", or use --list-pages to see " +
-                "what is on each page.");
+            Console.Error.WriteLine($"{words[TextKey.MsgError]}: {words[TextKey.MsgNoPageRange]}");
             return Program.ExitFailure;
         }
 
         var pages = PageRange.Parse(pageRange, document.PageCount);
-        Console.WriteLine($"Reading pages {PageRange.Format(pages)} using {colorScheme} colour numbering.");
+        Console.WriteLine(words.Format(TextKey.MsgReadingPages, PageRange.Format(pages), colorScheme));
 
         var reader = new CatalogueReader(OcrEngines.Create());
         var read = await reader.ReadAsync(document, pages, cancellationToken).ConfigureAwait(false);
@@ -118,28 +121,35 @@ internal static class ExtractCommand
         layout.CreateDirectories();
 
         var list = PartsListBuilder.Build(read.Entries, ColorReference.Table, colorScheme);
-        await PartsListCsv.WriteFileAsync(layout.PartsListPath, list, delimiter, cancellationToken)
+        await PartsListCsv.WriteFileAsync(layout.PartsListPath, list, delimiter, language, cancellationToken)
             .ConfigureAwait(false);
 
-        await WriteReportAsync(layout, input, pages, colorScheme, read, list, cancellationToken)
+        await WriteReportAsync(layout, input, pages, colorScheme, read, list, words, cancellationToken)
             .ConfigureAwait(false);
 
         Console.WriteLine();
-        Console.WriteLine($"{list.Entries.Count} entries, {list.TotalPieces} pieces, " +
-                          $"{list.DistinctPartNumbers.Count} distinct parts.");
-        Console.WriteLine($"Parts list: {layout.PartsListPath}");
-        Console.WriteLine($"Report:     {layout.ReportPath}");
+        Console.WriteLine(words.Format(
+            TextKey.MsgEntriesSummary,
+            list.Entries.Count,
+            list.TotalPieces,
+            list.DistinctPartNumbers.Count));
+        Console.WriteLine(words.Format(TextKey.MsgPartsListWritten, layout.PartsListPath));
+        Console.WriteLine(words.Format(TextKey.MsgReportWritten, layout.ReportPath));
 
         if (read.Unresolved.Count > 0)
         {
             Console.Error.WriteLine();
-            Console.Error.WriteLine($"{read.Unresolved.Count} entr{(read.Unresolved.Count == 1 ? "y" : "ies")} could not be read:");
+            Console.Error.WriteLine(words.Format(
+                read.Unresolved.Count == 1
+                    ? TextKey.MsgCouldNotReadEntriesOne
+                    : TextKey.MsgCouldNotReadEntriesMany,
+                read.Unresolved.Count));
             foreach (var u in read.Unresolved)
             {
                 Console.Error.WriteLine($"  page {u.Page} at {u.Bounds}: {u.Reason} (read as \"{Flatten(u.RawText)}\")");
             }
 
-            Console.Error.WriteLine("The parts list was written without them. Later stages are refused until they are settled.");
+            Console.Error.WriteLine(words[TextKey.MsgWrittenWithoutThem]);
             return Program.ExitUnverified;
         }
 
@@ -150,7 +160,10 @@ internal static class ExtractCommand
     /// Classifies every page by how many catalogue entries it holds, so the pages worth
     /// reading can be seen at a glance.
     /// </summary>
-    private static async Task ListPagesAsync(PdfPageImageSource document, CancellationToken cancellationToken)
+    private static async Task ListPagesAsync(
+        PdfPageImageSource document,
+        Strings words,
+        CancellationToken cancellationToken)
     {
         var locator = new Lego2STL.Core.Extraction.LabelLocator();
         var candidates = new List<int>();
@@ -166,7 +179,10 @@ internal static class ExtractCommand
             if (count > 0)
             {
                 candidates.Add(pageNumber);
-                Console.WriteLine($"  page {pageNumber,4}  catalogue, {count} entr{(count == 1 ? "y" : "ies")}");
+                Console.WriteLine("  " + words.Format(
+                    count == 1 ? TextKey.MsgPageIsCatalogueOne : TextKey.MsgPageIsCatalogueMany,
+                    pageNumber,
+                    count));
             }
 
             await Task.Yield();
@@ -174,8 +190,8 @@ internal static class ExtractCommand
 
         Console.WriteLine();
         Console.WriteLine(candidates.Count == 0
-            ? "No catalogue pages found."
-            : $"Suggested range: {PageRange.Format(candidates)}");
+            ? words[TextKey.MsgNoCataloguePages]
+            : words.Format(TextKey.MsgSuggestedRange, PageRange.Format(candidates)));
     }
 
     private static async Task WriteReportAsync(
@@ -185,29 +201,30 @@ internal static class ExtractCommand
         ColorScheme colorScheme,
         CatalogueReadResult read,
         PartsList list,
+        Strings words,
         CancellationToken cancellationToken)
     {
         var sb = new StringBuilder();
-        sb.AppendLine("Lego2STL run report");
+        sb.AppendLine(words[TextKey.ReportRunTitle]);
         sb.AppendLine(new string('-', 60));
-        sb.AppendLine($"Input          : {input.FullName}");
-        sb.AppendLine($"Pages          : {PageRange.Format(pages)}");
-        sb.AppendLine($"Colour numbers : {colorScheme}");
+        sb.AppendLine($"{words[TextKey.ReportInput],-16}: {input.FullName}");
+        sb.AppendLine($"{words[TextKey.ReportPages],-16}: {PageRange.Format(pages)}");
+        sb.AppendLine($"{words[TextKey.ReportColourNumbering],-16}: {colorScheme}");
         sb.AppendLine();
 
-        sb.AppendLine("Reading");
+        sb.AppendLine(words[TextKey.ReportReading]);
         foreach (var note in read.Notes)
         {
             sb.AppendLine("  " + note);
         }
 
         var fromShapes = read.Entries.Count(e => e.QuantitySource == ReadingSource.LearnedShapes);
-        sb.AppendLine($"  {read.Entries.Count} entries read; {fromShapes} quantity line(s) came from the learned lettering.");
+        sb.AppendLine("  " + words.Format(TextKey.ReportEntriesRead, read.Entries.Count, fromShapes));
         sb.AppendLine();
 
         if (list.Notes.Count > 0)
         {
-            sb.AppendLine("Parts list");
+            sb.AppendLine(words[TextKey.ReportPartsList]);
             foreach (var note in list.Notes)
             {
                 sb.AppendLine("  " + note);
@@ -216,19 +233,21 @@ internal static class ExtractCommand
             sb.AppendLine();
         }
 
-        sb.AppendLine("Totals");
-        sb.AppendLine($"  {list.Entries.Count} entries");
-        sb.AppendLine($"  {list.TotalPieces} pieces");
-        sb.AppendLine($"  {list.DistinctPartNumbers.Count} distinct part numbers (one shape each)");
+        sb.AppendLine(words[TextKey.ReportTotals]);
+        sb.AppendLine("  " + words.Format(TextKey.ReportTotalEntries, list.Entries.Count));
+        sb.AppendLine("  " + words.Format(TextKey.ReportTotalPieces, list.TotalPieces));
+        sb.AppendLine("  " + words.Format(
+            TextKey.ReportTotalDistinctParts, list.DistinctPartNumbers.Count));
         sb.AppendLine();
 
         if (read.Unresolved.Count > 0)
         {
-            sb.AppendLine("Could not be read");
+            sb.AppendLine(words[TextKey.ReportCouldNotBeRead]);
             foreach (var u in read.Unresolved)
             {
-                sb.AppendLine($"  page {u.Page} at {u.Bounds}: {u.Reason}");
-                sb.AppendLine($"    recogniser returned: \"{Flatten(u.RawText)}\"");
+                sb.AppendLine($"  {u.Page} @ {u.Bounds}: {u.Reason}");
+                sb.AppendLine("    " + words.Format(
+                    TextKey.ReportRecogniserReturned, Flatten(u.RawText)));
             }
         }
 

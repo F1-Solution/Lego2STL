@@ -1,0 +1,189 @@
+namespace Lego2STL.Core.Text;
+
+public sealed partial class Strings
+{
+    /// <summary>Reached through a property so this table is set up on its own, on first use.</summary>
+    private static IReadOnlyDictionary<TextKey, string> EnglishTable => EnglishWords.Table;
+
+    private static class EnglishWords
+    {
+        internal static readonly Dictionary<TextKey, string> Table = new()
+        {
+            // The parts list's columns.
+            [TextKey.CsvId] = "ID",
+            [TextKey.CsvLegoCode] = "Lego Code",
+            [TextKey.CsvBrickLinkCode] = "BrickLink Code",
+            [TextKey.CsvColourName] = "Colour Name",
+            [TextKey.CsvRgb] = "RGB Code",
+            [TextKey.CsvQuantity] = "Quantity",
+
+            // Shared words.
+            [TextKey.Millimetres] = "millimetres",
+            [TextKey.On] = "on",
+            [TextKey.Off] = "off",
+            [TextKey.Yes] = "yes",
+            [TextKey.No] = "no",
+            [TextKey.None] = "none",
+
+            // Reports.
+            [TextKey.ReportRunTitle] = "Lego2STL run report",
+            [TextKey.ReportShapeTitle] = "Lego2STL shape report",
+            [TextKey.ReportPlateTitle] = "Lego2STL plate report",
+            [TextKey.ReportInput] = "Input",
+            [TextKey.ReportPages] = "Pages",
+            [TextKey.ReportColourNumbering] = "Colour numbers",
+            [TextKey.ReportReading] = "Reading",
+            [TextKey.ReportEntriesRead] =
+                "{0} entries read; {1} quantity line(s) came from the learned lettering.",
+            [TextKey.ReportPartsList] = "Parts list",
+            [TextKey.ReportTotals] = "Totals",
+            [TextKey.ReportTotalEntries] = "{0} entries",
+            [TextKey.ReportTotalPieces] = "{0} pieces",
+            [TextKey.ReportTotalDistinctParts] = "{0} distinct part numbers (one shape each)",
+            [TextKey.ReportCouldNotBeRead] = "Could not be read",
+            [TextKey.ReportRecogniserReturned] = "recogniser returned: \"{0}\"",
+            [TextKey.ReportGeometryFrom] = "Geometry from",
+            [TextKey.ReportUnits] = "Units",
+            [TextKey.ReportStandingOnZero] = "standing on zero",
+            [TextKey.ReportOriginalOrigin] = "original origin",
+            [TextKey.ReportScale] = "Scale",
+            [TextKey.ReportSeamRepair] = "Seam repair",
+            [TextKey.ReportClearance] = "Clearance",
+            [TextKey.ReportColumnPart] = "part",
+            [TextKey.ReportColumnTriangles] = "tris",
+            [TextKey.ReportColumnOpen] = "open",
+            [TextKey.ReportColumnSeams] = "seams",
+            [TextKey.ReportColumnSize] = "size (mm)",
+            [TextKey.ReportShapesClosed] = "{0} of {1} shapes are closed.",
+            [TextKey.ReportSeamsClosedSummary] =
+                "Seam repair closed {0} edge(s) and completed {1} shape(s).",
+            [TextKey.ReportRetiredNumbers] =
+                "Retired numbers, where the shape comes from a replacement part:",
+            [TextKey.ReportBuiltWithSomethingMissing] = "Parts built with something missing:",
+            [TextKey.ReportProducedNothing] = "Produced nothing:",
+            [TextKey.ReportPrintingNoteTitle] = "Note on printing",
+            [TextKey.ReportPrintingNoteBody] =
+                "These shapes are the catalogue's nominal dimensions, with no allowance for the " +
+                "clearance a real moulded part has. Printed at true size they will be slightly " +
+                "oversized on every face and will not clip together without a clearance allowance " +
+                "calibrated for your own printer and material. Run the calibration command to find " +
+                "that figure, then pass it with --clearance.",
+            [TextKey.ReportPrintingNoteWithClearance] =
+                "Every face has been taken in by {0} mm from the catalogue's nominal size. If parts " +
+                "still bind, raise the figure; if they fall apart, lower it. The calibration command " +
+                "prints a set at several values so the right one can be measured rather than guessed.",
+            [TextKey.ReportPlateSummary] = "{0} plate(s) for {1} colour(s), {2} piece(s) in total.",
+            [TextKey.ReportPlateLine] = "{0} x {1}",
+            [TextKey.ReportPlateColumnPlate] = "plate",
+            [TextKey.ReportPlateColumnColour] = "colour",
+            [TextKey.ReportPlateColumnPieces] = "pieces",
+            [TextKey.ReportPlateColumnFootprint] = "used (mm)",
+            [TextKey.ReportPlateDidNotFit] = "Too big for the bed, so left off the plates:",
+
+            // Running.
+            [TextKey.MsgPagesInDocument] = "{0}: {1} pages.",
+            [TextKey.MsgReadingPages] = "Reading pages {0} using {1} colour numbering.",
+            [TextKey.MsgNoPageRange] =
+                "no page range given. Pass one, e.g. \"2-5\", or use --list-pages to see what is on " +
+                "each page.",
+            [TextKey.MsgNoSuchFile] = "no such file: {0}",
+            [TextKey.MsgNoSuchPartsList] = "no such parts list: {0}",
+            [TextKey.MsgPageIsCatalogueOne] = "page {0}  catalogue, {1} entry",
+            [TextKey.MsgPageIsCatalogueMany] = "page {0}  catalogue, {1} entries",
+            [TextKey.MsgNoCataloguePages] = "No catalogue pages found.",
+            [TextKey.MsgSuggestedRange] = "Suggested range: {0}",
+            [TextKey.MsgEntriesSummary] = "{0} entries, {1} pieces, {2} distinct parts.",
+            [TextKey.MsgPartsListWritten] = "Parts list: {0}",
+            [TextKey.MsgReportWritten] = "Report:     {0}",
+            [TextKey.MsgCouldNotReadEntriesOne] = "Could not read {0} entry:",
+            [TextKey.MsgCouldNotReadEntriesMany] = "Could not read {0} entries:",
+            [TextKey.MsgWrittenWithoutThem] =
+                "The parts list was written without them. Later stages are refused until they are settled.",
+            [TextKey.MsgEntriesAndParts] = "{0} entries, {1} distinct parts.",
+            [TextKey.MsgWroteShapes] = "Wrote {0} shape file(s) to {1}",
+            [TextKey.MsgClosedAndOpen] =
+                "{0} closed, {1} with open edges (a slicer will repair those, and the report lists them).",
+            [TextKey.MsgProducedNothing] = "{0} part(s) produced nothing:",
+            [TextKey.MsgWrotePlates] = "Wrote {0} plate file(s) to {1}",
+            [TextKey.MsgNoPlatesRequested] = "Plates were not asked for.",
+            [TextKey.MsgPlatesSkippedUnverified] =
+                "Plates were skipped because some parts produced nothing.",
+            [TextKey.MsgCalibrationWritten] = "Wrote {0} calibration shape(s) to {1}",
+            [TextKey.MsgCancelled] = "Cancelled.",
+            [TextKey.MsgError] = "Error",
+
+            // Things that go wrong.
+            [TextKey.ErrClearanceNeedsClosedShape] =
+                "{0} still has {1} open edge(s), so taking every face in by a fixed amount would move " +
+                "the edges of the holes as well and distort the shape. It was written at true size " +
+                "instead. Leave seam repair on, or exclude this part.",
+            [TextKey.ErrClearanceNegative] = "A clearance cannot be negative; got {0} mm.",
+            [TextKey.ErrPartTooSmallForClearance] =
+                "{0} is only {1} mm across at its thinnest, so taking {2} mm off every face would " +
+                "consume it. It was written at true size instead.",
+            [TextKey.ErrPlateTooSmall] =
+                "{0} measures {1} and does not fit a {2} bed, so it is not on any plate. Its shape " +
+                "file is still there to place by hand.",
+            [TextKey.ErrOcrUnavailable] =
+                "Reading a document needs text recognition, which is not available here.",
+            [TextKey.ErrOpenScadNotFound] =
+                "OpenSCAD was not found. Install it from openscad.org and either put it on the path " +
+                "or name it with --openscad.",
+
+            // The interface.
+            [TextKey.UiTitle] = "Lego2STL",
+            [TextKey.UiTabInput] = "Input",
+            [TextKey.UiTabOptions] = "Options",
+            [TextKey.UiTabRun] = "Run",
+            [TextKey.UiTabCatalogue] = "Catalogue",
+            [TextKey.UiNext] = "Next",
+            [TextKey.UiBack] = "Back",
+            [TextKey.UiStart] = "Start",
+            [TextKey.UiCancel] = "Cancel",
+            [TextKey.UiBrowse] = "Browse...",
+            [TextKey.UiInputKind] = "What are you starting from?",
+            [TextKey.UiInputDocument] = "A document",
+            [TextKey.UiInputPartsList] = "A parts list",
+            [TextKey.UiInputSetNumber] = "A set number",
+            [TextKey.UiChooseDocument] = "Document",
+            [TextKey.UiChoosePartsList] = "Parts list",
+            [TextKey.UiSetNumber] = "Set number",
+            [TextKey.UiPageRange] = "Pages",
+            [TextKey.UiPageRangeHint] = "for example 2-5, or 2-5,8,11-13",
+            [TextKey.UiScanPages] = "Find the catalogue pages",
+            [TextKey.UiScanning] = "Looking through the pages...",
+            [TextKey.UiColourScheme] = "Colour numbering in the document",
+            [TextKey.UiLanguage] = "Language",
+            [TextKey.UiSettings] = "Settings",
+            [TextKey.UiEquivalentCommand] = "The same thing from the command line",
+            [TextKey.UiCopyCommand] = "Copy",
+            [TextKey.UiCopied] = "Copied",
+            [TextKey.UiGroupStages] = "Stages",
+            [TextKey.UiGroupOutput] = "Output",
+            [TextKey.UiGroupGeometry] = "Geometry",
+            [TextKey.UiGroupLibrary] = "Shape library",
+            [TextKey.UiGroupPlates] = "Plates",
+            [TextKey.UiGroupBehaviour] = "Behaviour",
+            [TextKey.UiProgress] = "Progress",
+            [TextKey.UiLog] = "Details",
+            [TextKey.UiShowLog] = "Show details",
+            [TextKey.UiHideLog] = "Hide details",
+            [TextKey.UiCatalogueEmpty] = "Nothing yet. Run the pipeline and the parts appear here.",
+            [TextKey.UiFilterByColour] = "Colour",
+            [TextKey.UiAllColours] = "All colours",
+            [TextKey.UiSortBy] = "Sort by",
+            [TextKey.UiSortByPart] = "Part number",
+            [TextKey.UiSortByQuantity] = "Quantity",
+            [TextKey.UiSortByColour] = "Colour",
+            [TextKey.UiOpenShapeFile] = "Open the shape file",
+            [TextKey.UiOpenPlate] = "Open the plate",
+            [TextKey.UiOpenFolder] = "Open the folder",
+            [TextKey.UiWarningNotClosed] = "This shape has open edges; a slicer will repair it.",
+            [TextKey.UiWarningThinFeature] = "This part has features thinner than a 0.4 mm nozzle.",
+            [TextKey.UiQuantity] = "Quantity",
+            [TextKey.UiDone] = "Done",
+            [TextKey.UiFailed] = "Failed",
+            [TextKey.UiIdle] = "Ready",
+        };
+    }
+}

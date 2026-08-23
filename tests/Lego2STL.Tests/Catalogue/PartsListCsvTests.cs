@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Colors;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Tests.Catalogue;
 
@@ -25,10 +26,44 @@ public sealed class PartsListCsvTests
 
         var lines = text.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
 
-        lines[0].Should().Be("ID;Codice Lego;Codice BrickLink;Nome colore;Codice RGB;Quantita");
+        lines[0].Should().Be("ID;Lego Code;BrickLink Code;Colour Name;RGB Code;Quantity");
         lines[1].Should().Be("1;6628;11;Black;#05131D;1");
         lines[2].Should().Be("2;4265c;9;Light Gray;#9BA19D;10");
         lines[3].Should().Be("3;32556;5;Red;#C91A09;38");
+    }
+
+    [Fact]
+    public void The_column_names_follow_the_chosen_language()
+    {
+        var italian = PartsListCsv.Write(Sample(), language: DisplayLanguage.Italian);
+
+        italian.Split("\r\n")[0]
+            .Should().Be("ID;Codice Lego;Codice BrickLink;Nome colore;Codice RGB;Quantita");
+    }
+
+    /// <summary>
+    /// The rows themselves are data, not prose: a part number, a colour code and a count read
+    /// the same in any language, so only the heading row moves.
+    /// </summary>
+    [Fact]
+    public void Only_the_heading_row_changes_with_the_language()
+    {
+        var english = PartsListCsv.Write(Sample(), language: DisplayLanguage.English).Split("\r\n");
+        var italian = PartsListCsv.Write(Sample(), language: DisplayLanguage.Italian).Split("\r\n");
+
+        italian.Skip(1).Should().Equal(english.Skip(1));
+    }
+
+    [Theory]
+    [InlineData(DisplayLanguage.English)]
+    [InlineData(DisplayLanguage.Italian)]
+    public void A_file_written_in_any_language_reads_back_the_same(DisplayLanguage language)
+    {
+        // A parts list is an input as well as an output, so one written on an Italian machine
+        // has to load on an English one and the other way round.
+        var read = PartsListCsv.Read(PartsListCsv.Write(Sample(), language: language));
+
+        read.Entries.Should().Equal(Sample().Entries);
     }
 
     [Fact]
@@ -133,7 +168,7 @@ public sealed class PartsListCsvTests
         var act = () => PartsListCsv.Read(
             "ID;Codice Lego;Codice BrickLink;Nome colore;Codice RGB;Quantita\r\n1;;11;Black;#05131D;1\r\n");
 
-        act.Should().Throw<FormatException>().WithMessage("*Codice Lego is empty*");
+        act.Should().Throw<FormatException>().WithMessage("*Lego Code is empty*");
     }
 
     [Fact]
