@@ -1,0 +1,159 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Lego2STL.Gui.ViewModels"
+             xmlns:loc="using:Lego2STL.Gui.Localization"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="560"
+             x:Class="Lego2STL.Gui.Views.OptionsView"
+             x:DataType="vm:MainViewModel">
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock.opt">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="0,0,10,0" />
+      <Setter Property="MinWidth" Value="170" />
+    </Style>
+    <Style Selector="StackPanel.row">
+      <Setter Property="Orientation" Value="Horizontal" />
+      <Setter Property="Margin" Value="0,3" />
+    </Style>
+    <Style Selector="NumericUpDown">
+      <Setter Property="MinWidth" Value="150" />
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer>
+    <StackPanel Spacing="2" MaxWidth="820" HorizontalAlignment="Left">
+
+      <TextBlock Classes="heading"
+                 Text="{Binding [UiTabOptions], Source={x:Static loc:Loc.Current}}" />
+
+      <!-- Stages -->
+      <TextBlock Classes="group"
+                 Text="{Binding [UiGroupStages], Source={x:Static loc:Loc.Current}}" />
+      <CheckBox IsChecked="{Binding Options.MakeShapes}"
+                Content="Make the shape files  (off = --csv-only)" />
+      <CheckBox IsChecked="{Binding Options.MakePlates}"
+                IsEnabled="{Binding Options.MakeShapes}"
+                Content="Arrange them on coloured plates  (off = --no-plates)" />
+
+      <!-- Output -->
+      <TextBlock Classes="group"
+                 Text="{Binding [UiGroupOutput], Source={x:Static loc:Loc.Current}}" />
+      <Grid ColumnDefinitions="180,*,Auto" Margin="0,3">
+        <TextBlock Grid.Column="0" Classes="opt" Text="--output-dir" />
+        <TextBox Grid.Column="1" Text="{Binding Options.OutputDirectory}" />
+        <Button Grid.Column="2" Margin="8,0,0,0" Name="PickOutput"
+                Content="{Binding [UiBrowse], Source={x:Static loc:Loc.Current}}" />
+      </Grid>
+      <StackPanel Classes="row">
+        <TextBlock Classes="opt" Text="--delimiter" />
+        <ComboBox MinWidth="150"
+                  ItemsSource="{x:Static vm:RunOptionsViewModel.Delimiters}"
+                  SelectedItem="{Binding Options.Delimiter}" />
+      </StackPanel>
+      <CheckBox IsChecked="{Binding Options.AsciiStl}"
+                Content="--ascii  (the readable form of STL)" />
+
+      <!-- Geometry -->
+      <TextBlock Classes="group"
+                 Text="{Binding [UiGroupGeometry], Source={x:Static loc:Loc.Current}}" />
+      <StackPanel Classes="row">
+        <TextBlock Classes="opt" Text="--scale  (%)" />
+        <NumericUpDown Value="{Binding Options.ScalePercent}"
+                       Minimum="1" Maximum="1000" Increment="5" FormatString="0.##" />
+      </StackPanel>
+      <StackPanel Classes="row">
+        <TextBlock Classes="opt" Text="--clearance  (mm)" />
+        <NumericUpDown Value="{Binding Options.Clearance}"
+                       Minimum="0" Maximum="5" Increment="0.05" FormatString="0.###" />
+      </StackPanel>
+      <CheckBox IsChecked="{Binding Options.FillGaps}"
+                Content="--repair  (cover the gaps, so a clearance can be applied)" />
+      <CheckBox IsChecked="{Binding Options.KeepOrigin}"
+                Content="--keep-origin  (do not stand each part on the bed)" />
+      <CheckBox IsChecked="{Binding Options.NoSeamRepair}"
+                Content="--no-seam-repair" />
+      <StackPanel Classes="row">
+        <TextBlock Classes="opt" Text="--weld-tolerance  (mm)" />
+        <NumericUpDown Value="{Binding Options.WeldTolerance}"
+                       Minimum="0" Maximum="1" Increment="0.001" FormatString="0.####" />
+      </StackPanel>
+
+      <!-- Shape library -->
+      <TextBlock Classes="group"
+                 Text="{Binding [UiGroupLibrary], Source={x:Static loc:Loc.Current}}" />
+      <Grid ColumnDefinitions="180,*,Auto" Margin="0,3">
+        <TextBlock Grid.Column="0" Classes="opt" Text="--ldraw-dir" />
+        <TextBox Grid.Column="1" Text="{Binding Options.LDrawDirectory}" />
+        <Button Grid.Column="2" Margin="8,0,0,0" Name="PickLDraw"
+                Content="{Binding [UiBrowse], Source={x:Static loc:Loc.Current}}" />
+      </Grid>
+      <Grid ColumnDefinitions="180,*,Auto" Margin="0,3">
+        <TextBlock Grid.Column="0" Classes="opt" Text="--ldraw-cache" />
+        <TextBox Grid.Column="1" Text="{Binding Options.LDrawCache}" />
+        <Button Grid.Column="2" Margin="8,0,0,0" Name="PickCache"
+                Content="{Binding [UiBrowse], Source={x:Static loc:Loc.Current}}" />
+      </Grid>
+      <CheckBox IsChecked="{Binding Options.Offline}" Content="--offline" />
+      <CheckBox IsChecked="{Binding !Options.IncludeUnofficial}"
+                Content="--no-unofficial  (official shapes only)" />
+
+      <!-- Plates -->
+      <TextBlock Classes="group"
+                 Text="{Binding [UiGroupPlates], Source={x:Static loc:Loc.Current}}" />
+      <StackPanel Classes="row">
+        <TextBlock Classes="opt" Text="--printer" />
+        <ComboBox MinWidth="150"
+                  IsEnabled="{Binding Options.MakePlates}"
+                  ItemsSource="{x:Static vm:RunOptionsViewModel.Printers}"
+                  SelectedItem="{Binding Options.Printer}" />
+      </StackPanel>
+      <StackPanel Classes="row">
+        <TextBlock Classes="opt" Text="--plate-size" />
+        <TextBox MinWidth="150" PlaceholderText="220x220"
+                 IsEnabled="{Binding Options.MakePlates}"
+                 Text="{Binding Options.PlateSize}" />
+        <TextBlock Classes="hint" VerticalAlignment="Center" Margin="10,0,0,0"
+                   Text="a size here is used instead of the printer" />
+      </StackPanel>
+      <StackPanel Classes="row">
+        <TextBlock Classes="opt" Text="--plate-spacing  (mm)" />
+        <NumericUpDown Value="{Binding Options.PlateSpacing}"
+                       IsEnabled="{Binding Options.MakePlates}"
+                       Minimum="0" Maximum="50" Increment="0.5" FormatString="0.##" />
+      </StackPanel>
+
+      <!-- Behaviour -->
+      <TextBlock Classes="group"
+                 Text="{Binding [UiGroupBehaviour], Source={x:Static loc:Loc.Current}}" />
+      <StackPanel Classes="row">
+        <TextBlock Classes="opt"
+                   Text="{Binding [UiLanguage], Source={x:Static loc:Loc.Current}}" />
+        <ComboBox MinWidth="150"
+                  ItemsSource="{Binding Languages}"
+                  SelectedItem="{Binding SelectedLanguage}"
+                  DisplayMemberBinding="{Binding Name}" />
+        <TextBlock Classes="hint" VerticalAlignment="Center" Margin="10,0,0,0"
+                   Text="--lang  (also sets the parts list's column names)" />
+      </StackPanel>
+      <Grid ColumnDefinitions="180,*" Margin="0,3">
+        <TextBlock Grid.Column="0" Classes="opt" Text="--api-key" />
+        <TextBox Grid.Column="1" PasswordChar="•" Text="{Binding Options.ApiKey}"
+                 PlaceholderText="only needed to look up a set" />
+      </Grid>
+      <Grid ColumnDefinitions="180,*,Auto" Margin="0,3">
+        <TextBlock Grid.Column="0" Classes="opt" Text="--log" />
+        <TextBox Grid.Column="1" Text="{Binding Options.LogFile}" />
+        <Button Grid.Column="2" Margin="8,0,0,0" Name="PickLog"
+                Content="{Binding [UiBrowse], Source={x:Static loc:Loc.Current}}" />
+      </Grid>
+
+      <TextBlock Classes="hint" Margin="0,18,0,0" TextWrapping="Wrap"
+                 Text="Every option the command line takes is on this screen. The line at the bottom of the window is exactly what these settings amount to." />
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

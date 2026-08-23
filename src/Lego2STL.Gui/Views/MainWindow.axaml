@@ -1,22 +1,124 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Lego2STL.Gui.ViewModels"
+        xmlns:views="using:Lego2STL.Gui.Views"
+        xmlns:loc="using:Lego2STL.Gui.Localization"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="1040" d:DesignHeight="720"
         x:Class="Lego2STL.Gui.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="Lego2STL.Gui">
+        Width="1040" Height="720"
+        MinWidth="820" MinHeight="560"
+        Title="Lego2STL">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainViewModel />
-    </Design.DataContext>
+  <Window.Styles>
+    <Style Selector="TextBlock.heading">
+      <Setter Property="FontSize" Value="20" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Margin" Value="0,0,0,12" />
+    </Style>
+    <Style Selector="TextBlock.group">
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Margin" Value="0,16,0,6" />
+      <Setter Property="Opacity" Value="0.85" />
+    </Style>
+    <Style Selector="TextBlock.hint">
+      <Setter Property="Opacity" Value="0.6" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="TextBlock.label">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="0,0,10,0" />
+    </Style>
+    <Style Selector="Border.card">
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseLowBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="6" />
+      <Setter Property="Padding" Value="10" />
+    </Style>
+    <Style Selector="Button.tab">
+      <Setter Property="Padding" Value="16,8" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0,0,0,2" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+    </Style>
+    <Style Selector="Button.tab.on">
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+  </Window.Styles>
 
-    <TextBox Text="{Binding Greeting}"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center" />
+  <DockPanel>
+
+    <!-- Header: the four screens, and the language, which belongs everywhere. -->
+    <Border DockPanel.Dock="Top" Padding="16,10,16,0">
+      <Grid ColumnDefinitions="Auto,*,Auto">
+
+        <StackPanel Grid.Column="0" Orientation="Horizontal">
+          <Button Classes="tab" Classes.on="{Binding OnInput}"
+                  Command="{Binding ShowCommand}" CommandParameter="Input"
+                  Content="{Binding [UiTabInput], Source={x:Static loc:Loc.Current}}" />
+          <Button Classes="tab" Classes.on="{Binding OnOptions}"
+                  Command="{Binding ShowCommand}" CommandParameter="Options"
+                  Content="{Binding [UiTabOptions], Source={x:Static loc:Loc.Current}}" />
+          <Button Classes="tab" Classes.on="{Binding OnRun}"
+                  Command="{Binding ShowCommand}" CommandParameter="Run"
+                  Content="{Binding [UiTabRun], Source={x:Static loc:Loc.Current}}" />
+          <Button Classes="tab" Classes.on="{Binding OnCatalogue}"
+                  Command="{Binding ShowCommand}" CommandParameter="Catalogue"
+                  Content="{Binding [UiTabCatalogue], Source={x:Static loc:Loc.Current}}" />
+        </StackPanel>
+
+        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+          <TextBlock Classes="label"
+                     Text="{Binding [UiLanguage], Source={x:Static loc:Loc.Current}}" />
+          <ComboBox MinWidth="120"
+                    ItemsSource="{Binding Languages}"
+                    SelectedItem="{Binding SelectedLanguage}"
+                    DisplayMemberBinding="{Binding Name}" />
+        </StackPanel>
+
+      </Grid>
+    </Border>
+
+    <!-- Footer: what would be typed to do the same thing, and the button that does it. -->
+    <Border DockPanel.Dock="Bottom" Padding="16,10"
+            BorderThickness="0,1,0,0"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+      <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+
+        <TextBlock Grid.Row="0" Grid.Column="0" Classes="hint"
+                   Text="{Binding [UiEquivalentCommand], Source={x:Static loc:Loc.Current}}" />
+
+        <SelectableTextBlock Grid.Row="1" Grid.Column="0"
+                             Margin="0,2,12,0"
+                             FontFamily="Cascadia Mono,Consolas,Menlo,DejaVu Sans Mono,monospace"
+                             TextWrapping="Wrap"
+                             Text="{Binding Options.CommandLine}" />
+
+        <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1"
+                    Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
+          <Button Command="{Binding CancelCommand}"
+                  IsVisible="{Binding Busy}"
+                  Content="{Binding [UiCancel], Source={x:Static loc:Loc.Current}}" />
+          <Button Classes="accent"
+                  Command="{Binding StartCommand}"
+                  IsEnabled="{Binding CanStart}"
+                  Content="{Binding [UiStart], Source={x:Static loc:Loc.Current}}" />
+        </StackPanel>
+
+      </Grid>
+    </Border>
+
+    <!-- The screen itself. -->
+    <Panel Margin="16,12">
+      <views:InputView DataContext="{Binding}" IsVisible="{Binding OnInput}" />
+      <views:OptionsView DataContext="{Binding}" IsVisible="{Binding OnOptions}" />
+      <views:RunView DataContext="{Binding}" IsVisible="{Binding OnRun}" />
+      <views:CatalogueView DataContext="{Binding}" IsVisible="{Binding OnCatalogue}" />
+    </Panel>
+
+  </DockPanel>
 
 </Window>

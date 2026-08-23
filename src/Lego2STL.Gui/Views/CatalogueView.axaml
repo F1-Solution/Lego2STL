@@ -1,0 +1,102 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Lego2STL.Gui.ViewModels"
+             xmlns:loc="using:Lego2STL.Gui.Localization"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="560"
+             x:Class="Lego2STL.Gui.Views.CatalogueView"
+             x:DataType="vm:MainViewModel">
+
+  <DockPanel>
+
+    <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,10">
+
+      <TextBlock Classes="heading"
+                 Text="{Binding [UiTabCatalogue], Source={x:Static loc:Loc.Current}}" />
+
+      <StackPanel Orientation="Horizontal" Spacing="10">
+        <TextBlock Classes="label"
+                   Text="{Binding [UiFilterByColour], Source={x:Static loc:Loc.Current}}" />
+        <ComboBox MinWidth="200"
+                  PlaceholderText="{Binding [UiAllColours], Source={x:Static loc:Loc.Current}}"
+                  ItemsSource="{Binding Colours}"
+                  SelectedItem="{Binding ColourFilter}" />
+        <Button Name="ClearFilter" Content="✕" ToolTip.Tip="{Binding [UiAllColours], Source={x:Static loc:Loc.Current}}" />
+        <TextBox MinWidth="220" PlaceholderText="32523" Text="{Binding Search}" />
+      </StackPanel>
+
+    </StackPanel>
+
+    <TextBlock DockPanel.Dock="Top" Classes="hint" Margin="0,0,0,8"
+               IsVisible="{Binding !Parts.Count}"
+               Text="{Binding [UiCatalogueEmpty], Source={x:Static loc:Loc.Current}}" />
+
+    <ScrollViewer>
+      <ItemsControl ItemsSource="{Binding VisibleParts}">
+
+        <ItemsControl.ItemsPanel>
+          <ItemsPanelTemplate>
+            <WrapPanel Orientation="Horizontal" />
+          </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:CataloguePartViewModel">
+
+            <Border Classes="card" Width="264" Margin="0,0,10,10">
+              <StackPanel Spacing="6">
+
+                <!-- The part, in its colour. A swatch stands in when there is no picture. -->
+                <Panel Height="104">
+                  <Border Background="{Binding Swatch}" CornerRadius="4"
+                          IsVisible="{Binding Picture, Converter={x:Static ObjectConverters.IsNull}}" />
+                  <Image Source="{Binding Picture}" Stretch="Uniform"
+                         IsVisible="{Binding Picture, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                </Panel>
+
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <Border Grid.Column="0" Width="14" Height="14" CornerRadius="3"
+                          VerticalAlignment="Center" Margin="0,0,8,0"
+                          Background="{Binding Swatch}"
+                          BorderThickness="1"
+                          BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" />
+                  <TextBlock Grid.Column="1" FontWeight="SemiBold"
+                             Text="{Binding PartNumber}" TextTrimming="CharacterEllipsis" />
+                  <TextBlock Grid.Column="2" Text="{Binding Quantity, StringFormat='x{0}'}" />
+                </Grid>
+
+                <TextBlock Classes="hint" Text="{Binding ColorName}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="hint" Text="{Binding Size}" />
+
+                <Border Background="#33FFAA00" CornerRadius="3" Padding="6,4"
+                        IsVisible="{Binding HasWarning}">
+                  <TextBlock FontSize="11" TextWrapping="Wrap" Text="{Binding WarningText}" />
+                </Border>
+
+                <!-- Two equal halves, so a longer wording in another language still fits. -->
+                <Grid ColumnDefinitions="*,6,*">
+                  <Button Grid.Column="0" FontSize="11" Padding="6,4"
+                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                          Command="{Binding OpenShapeCommand}"
+                          IsEnabled="{Binding HasShapeFile}"
+                          Content="{Binding [UiOpenShapeFile], Source={x:Static loc:Loc.Current}}" />
+                  <Button Grid.Column="2" FontSize="11" Padding="6,4"
+                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                          Command="{Binding OpenPlateCommand}"
+                          IsEnabled="{Binding HasPlateFile}"
+                          Content="{Binding [UiOpenPlate], Source={x:Static loc:Loc.Current}}" />
+                </Grid>
+
+              </StackPanel>
+            </Border>
+
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+
+      </ItemsControl>
+    </ScrollViewer>
+
+  </DockPanel>
+
+</UserControl>
