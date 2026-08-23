@@ -284,3 +284,44 @@ Per the PROGRESS.md protocol, one line is appended per completed phase, and it i
 1. **Rotate the Rebrickable API key** — it was pasted in plaintext. It will not be committed; runtime reads `REBRICKABLE_API_KEY` or `%APPDATA%\Lego2STL\config.json`.
 2. **Which printer** should be the default for plate sizing?
 3. **`--lang` default** — English with `--lang it` available, or Italian by default on an Italian OS?
+
+---
+
+## 11. Status — 2026-08-23
+
+Working end to end. `lego2stl extract` then `lego2stl build` takes the reference
+document to 44 shape files. 201 tests, all passing. 9 commits.
+
+| Phase | State | Evidence |
+|---|---|---|
+| 0 Skeleton | done | four projects build on the Windows target framework |
+| 1 Colour cross-reference | done | 275 colours; 214 BrickLink, 200 LEGO, 169 LDraw codes resolve; 6 ambiguities settled by stated rules |
+| 2 Page range and page images | done | all 126 pages decode; catalogue pages come from the embedded image at native size |
+| 3 Locate entries | done | **53/53** on pages 2-5, each two lines, on a parameter plateau |
+| 4 Read entries | done | **53/53** exact against the hand transcription |
+| 5 Parts list | done | 53 entries, 200 pieces, 44 distinct parts; round-trips through the file |
+| 6 Geometry source | done | escalates local → per-file → whole library; 36,896 files cached |
+| 7 Parser and transforms | done | the transpose has its own test, including the wrong answer it guards against |
+| 8 Mesh cleanup | done | 2,519 edges closed by exact seam repair, completing 7 shapes |
+| 9 Shape files | done | 44 files, 3.4 MB, structure verified byte-exact |
+| 15 Packaging | done | one 50 MB `lego2stl.exe`, runs with no runtime installed |
+
+### Not built yet
+
+| Phase | Why it matters |
+|---|---|
+| 10 Coloured plates | groups parts by colour with their quantities into one file per plate; the only place colour reaches the output |
+| 11 Clearance and calibration | the `--clearance` inward offset and the small calibration set; without it printed parts will not clip together |
+| 12 Snapshot tests | golden parts list and shape files, with a switch to regenerate |
+| 13 Interface | the four-screen Avalonia application |
+| 14 Parametric bricks | the separate command driving MachineBlocks through OpenSCAD |
+
+### What the reference set looks like
+
+44 shapes, 11 closed as they stand. Seam repair closed 2,519 edges and completed 7
+more shapes. The rest keep some unshared edges, which a slicer repairs silently;
+the report names them so it is never a surprise.
+
+Sizes come out right: the 4-long axle measures 31.6 x 4.8 x 4.8 mm, and a
+20-unit width lands on exactly 8.000 mm, which is the spacing everything else is
+measured against.
