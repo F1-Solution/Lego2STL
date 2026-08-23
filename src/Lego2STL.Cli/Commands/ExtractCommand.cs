@@ -106,7 +106,7 @@ internal static class ExtractCommand
         var pages = PageRange.Parse(pageRange, document.PageCount);
         Console.WriteLine($"Reading pages {PageRange.Format(pages)} using {colorScheme} colour numbering.");
 
-        var reader = new CatalogueReader(WindowsOcrEngine.Create());
+        var reader = new CatalogueReader(OcrEngines.Create());
         var read = await reader.ReadAsync(document, pages, cancellationToken).ConfigureAwait(false);
 
         foreach (var note in read.Notes)

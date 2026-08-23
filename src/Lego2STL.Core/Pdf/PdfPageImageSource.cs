@@ -1,3 +1,4 @@
+using System.Runtime.Versioning;
 using PDFtoImage;
 using SkiaSharp;
 using UglyToad.PdfPig;
@@ -163,8 +164,26 @@ public sealed class PdfPageImageSource : IDisposable
     private static bool LooksLikeJpeg(ReadOnlySpan<byte> bytes) =>
         bytes.Length > 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF;
 
+    /// <summary>
+    /// The platforms the renderer has binaries for. Named as a guard so that the compiler
+    /// can see the check, rather than being told to ignore the mismatch.
+    /// </summary>
+    [SupportedOSPlatformGuard("windows")]
+    [SupportedOSPlatformGuard("linux")]
+    [SupportedOSPlatformGuard("macos")]
+    private static bool CanRasterise =>
+        OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS();
+
     private SKBitmap Render(int pageNumber)
     {
+        if (!CanRasterise)
+        {
+            throw new PlatformNotSupportedException(
+                $"Page {pageNumber} of '{Path}' is not a single embedded image, so it has to be " +
+                "rendered, and there is no renderer for this platform. Windows, Linux and macOS " +
+                "all have one.");
+        }
+
         try
         {
             // PDFtoImage takes a 0-based page index.

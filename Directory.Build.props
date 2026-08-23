@@ -2,11 +2,14 @@
 
   <PropertyGroup>
     <!--
-      The Windows TFM is required, not a preference: the OCR engine is Windows.Media.Ocr,
-      reached through the WinRT projection. All OCR sits behind IOcrEngine so a
-      cross-platform engine can be added later without touching the pipeline.
+      Two targets, not one. The plain target is the whole tool except text recognition and
+      runs on Windows, Linux and macOS; the Windows target adds Windows.Media.Ocr, which is
+      what reads a document's pages. Everything OCR-related sits behind IOcrEngine, so the
+      plain target builds the identical pipeline and simply has no recogniser to offer:
+      reading a PDF asks for one, while a parts list, a set number, geometry, plates and
+      calibration never do.
     -->
-    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetFrameworks>net8.0;net8.0-windows10.0.19041.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
@@ -16,8 +19,17 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
-  <PropertyGroup Label="Publish defaults for self-contained single-file output">
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  <PropertyGroup Label="What distinguishes the two targets, named once so conditions read clearly">
+    <IsWindowsTarget>false</IsWindowsTarget>
+    <IsWindowsTarget Condition="$(TargetFramework.Contains('-windows'))">true</IsWindowsTarget>
+  </PropertyGroup>
+
+  <!--
+    Publish settings apply only once a runtime has been named, so that a plain build stays a
+    plain build and 'dotnet publish -r <rid>' is what produces the one-file application.
+    Naming a runtime here instead would fix every build to Windows.
+  -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''" Label="One self-contained file per platform">
     <SelfContained>true</SelfContained>
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>

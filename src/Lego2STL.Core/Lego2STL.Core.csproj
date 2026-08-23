@@ -1,8 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-  </PropertyGroup>
-
   <ItemGroup>
     <!--
       The colour cross-reference ships inside the assembly so a normal run needs no API
@@ -12,7 +9,17 @@
     <EmbeddedResource Include="Data\*.csv" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(IsWindowsTarget)' != 'true'">
+    <!-- The only file that talks to Windows. Off the Windows target there is no recogniser. -->
+    <Compile Remove="Ocr\WindowsOcrEngine.cs" />
+  </ItemGroup>
+
   <ItemGroup>
+    <!--
+      PdfPig reads the pages. PDFtoImage renders the ones that are not a single image, and
+      brings the Skia and PDFium binaries for Windows, Linux and macOS with it, which is what
+      lets the plain target run everywhere without naming a native package per platform.
+    -->
     <PackageReference Include="PdfPig" Version="0.1.16" />
     <PackageReference Include="PDFtoImage" Version="5.4.0" />
     <PackageReference Include="SkiaSharp" Version="4.150.1" />
