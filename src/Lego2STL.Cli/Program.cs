@@ -18,6 +18,7 @@ internal static class Program
         var root = new RootCommand(
             "Lego2STL - turn a LEGO parts catalogue into a CSV plus 3D-printable geometry.")
         {
+            ExtractCommand.Create(),
             RefreshColorsCommand.Create(),
         };
 
