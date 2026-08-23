@@ -33,36 +33,16 @@ jobs:
       number: ${{ steps.pick.outputs.number }}
       prerelease: ${{ steps.pick.outputs.prerelease }}
     steps:
+      - uses: actions/checkout@v4
+
       # Worked out once, here, so that every package in a release carries the same number
-      # rather than each job deriving its own.
+      # rather than each job deriving its own. The script is shared with the workflow that
+      # runs under act, so exercising it locally says something about this one.
       - name: Work out the version
         id: pick
         env:
           RAW: ${{ inputs.version || github.ref_name }}
-        run: |
-          set -euo pipefail
-
-          # A tag is written v1.2.0; a version is not. The leading letter is not part of the
-          # number, and dotnet refuses the whole string if it is left on, so the build fails
-          # at the point where it is least obvious why.
-          number="${RAW#v}"
-
-          if ! printf '%s' "$number" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$'; then
-            echo "::error::'$RAW' is not a version these packages can carry. Tag it v1.2.0, or v1.2.0-rc1."
-            exit 1
-          fi
-
-          # A hyphen is what marks a pre-release in semantic versioning, so one is announced
-          # as a pre-release rather than as a finished version.
-          if printf '%s' "$number" | grep -q -- '-'; then
-            prerelease=true
-          else
-            prerelease=false
-          fi
-
-          echo "number=$number" >> "$GITHUB_OUTPUT"
-          echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
-          echo "Building $number (pre-release: $prerelease)"
+        run: ./packaging/version.sh "$RAW"
 
   test:
     name: test

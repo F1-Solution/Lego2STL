@@ -1,0 +1,15 @@
+# Defaults for act, so the command line stays short. See packaging/act/README.md.
+
+# The medium image, about 1.1 GB. The default micro one has no Node and too little else for
+# actions/setup-dotnet to work; the full one is roughly 40 GB and buys nothing here.
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
+-P ubuntu-24.04=catthehacker/ubuntu:act-latest
+-P ubuntu-22.04=catthehacker/ubuntu:act-22.04
+
+# actions/upload-artifact needs somewhere to put things, or it fails rather than being
+# skipped. Uploads land under .act-artifacts, which is not tracked.
+--artifact-server-path .act-artifacts
+
+# Containers are removed when a run finishes, so a failed run does not leave one behind to be
+# reused by the next and confuse it.
+--rm

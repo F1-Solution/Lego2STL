@@ -26,3 +26,7 @@ config.json
 
 # Tooling artifacts
 .playwright-mcp/
+
+# What act leaves behind when the workflow is run locally
+.act-artifacts/
+.secrets

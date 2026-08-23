@@ -1,0 +1,100 @@
+# The part of the packaging workflow that can be built locally, under act.
+#
+# This is not a second copy of the build. Both this and .github/workflows/package.yml are thin
+# wrappers around packaging/version.sh and packaging/build-unix.sh, so what runs here is what
+# runs there, and a green run locally means something about the real one.
+#
+# It lives outside .github/workflows on purpose: GitHub would otherwise list it, and it is not
+# for GitHub. act is pointed at it with -W. See packaging/act/README.md.
+#
+# What is missing, and why:
+#
+#   test      runs on windows-latest, because reading a document needs the recogniser that is
+#             part of Windows. Run it directly instead: dotnet test -c Release
+#   windows   needs the Windows installer toolset.
+#   macos     needs macOS to make a disk image.
+#   release   publishes to GitHub, which is not a thing to do from a laptop by accident.
+#
+# act cannot run Windows or macOS containers on a Linux engine, so those four are out of reach
+# locally whatever is done. The Linux job is the one worth having: the container is Ubuntu and
+# carries dpkg-deb, so it builds the .deb as well as the tarball.
+
+name: package (local)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to stamp on the packages
+        required: false
+        default: 0.0.0-local
+
+permissions:
+  contents: read
+
+jobs:
+
+  version:
+    name: version
+    runs-on: ubuntu-latest
+    outputs:
+      number: ${{ steps.pick.outputs.number }}
+      prerelease: ${{ steps.pick.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Work out the version
+        id: pick
+        env:
+          RAW: ${{ inputs.version || github.ref_name }}
+        run: ./packaging/version.sh "$RAW"
+
+  linux:
+    name: linux
+    needs: version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build the package
+        env:
+          VERSION: ${{ needs.version.outputs.number }}
+        run: ./packaging/build-unix.sh linux x64 "$VERSION"
+
+      # Proves the packages are the shape they claim to be, which is the part a local run is
+      # actually for. The real workflow does not need this: it hands the files to a release,
+      # and anyone can look at them there.
+      - name: Look inside what was built
+        run: |
+          set -euo pipefail
+          cd artifacts/dist
+
+          echo "=== produced ==="
+          ls -lh
+
+          tarball=$(ls ./*linux-x64.tar.gz)
+          echo
+          echo "=== inside $tarball ==="
+          tar -tzf "$tarball"
+
+          deb=$(ls ./*.deb 2>/dev/null || true)
+          if [ -n "$deb" ]; then
+            echo
+            echo "=== $deb declares ==="
+            dpkg-deb --info "$deb"
+            echo "=== and installs ==="
+            dpkg-deb --contents "$deb"
+          else
+            echo
+            echo "::warning::No .deb was built - dpkg-deb was missing from the image."
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: artifacts/dist/*
+          if-no-files-found: error
