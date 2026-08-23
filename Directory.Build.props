@@ -1,0 +1,27 @@
+<Project>
+
+  <PropertyGroup>
+    <!--
+      The Windows TFM is required, not a preference: the OCR engine is Windows.Media.Ocr,
+      reached through the WinRT projection. All OCR sits behind IOcrEngine so a
+      cross-platform engine can be added later without touching the pipeline.
+    -->
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Deterministic>true</Deterministic>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Publish defaults for self-contained single-file output">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <!-- Avalonia loads XAML by reflection; trimming breaks it. Not trimmed anywhere. -->
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+
+</Project>

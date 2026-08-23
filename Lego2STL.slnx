@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Lego2STL.Cli/Lego2STL.Cli.csproj" />
+    <Project Path="src/Lego2STL.Core/Lego2STL.Core.csproj" />
+    <Project Path="src/Lego2STL.Gui/Lego2STL.Gui.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Lego2STL.Tests/Lego2STL.Tests.csproj" />
+  </Folder>
+</Solution>

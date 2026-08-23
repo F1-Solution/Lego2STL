@@ -1,0 +1,28 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+artifacts/
+*.user
+*.suo
+.vs/
+
+# Tool output: one folder per run, named after the input file
+/*/*.csv
+/*/report.txt
+/*/_review/
+/*/stl/
+/*/3mf/
+
+# Large third-party data, not ours to redistribute
+DB Lego/
+*.pdf
+ldraw-cache/
+*.zip
+
+# Secrets
+config.json
+*.key
+.env
+
+# Tooling artifacts
+.playwright-mcp/
