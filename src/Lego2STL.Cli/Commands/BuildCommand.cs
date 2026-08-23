@@ -1,14 +1,16 @@
 using System.CommandLine;
-using System.Text;
+using System.Globalization;
 using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Geometry;
 using Lego2STL.Core.LDraw;
+using Lego2STL.Core.Plates;
 using Lego2STL.Core.Run;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Cli.Commands;
 
 /// <summary>
-/// Turns a parts list into one shape file per distinct part.
+/// Turns a parts list into one shape file per distinct part, plus a plate per colour.
 /// </summary>
 internal static class BuildCommand
 {
@@ -45,6 +47,21 @@ internal static class BuildCommand
             DefaultValueFactory = _ => 100.0,
         };
 
+        var clearance = new Option<double>("--clearance")
+        {
+            Description =
+                "Take every face in by this many millimetres, so printed parts clip together. " +
+                "Run the calibration command to find the right figure for your printer.",
+            DefaultValueFactory = _ => 0.0,
+        };
+
+        var repair = new Option<bool>("--repair")
+        {
+            Description =
+                "Also cover over the gaps left in a shape's surface, making it a solid. Needed " +
+                "before a clearance can be applied to a part that has any.",
+        };
+
         var noRepair = new Option<bool>("--no-seam-repair")
         {
             Description = "Skip closing seams where a corner lies part-way along another edge.",
@@ -55,60 +72,123 @@ internal static class BuildCommand
             Description = "Where to put the run folder. Defaults to the parts list's own folder.",
         };
 
-        var command = new Command("build", "Turn a parts list into one shape file per part.")
+        var printer = new Option<string>("--printer")
         {
-            input, ldrawDirectory, offline, asText, keepOrigin, scale, noRepair, outputDirectory,
+            Description =
+                $"Which printer's bed to lay the plates out for: {string.Join(", ", PrintBeds.Names)}.",
+            DefaultValueFactory = _ => PrintBeds.Default.Name,
+        };
+
+        var plateSize = new Option<string?>("--plate-size")
+        {
+            Description =
+                "A bed size in millimetres instead of a printer name, e.g. 220x220 or 300x300x400.",
+        };
+
+        var plateSpacing = new Option<double>("--plate-spacing")
+        {
+            Description = "Millimetres to leave between parts on a plate.",
+            DefaultValueFactory = _ => 3.0,
+        };
+
+        var noPlates = new Option<bool>("--no-plates")
+        {
+            Description = "Write only the shape files, no coloured plates.",
+        };
+
+        var command = new Command("build", "Turn a parts list into shape files and coloured plates.")
+        {
+            input, ldrawDirectory, offline, asText, keepOrigin, scale, clearance, repair, noRepair,
+            outputDirectory, printer, plateSize, plateSpacing, noPlates,
         };
 
         command.SetAction(async (parseResult, cancellationToken) => await RunAsync(
-            parseResult.GetRequiredValue(input),
-            parseResult.GetValue(ldrawDirectory),
-            parseResult.GetValue(offline),
-            parseResult.GetValue(asText),
-            parseResult.GetValue(keepOrigin),
-            parseResult.GetValue(scale),
-            parseResult.GetValue(noRepair),
-            parseResult.GetValue(outputDirectory),
+            new Settings(
+                parseResult.GetRequiredValue(input),
+                parseResult.GetValue(ldrawDirectory),
+                parseResult.GetValue(offline),
+                parseResult.GetValue(asText),
+                parseResult.GetValue(keepOrigin),
+                parseResult.GetValue(scale),
+                parseResult.GetValue(clearance),
+                parseResult.GetValue(repair),
+                parseResult.GetValue(noRepair),
+                parseResult.GetValue(outputDirectory),
+                parseResult.GetValue(printer) ?? PrintBeds.Default.Name,
+                parseResult.GetValue(plateSize),
+                parseResult.GetValue(plateSpacing),
+                parseResult.GetValue(noPlates),
+                parseResult.GetValue(CommonOptions.Language)),
             cancellationToken).ConfigureAwait(false));
 
         return command;
     }
 
-    private static async Task<int> RunAsync(
-        FileInfo input,
-        DirectoryInfo? ldrawDirectory,
-        bool offline,
-        bool asText,
-        bool keepOrigin,
-        double scalePercent,
-        bool noRepair,
-        DirectoryInfo? outputDirectory,
-        CancellationToken cancellationToken)
+    /// <summary>Everything the command was asked for, gathered so the run reads as one step.</summary>
+    private sealed record Settings(
+        FileInfo Input,
+        DirectoryInfo? LDrawDirectory,
+        bool Offline,
+        bool AsText,
+        bool KeepOrigin,
+        double ScalePercent,
+        double Clearance,
+        bool FillGaps,
+        bool NoSeamRepair,
+        DirectoryInfo? OutputDirectory,
+        string Printer,
+        string? PlateSize,
+        double PlateSpacing,
+        bool NoPlates,
+        DisplayLanguage Language);
+
+    private static async Task<int> RunAsync(Settings settings, CancellationToken cancellationToken)
     {
-        if (!input.Exists)
+        var words = Strings.For(settings.Language);
+
+        if (!settings.Input.Exists)
         {
-            Console.Error.WriteLine($"Error: no such parts list: {input.FullName}");
+            Console.Error.WriteLine(
+                $"{words[TextKey.MsgError]}: " +
+                words.Format(TextKey.MsgNoSuchPartsList, settings.Input.FullName));
             return Program.ExitFailure;
         }
 
-        var list = await PartsListCsv.ReadFileAsync(input.FullName, cancellationToken).ConfigureAwait(false);
-        var layout = RunLayout.For(input.FullName, outputDirectory?.FullName);
+        if (settings.Clearance < 0)
+        {
+            Console.Error.WriteLine(
+                $"{words[TextKey.MsgError]}: " +
+                words.Format(TextKey.ErrClearanceNegative, settings.Clearance));
+            return Program.ExitFailure;
+        }
+
+        var bed = settings.PlateSize is { Length: > 0 }
+            ? PrintBeds.Parse(settings.PlateSize)
+            : PrintBeds.Parse(settings.Printer);
+
+        var list = await PartsListCsv.ReadFileAsync(settings.Input.FullName, cancellationToken)
+            .ConfigureAwait(false);
+
+        var layout = RunLayout.For(settings.Input.FullName, settings.OutputDirectory?.FullName);
         layout.CreateDirectories();
 
-        Console.WriteLine($"{list.Entries.Count} entries, {list.DistinctPartNumbers.Count} distinct parts.");
+        Console.WriteLine(words.Format(
+            TextKey.MsgEntriesAndParts, list.Entries.Count, list.DistinctPartNumbers.Count));
 
         var options = new MeshPipelineOptions
         {
-            RepairSeams = !noRepair,
-            PlaceOnBed = !keepOrigin,
-            ScalePercent = (float)scalePercent,
+            RepairSeams = !settings.NoSeamRepair,
+            PlaceOnBed = !settings.KeepOrigin,
+            FillGaps = settings.FillGaps,
+            ScalePercent = (float)settings.ScalePercent,
+            ClearanceMillimetres = (float)settings.Clearance,
         };
 
         using var library = new EscalatingLDrawLibrary(
             new LDrawSourceOptions
             {
-                LocalDirectory = ldrawDirectory?.FullName,
-                Offline = offline,
+                LocalDirectory = settings.LDrawDirectory?.FullName,
+                Offline = settings.Offline,
             },
             message => Console.WriteLine("  " + message));
 
@@ -116,6 +196,7 @@ internal static class BuildCommand
 
         var prepared = new List<PreparedMesh>();
         var failed = new List<(string Part, string Reason)>();
+        var shapes = new Dictionary<string, IndexedMesh>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var partNumber in list.DistinctPartNumbers)
         {
@@ -133,9 +214,11 @@ internal static class BuildCommand
 
                 var ready = MeshPipeline.Prepare(mesh, options);
                 prepared.Add(ready);
+                shapes[partNumber] = ready.Mesh;
 
-                var path = Path.Combine(layout.StlDirectory, partNumber + (asText ? ".stl" : ".stl"));
-                await StlWriter.WriteFileAsync(path, ready.Mesh, asText, partNumber, cancellationToken)
+                var path = Path.Combine(layout.StlDirectory, partNumber + ".stl");
+                await StlWriter
+                    .WriteFileAsync(path, ready.Mesh, settings.AsText, partNumber, cancellationToken)
                     .ConfigureAwait(false);
 
                 Console.WriteLine(
@@ -148,21 +231,34 @@ internal static class BuildCommand
             }
         }
 
-        await WriteReportAsync(layout, list, prepared, failed, library, options, cancellationToken)
+        var plates = await WritePlatesAsync(settings, words, list, shapes, layout, bed, failed, cancellationToken)
+            .ConfigureAwait(false);
+
+        await BuildReport
+            .WriteAsync(layout, words, prepared, failed, plates, library.Description, options, bed, cancellationToken)
             .ConfigureAwait(false);
 
         var closed = prepared.Count(p => p.Quality.IsClosed);
 
         Console.WriteLine();
-        Console.WriteLine($"Wrote {prepared.Count} shape file(s) to {layout.StlDirectory}");
-        Console.WriteLine($"  {closed} closed, {prepared.Count - closed} with open edges " +
-                          "(a slicer will repair those, and the report lists them).");
-        Console.WriteLine($"Report: {layout.ReportPath}");
+        ReportClearance(prepared, words, settings.Clearance, settings.FillGaps);
+        Console.WriteLine(words.Format(TextKey.MsgWroteShapes, prepared.Count, layout.StlDirectory));
+        Console.WriteLine("  " + words.Format(TextKey.MsgClosedAndOpen, closed, prepared.Count - closed));
+
+        if (plates is not null)
+        {
+            Console.WriteLine(words.Format(
+                TextKey.MsgWrotePlates, plates.Plates.Count, layout.PlateDirectory));
+            Console.WriteLine("  " + words.Format(
+                TextKey.ReportPlateSummary, plates.Plates.Count, plates.ColorCount, plates.PieceCount));
+        }
+
+        Console.WriteLine(words.Format(TextKey.MsgReportWritten, layout.ReportPath));
 
         if (failed.Count > 0)
         {
             Console.Error.WriteLine();
-            Console.Error.WriteLine($"{failed.Count} part(s) produced nothing:");
+            Console.Error.WriteLine(words.Format(TextKey.MsgProducedNothing, failed.Count));
             foreach (var (part, reason) in failed)
             {
                 Console.Error.WriteLine($"  {part}: {reason}");
@@ -174,85 +270,75 @@ internal static class BuildCommand
         return Program.ExitOk;
     }
 
-    private static async Task WriteReportAsync(
-        RunLayout layout,
+    /// <summary>
+    /// Plates come last and only when everything resolved, because a plate that silently
+    /// leaves out the parts that failed looks complete and is not.
+    /// </summary>
+    private static async Task<PlateBuildResult?> WritePlatesAsync(
+        Settings settings,
+        Strings words,
         PartsList list,
-        List<PreparedMesh> prepared,
+        IReadOnlyDictionary<string, IndexedMesh> shapes,
+        RunLayout layout,
+        PrintBed bed,
         List<(string Part, string Reason)> failed,
-        EscalatingLDrawLibrary library,
-        MeshPipelineOptions options,
         CancellationToken cancellationToken)
     {
-        var sb = new StringBuilder();
-        sb.AppendLine("Lego2STL shape report");
-        sb.AppendLine(new string('-', 78));
-        sb.AppendLine($"Geometry from : {library.Description}");
-        sb.AppendLine($"Units         : millimetres, upright, {(options.PlaceOnBed ? "standing on zero" : "original origin")}");
-        sb.AppendLine($"Scale         : {options.ScalePercent:0.##}%");
-        sb.AppendLine($"Seam repair   : {(options.RepairSeams ? "on" : "off")}");
-        sb.AppendLine();
-
-        sb.AppendLine($"{"part",-10}{"tris",8}{"open",7}{"seams",7}  size (mm)");
-        foreach (var p in prepared.OrderBy(p => p.PartNumber, StringComparer.OrdinalIgnoreCase))
+        if (settings.NoPlates)
         {
-            sb.AppendLine(
-                $"{p.PartNumber,-10}{p.Mesh.TriangleCount,8}{p.Quality.OpenEdgeCount,7}" +
-                $"{p.SeamsClosed,7}  {p.DescribeSize()}" +
-                (p.Title is null ? "" : $"  {p.Title}"));
-        }
-
-        sb.AppendLine();
-
-        var closed = prepared.Count(p => p.Quality.IsClosed);
-        sb.AppendLine($"{closed} of {prepared.Count} shapes are closed.");
-
-        var seamTotal = prepared.Sum(p => p.SeamsClosed);
-        var fixedByRepair = prepared.Count(p => !p.QualityBeforeRepair.IsClosed && p.Quality.IsClosed);
-        sb.AppendLine($"Seam repair closed {seamTotal} edge(s) and completed {fixedByRepair} shape(s).");
-        sb.AppendLine();
-
-        var redirected = prepared.Where(p => p.MovedTo is not null).ToList();
-        if (redirected.Count > 0)
-        {
-            sb.AppendLine("Retired numbers, where the shape comes from a replacement part:");
-            foreach (var p in redirected)
-            {
-                sb.AppendLine($"  {p.PartNumber} -> {p.MovedTo}");
-            }
-
-            sb.AppendLine();
-        }
-
-        var withMissing = prepared.Where(p => p.MissingReferences.Count > 0).ToList();
-        if (withMissing.Count > 0)
-        {
-            sb.AppendLine("Parts built with something missing:");
-            foreach (var p in withMissing)
-            {
-                sb.AppendLine($"  {p.PartNumber}: {string.Join(", ", p.MissingReferences.Take(6))}");
-            }
-
-            sb.AppendLine();
+            Console.WriteLine(words[TextKey.MsgNoPlatesRequested]);
+            return null;
         }
 
         if (failed.Count > 0)
         {
-            sb.AppendLine("Produced nothing:");
-            foreach (var (part, reason) in failed)
-            {
-                sb.AppendLine($"  {part}: {reason}");
-            }
-
-            sb.AppendLine();
+            Console.WriteLine(words[TextKey.MsgPlatesSkippedUnverified]);
+            return null;
         }
 
-        sb.AppendLine("Note on printing");
-        sb.AppendLine("  These shapes are the catalogue's nominal dimensions, with no allowance for");
-        sb.AppendLine("  the clearance a real moulded part has. Printed at true size they will be");
-        sb.AppendLine("  slightly oversized on every face and will not clip together without a");
-        sb.AppendLine("  clearance allowance calibrated for your own printer and material.");
+        var result = await PlateBuilder.WriteAsync(
+            list,
+            shapes,
+            layout.PlateDirectory,
+            new PackingOptions { Bed = bed, Spacing = (float)settings.PlateSpacing },
+            cancellationToken).ConfigureAwait(false);
 
-        await File.WriteAllTextAsync(layout.ReportPath, sb.ToString(), new UTF8Encoding(true), cancellationToken)
-            .ConfigureAwait(false);
+        foreach (var note in result.Skipped)
+        {
+            Console.WriteLine("  " + note);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// One line for the clearance, not one paragraph per part. Which parts were refused, and
+    /// why, is in the report; the console says how many and what to do about it.
+    /// </summary>
+    private static void ReportClearance(
+        IReadOnlyList<PreparedMesh> prepared, Strings words, double clearance, bool gapsCovered)
+    {
+        if (clearance <= 0 || prepared.Count == 0)
+        {
+            return;
+        }
+
+        var applied = prepared.Count(p => p.ClearanceApplied);
+        Console.WriteLine(words.Format(TextKey.MsgClearanceApplied, applied, prepared.Count, clearance));
+
+        var open = prepared.Count(p => p.ClearanceRefusedBecause == "open");
+        var thin = prepared.Count(p => p.ClearanceRefusedBecause == "thin");
+
+        if (open > 0)
+        {
+            Console.WriteLine("  " + words.Format(
+                gapsCovered ? TextKey.MsgClearanceRefusedStillOpen : TextKey.MsgClearanceRefusedOpen,
+                open));
+        }
+
+        if (thin > 0)
+        {
+            Console.WriteLine("  " + words.Format(TextKey.MsgClearanceRefusedThin, thin));
+        }
     }
 }

@@ -21,6 +21,7 @@ internal static class Program
             CommonOptions.Language,
             ExtractCommand.Create(),
             BuildCommand.Create(),
+            CalibrationCommand.Create(),
             RefreshColorsCommand.Create(),
         };
 

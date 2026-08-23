@@ -54,10 +54,13 @@ public sealed partial class Strings
             [TextKey.ReportColumnTriangles] = "tri",
             [TextKey.ReportColumnOpen] = "aperti",
             [TextKey.ReportColumnSeams] = "giunz",
+            [TextKey.ReportColumnGaps] = "buchi",
             [TextKey.ReportColumnSize] = "dimensioni (mm)",
             [TextKey.ReportShapesClosed] = "{0} forme su {1} sono chiuse.",
             [TextKey.ReportSeamsClosedSummary] =
                 "La chiusura delle giunzioni ha saldato {0} spigoli e completato {1} forme.",
+            [TextKey.ReportGapsFilledSummary] =
+                "La copertura dei buchi ne ha chiusi {0} su {1} forme.",
             [TextKey.ReportRetiredNumbers] =
                 "Codici ritirati, la cui forma viene da un pezzo sostitutivo:",
             [TextKey.ReportBuiltWithSomethingMissing] = "Pezzi costruiti con qualcosa di mancante:",
@@ -112,6 +115,32 @@ public sealed partial class Strings
             [TextKey.MsgPlatesSkippedUnverified] =
                 "I piani di stampa sono stati saltati perché alcuni pezzi non hanno prodotto nulla.",
             [TextKey.MsgCalibrationWritten] = "Scritte {0} forme di taratura in {1}",
+            [TextKey.CalibrationTitle] = "Trovare il gioco che serve alla propria stampante",
+            [TextKey.CalibrationHow] =
+                "Qui c'è {0}, una volta per ciascuno di questi giochi in millimetri: {1}. "
+                + "Stampare tutta la serie con il materiale che si intende usare, sulla "
+                + "macchina che si intende usare, con le impostazioni che si intendono usare. "
+                + "Niente di tutto questo si può prendere dalla stampante di qualcun altro: il "
+                + "valore cercato è più piccolo della differenza fra due macchine dello stesso "
+                + "modello.",
+            [TextKey.CalibrationThen] =
+                "Poi provarli. Salire dal più piccolo finché i pezzi si uniscono senza forzare "
+                + "e restano uniti se si scuotono. Quel gioco è il proprio: passarlo al comando "
+                + "build come --clearance, insieme a --repair perché possa essere applicato "
+                + "anche ai pezzi con buchi nella superficie. Ricontrollarlo se si cambia "
+                + "materiale, ugello o stampante.",
+            [TextKey.MsgClearanceApplied] =
+                "Ogni faccia rientrata di {2} mm su {0} forme di {1}.",
+            [TextKey.MsgClearanceRefusedOpen] =
+                "{0} lasciate a grandezza reale: la loro superficie ha ancora dei buchi, e " +
+                "rientrare le facce trascinerebbe anche i bordi di quei buchi. Aggiungere " +
+                "--repair per coprirli prima.",
+            [TextKey.MsgClearanceRefusedStillOpen] =
+                "{0} lasciate a grandezza reale: la loro superficie ha buchi che non è stato "
+                + "possibile coprire, perché al bordo del buco la superficie si dirama invece "
+                + "di chiudersi ad anello. Uno slicer le ripara comunque in fase di stampa.",
+            [TextKey.MsgClearanceRefusedThin] =
+                "{0} lasciate a grandezza reale: togliere tanto da ogni faccia le farebbe sparire.",
             [TextKey.MsgCancelled] = "Annullato.",
             [TextKey.MsgError] = "Errore",
 

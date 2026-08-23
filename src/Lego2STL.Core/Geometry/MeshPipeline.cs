@@ -13,6 +13,12 @@ public sealed record MeshPipelineOptions
     public bool RepairSeams { get; init; } = true;
 
     /// <summary>
+    /// Also cover over whatever gaps are left, so the shape becomes a solid. Asked for rather
+    /// than assumed, because unlike closing seams this invents surface.
+    /// </summary>
+    public bool FillGaps { get; init; }
+
+    /// <summary>
     /// Millimetres per source unit. The source measures in units of 0.4 mm, so a standard
     /// brick is 20 units and comes out 8 mm wide.
     /// </summary>
@@ -26,6 +32,12 @@ public sealed record MeshPipelineOptions
 
     /// <summary>Extra scaling, as a percentage. 100 means true size.</summary>
     public float ScalePercent { get; init; } = 100f;
+
+    /// <summary>
+    /// How far to take every face in, in millimetres, so that a printed part has the clearance
+    /// a moulded one is made with. Zero leaves the catalogue's nominal size alone.
+    /// </summary>
+    public float ClearanceMillimetres { get; init; }
 }
 
 /// <summary>A prepared shape, with what was done to it and how closed it came out.</summary>
@@ -36,9 +48,12 @@ public sealed record PreparedMesh(
     MeshQuality Quality,
     MeshQuality QualityBeforeRepair,
     int SeamsClosed,
+    int GapsFilled,
     int DegenerateTrianglesRemoved,
     string? MovedTo,
-    IReadOnlyList<string> MissingReferences)
+    IReadOnlyList<string> MissingReferences,
+    bool ClearanceApplied = false,
+    string? ClearanceRefusedBecause = null)
 {
     public (Vector3 Min, Vector3 Max) Bounds => Mesh.Bounds();
 
@@ -81,13 +96,25 @@ public static class MeshPipeline
         var before = MeshAnalysis.Measure(tidied);
 
         var seamsClosed = 0;
-        var repaired = o.RepairSeams
+        IndexedMesh repaired = o.RepairSeams
             ? TJunctionRepair.Repair(tidied, out seamsClosed, o.WeldTolerance)
             : tidied;
 
+        var gapsFilled = 0;
+        if (o.FillGaps)
+        {
+            var covered = BoundaryFill.Fill(repaired);
+            repaired = covered.Mesh;
+            gapsFilled = covered.LoopsFilled;
+        }
+
         var quality = MeshAnalysis.Measure(repaired);
 
-        var placed = Place(repaired, o);
+        // Millimetres first, because a clearance is stated in millimetres and has to be applied
+        // to a shape that is already measured in them.
+        var upright = StandUp(repaired, o);
+        var clearance = ClearanceOffset.Apply(upright, o.ClearanceMillimetres, quality);
+        var placed = SitOnBed(clearance.Mesh, o);
 
         return new PreparedMesh(
             part.Reference,
@@ -96,9 +123,12 @@ public static class MeshPipeline
             quality,
             before,
             seamsClosed,
+            gapsFilled,
             degenerateRemoved,
             part.MovedTo,
-            part.MissingReferences);
+            part.MissingReferences,
+            clearance.Applied,
+            clearance.Reason);
     }
 
     /// <summary>
@@ -109,7 +139,7 @@ public static class MeshPipeline
     /// expects, so a straight unit conversion arrives lying upside down and has to be turned
     /// by hand every time. Turning it here costs nothing and makes the files usable as they are.
     /// </remarks>
-    private static IndexedMesh Place(IndexedMesh mesh, MeshPipelineOptions o)
+    private static IndexedMesh StandUp(IndexedMesh mesh, MeshPipelineOptions o)
     {
         var scale = o.MillimetresPerUnit * (o.ScalePercent / 100f);
 
@@ -118,16 +148,23 @@ public static class MeshPipeline
             Matrix4x4.CreateScale(scale) *
             Matrix4x4.CreateRotationX(-MathF.PI / 2f);
 
-        var placed = mesh.Transformed(transform);
+        return mesh.Transformed(transform);
+    }
 
-        if (!o.PlaceOnBed || placed.VertexCount == 0)
+    /// <summary>
+    /// Centres the shape and drops it onto zero. Done after any clearance, because taking the
+    /// faces in lifts the underside by that much and would otherwise leave the part hovering.
+    /// </summary>
+    private static IndexedMesh SitOnBed(IndexedMesh mesh, MeshPipelineOptions o)
+    {
+        if (!o.PlaceOnBed || mesh.VertexCount == 0)
         {
-            return placed;
+            return mesh;
         }
 
-        var (min, max) = placed.Bounds();
+        var (min, max) = mesh.Bounds();
         var centre = (min + max) / 2f;
 
-        return placed.Transformed(Matrix4x4.CreateTranslation(-centre.X, -centre.Y, -min.Z));
+        return mesh.Transformed(Matrix4x4.CreateTranslation(-centre.X, -centre.Y, -min.Z));
     }
 }

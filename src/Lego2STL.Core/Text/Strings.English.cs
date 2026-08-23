@@ -53,10 +53,13 @@ public sealed partial class Strings
             [TextKey.ReportColumnTriangles] = "tris",
             [TextKey.ReportColumnOpen] = "open",
             [TextKey.ReportColumnSeams] = "seams",
+            [TextKey.ReportColumnGaps] = "gaps",
             [TextKey.ReportColumnSize] = "size (mm)",
             [TextKey.ReportShapesClosed] = "{0} of {1} shapes are closed.",
             [TextKey.ReportSeamsClosedSummary] =
                 "Seam repair closed {0} edge(s) and completed {1} shape(s).",
+            [TextKey.ReportGapsFilledSummary] =
+                "Covering gaps closed {0} of them across {1} shape(s).",
             [TextKey.ReportRetiredNumbers] =
                 "Retired numbers, where the shape comes from a replacement part:",
             [TextKey.ReportBuiltWithSomethingMissing] = "Parts built with something missing:",
@@ -109,6 +112,30 @@ public sealed partial class Strings
             [TextKey.MsgPlatesSkippedUnverified] =
                 "Plates were skipped because some parts produced nothing.",
             [TextKey.MsgCalibrationWritten] = "Wrote {0} calibration shape(s) to {1}",
+            [TextKey.CalibrationTitle] = "Finding the clearance your printer needs",
+            [TextKey.CalibrationHow] =
+                "Here is {0}, once for each of these clearances in millimetres: {1}. Print the "
+                + "whole set in the material you mean to use, on the machine you mean to use, "
+                + "with the settings you mean to use. Nothing here can be carried over from "
+                + "someone else's printer: the figure being looked for is smaller than the "
+                + "difference between two machines of the same model.",
+            [TextKey.CalibrationThen] =
+                "Then try them. Work up from the smallest until parts go together without "
+                + "forcing and stay together when shaken. That clearance is yours: pass it to "
+                + "the build command as --clearance, together with --repair so it can be "
+                + "applied to parts whose surfaces have gaps. Check it again if you change "
+                + "material, nozzle or printer.",
+            [TextKey.MsgClearanceApplied] =
+                "Took every face in by {2} mm on {0} of {1} shape(s).",
+            [TextKey.MsgClearanceRefusedOpen] =
+                "{0} left at true size: their surfaces still have gaps, and pulling the faces in " +
+                "would drag the edges of those gaps too. Add --repair to cover them over first.",
+            [TextKey.MsgClearanceRefusedStillOpen] =
+                "{0} left at true size: their surfaces have gaps that could not be covered, "
+                + "because the surface branches at the edge of the gap rather than closing "
+                + "into a ring. A slicer will still repair these when it prints them.",
+            [TextKey.MsgClearanceRefusedThin] =
+                "{0} left at true size: taking that much off every face would consume them.",
             [TextKey.MsgCancelled] = "Cancelled.",
             [TextKey.MsgError] = "Error",
 
