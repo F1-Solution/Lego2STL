@@ -19,6 +19,7 @@ internal static class Program
             "Lego2STL - turn a LEGO parts catalogue into a CSV plus 3D-printable geometry.")
         {
             ExtractCommand.Create(),
+            BuildCommand.Create(),
             RefreshColorsCommand.Create(),
         };
 
