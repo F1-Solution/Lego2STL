@@ -2,7 +2,12 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <AssemblyName>Lego2STL</AssemblyName>
+    <!--
+      Distinct from the console program's name, and not merely in capitalisation: Windows
+      treats file names case-insensitively, so shipping "Lego2STL.exe" beside "lego2stl.exe"
+      silently leaves one of them out of the folder.
+    -->
+    <AssemblyName>Lego2STL.Gui</AssemblyName>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest Condition="'$(IsWindowsTarget)' == 'true'">app.manifest</ApplicationManifest>
   </PropertyGroup>

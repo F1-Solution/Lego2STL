@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Lego2STL
+GenericName=LEGO parts to printable shapes
+Comment=Turn a LEGO parts list into shape files and printing plates
+Exec=lego2stl-gui
+Icon=lego2stl
+Terminal=false
+Categories=Graphics;3DGraphics;Engineering;
+Keywords=LEGO;STL;3MF;3D;print;LDraw;
+StartupWMClass=Lego2STL.Gui

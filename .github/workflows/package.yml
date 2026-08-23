@@ -1,0 +1,102 @@
+# Builds the packages for all three systems, each on its own.
+#
+# Cross-building the programs themselves works from anywhere, but the packages do not: an
+# installer needs the Windows toolset, a .deb needs Debian's, and a disk image needs macOS.
+# So each one is built where it belongs and the results are collected together.
+
+name: package
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to stamp on the packages
+        required: false
+        default: 0.0.0-dev
+
+permissions:
+  contents: read
+
+jobs:
+
+  test:
+    name: test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # The whole suite runs on Windows, because reading a document needs the recogniser that
+      # is part of Windows. Everything it covers is the same code the other systems run.
+      - run: dotnet test --configuration Release --nologo
+
+  windows:
+    name: windows
+    needs: test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install the installer toolset
+        run: dotnet tool install --global wix --version 6.0.1
+
+      - name: Build the package
+        shell: pwsh
+        run: ./packaging/build-windows.ps1 -Version "${{ inputs.version || github.ref_name }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: artifacts/dist/*
+
+  linux:
+    name: linux
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build the package
+        run: ./packaging/build-unix.sh linux x64 "${{ inputs.version || github.ref_name }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: artifacts/dist/*
+
+  macos:
+    name: macos
+    needs: test
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        # Both, because a Mac binary is built for one processor family or the other and an
+        # Intel machine cannot run an Apple silicon build.
+        arch: [x64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build the package
+        run: ./packaging/build-unix.sh macos ${{ matrix.arch }} "${{ inputs.version || github.ref_name }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}
+          path: artifacts/dist/*

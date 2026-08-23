@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  The Windows installer.
+
+  Two programs go in, because they are deliberately two: a console one that can be scripted
+  and write to a pipe, and a windowed one that does not flash a console when it starts. One
+  executable cannot be both on Windows.
+
+  Per-user by default, so that installing needs no administrator. Anyone who wants it for the
+  whole machine can pass -DInstallScope=perMachine, which is the only difference between the
+  two and is worth having rather than forcing an elevation prompt on someone installing a
+  hobby tool for themselves.
+-->
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+
+  <?ifndef Version?>
+  <?define Version="1.0.0"?>
+  <?endif?>
+
+  <?ifndef Publish?>
+  <?define Publish="..\..\artifacts\publish\win-x64"?>
+  <?endif?>
+
+  <Package Name="Lego2STL"
+           Manufacturer="Lego2STL"
+           Version="$(Version)"
+           UpgradeCode="7C3F2A16-6B1E-4E52-9E1D-2F0C4B8A9D31"
+           Scope="perUser"
+           Compressed="yes">
+
+    <!-- Upgrading replaces what is there rather than installing a second copy beside it. -->
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Lego2STL is already installed." />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <Icon Id="AppIcon" SourceFile="$(Publish)\Lego2STL.Gui.exe" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/" />
+
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+    <WixVariable Id="WixUILicenseRtf" Value="$(LicenseRtf)" />
+
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="INSTALLFOLDER" Name="Lego2STL" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ShortcutFolder" Name="Lego2STL" />
+    </StandardDirectory>
+
+    <Feature Id="Main" Title="Lego2STL" Level="1">
+      <ComponentGroupRef Id="Programs" />
+      <ComponentGroupRef Id="Shortcuts" />
+    </Feature>
+
+    <ComponentGroup Id="Programs" Directory="INSTALLFOLDER">
+
+      <Component Id="WindowProgram" Guid="B1E4C2D8-5A73-4F19-8C60-3D9E7A4B1F22">
+        <File Id="GuiExe" Source="$(Publish)\Lego2STL.Gui.exe" KeyPath="yes" />
+      </Component>
+
+      <Component Id="ConsoleProgram" Guid="D4A9F3B2-8C51-4E07-A6B3-1F852C9D7E40">
+        <File Id="CliExe" Source="$(Publish)\lego2stl.exe" KeyPath="yes" />
+
+        <!--
+          The console program goes on the path, so 'lego2stl' works from any terminal. The
+          windowed one deliberately does not: starting it from a terminal is not how it is
+          meant to be used, and two similarly named things on the path invites the wrong one.
+        -->
+        <Environment Id="PathEntry"
+                     Name="PATH"
+                     Value="[INSTALLFOLDER]"
+                     Permanent="no"
+                     Part="last"
+                     Action="set"
+                     System="no" />
+      </Component>
+
+    </ComponentGroup>
+
+    <ComponentGroup Id="Shortcuts" Directory="ShortcutFolder">
+      <Component Id="StartMenuShortcut" Guid="F0C7B5A1-2D68-4B93-9E45-6A1C8F3D2B57">
+        <Shortcut Id="AppShortcut"
+                  Name="Lego2STL"
+                  Description="Turn a LEGO parts catalogue into printable shapes"
+                  Target="[INSTALLFOLDER]Lego2STL.Gui.exe"
+                  WorkingDirectory="INSTALLFOLDER" />
+        <RemoveFolder Id="RemoveShortcutFolder" On="uninstall" />
+        <RegistryValue Root="HKCU"
+                       Key="Software\Lego2STL"
+                       Name="installed"
+                       Type="integer"
+                       Value="1"
+                       KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+
+  </Package>
+
+</Wix>

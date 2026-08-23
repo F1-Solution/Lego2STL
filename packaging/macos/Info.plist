@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleName</key>
+  <string>Lego2STL</string>
+  <key>CFBundleDisplayName</key>
+  <string>Lego2STL</string>
+  <key>CFBundleIdentifier</key>
+  <string>org.lego2stl.app</string>
+  <key>CFBundleVersion</key>
+  <string>@VERSION@</string>
+  <key>CFBundleShortVersionString</key>
+  <string>@VERSION@</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <!-- Named as it was built. It cannot be "Lego2STL": a Mac disk is case-insensitive by
+       default, so that name and the console program's "lego2stl" would be one file. -->
+  <key>CFBundleExecutable</key>
+  <string>Lego2STL.Gui</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>LSMinimumSystemVersion</key>
+  <string>12.0</string>
+  <key>NSHighResolutionCapable</key>
+  <true/>
+  <!-- Nothing here reaches the network on its own except when asked to fetch shapes or look
+       up a set, so no other permission is declared. -->
+  <key>LSApplicationCategoryType</key>
+  <string>public.app-category.graphics-design</string>
+</dict>
+</plist>
