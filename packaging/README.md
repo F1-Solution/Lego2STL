@@ -38,6 +38,36 @@ Without it the script still produces the zip and says why there is no installer.
 the only way to get all three: an installer needs the Windows toolset, a `.deb` needs Debian's,
 and a disk image needs macOS.
 
+`packaging/act/` runs the Linux part of that workflow on this machine, in Docker, without
+GitHub. See [packaging/act/README.md](act/README.md).
+
+## The macOS package cannot be built anywhere else
+
+The programs cross-build fine — `dotnet publish -r osx-arm64` on Windows or Linux emits a
+genuine `Mach-O 64-bit arm64 executable`, and the bundle is only a folder with an `Info.plist`
+in it. What cannot be done off a Mac is turn that into something a Mac will open:
+
+| Needed for | Tool | Ships with |
+|---|---|---|
+| Ad-hoc signature, without which Apple silicon rejects a copied bundle outright | `codesign` | macOS |
+| An archive that keeps the permission bits and the signature | `ditto` | macOS |
+| The disk image | `hdiutil` | macOS |
+
+The executable bit is the quiet one. Most non-Unix filesystems do not carry it, so a bundle
+zipped elsewhere can arrive unrunnable even when everything else about it is right.
+
+Running `build-unix.sh macos` off a Mac therefore says so, and exits non-zero rather than
+leaving a folder that resembles a package. To actually get one:
+
+- **A Mac.** `./packaging/build-unix.sh macos arm64 1.2.3` does the whole thing.
+- **The workflow's `macos` job**, which already builds both architectures on a real runner.
+  Note that GitHub bills macOS minutes at ten times the Linux rate.
+- **A hosted Mac**, if neither is to hand. Virtualising macOS is only licensed on Apple
+  hardware, so a VM on this machine is not an option.
+
+Splitting the work is possible if it ever matters — cross-publish the binaries anywhere, and
+let a Mac do only the signing and the image — but nothing here does that today.
+
 ## Two programs, not one
 
 Every package holds two:

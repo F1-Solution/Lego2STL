@@ -134,6 +134,20 @@ EOF
 else
   # ---- macOS: an application bundle, zipped, and a disk image when on macOS ---------------
 
+  # The programs themselves cross-build from anywhere - dotnet emits a real Mach-O binary on
+  # Windows or Linux quite happily. What cannot be done elsewhere is turn them into something
+  # a Mac will open: the signature, the archive that keeps the permission bits, and the disk
+  # image all come from tools that ship only with macOS. Said here rather than discovered
+  # three notices later, because the folder left behind otherwise looks like a package.
+  if [ "$(uname -s)" != "Darwin" ]; then
+    echo
+    echo "    Note: this is not macOS, so what follows will not be a package anyone can open."
+    echo "    The binaries are real and the bundle's layout is right, but codesign, ditto and"
+    echo "    hdiutil are macOS-only, and the executable bit does not survive most other"
+    echo "    filesystems. Build on a Mac, or let the workflow's macos job do it."
+    echo
+  fi
+
   step "Building the application bundle"
   app="$staging/Lego2STL.app"
   rm -rf "$app"
@@ -189,6 +203,16 @@ else
     echo "    $dmg"
   else
     echo "    hdiutil was not found, so no disk image was built. Build on macOS for one."
+  fi
+
+  # Nothing to hand anyone means the run did not do what it was asked, whatever the notices
+  # above said individually. Saying so with an exit code stops a build script upstream from
+  # treating a loose folder as a released package.
+  if ! ls "$dist"/Lego2STL-"$version"-osx-"$arch".* >/dev/null 2>&1; then
+    echo >&2
+    echo "no macOS package was produced: the bundle is at $app, but nothing archived it." >&2
+    echo "Run this on macOS, or use the workflow's macos job." >&2
+    exit 1
   fi
 fi
 
