@@ -219,6 +219,9 @@ public sealed partial class Strings
             [TextKey.UiDone] = "Fatto",
             [TextKey.UiFailed] = "Non riuscito",
             [TextKey.UiIdle] = "Pronto",
+            [TextKey.UiEveryOptionHere] =
+                "Tutte le opzioni che accetta la riga di comando sono in questa schermata. La "
+                + "riga in fondo alla finestra è esattamente ciò a cui equivalgono.",
 
             // What --help says.
             [TextKey.HelpRoot] =

@@ -135,6 +135,39 @@ public sealed partial class RunOptionsViewModel : ViewModelBase
 
     public static IReadOnlyList<string> Delimiters { get; } = [";", ",", "tab"];
 
+    /// <summary>
+    /// The three settings the window states the other way round, because the flag is named
+    /// for turning something off.
+    /// </summary>
+    /// <remarks>
+    /// Written out rather than bound through a negation, so that checking the box really does
+    /// change the setting. A binding that inverts on the way out but not on the way back is a
+    /// control that looks right and does nothing, which is worse than one that looks wrong.
+    /// </remarks>
+    public bool CsvOnly
+    {
+        get => !MakeShapes;
+        set => MakeShapes = !value;
+    }
+
+    public bool NoPlates
+    {
+        get => !MakePlates;
+        set => MakePlates = !value;
+    }
+
+    public bool NoUnofficial
+    {
+        get => !IncludeUnofficial;
+        set => IncludeUnofficial = !value;
+    }
+
+    partial void OnMakeShapesChanged(bool value) => OnPropertyChanged(nameof(CsvOnly));
+
+    partial void OnMakePlatesChanged(bool value) => OnPropertyChanged(nameof(NoPlates));
+
+    partial void OnIncludeUnofficialChanged(bool value) => OnPropertyChanged(nameof(NoUnofficial));
+
     /// <summary>The input path for whichever kind of start was chosen.</summary>
     public string? EffectiveInputPath => Kind switch
     {

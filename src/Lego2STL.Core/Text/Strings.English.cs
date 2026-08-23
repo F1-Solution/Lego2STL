@@ -211,6 +211,9 @@ public sealed partial class Strings
             [TextKey.UiDone] = "Done",
             [TextKey.UiFailed] = "Failed",
             [TextKey.UiIdle] = "Ready",
+            [TextKey.UiEveryOptionHere] =
+                "Every option the command line takes is on this screen. The line at the foot of "
+                + "the window is exactly what these settings amount to.",
 
             // What --help says.
             [TextKey.HelpRoot] =

@@ -170,6 +170,7 @@ public enum TextKey
     UiDone,
     UiFailed,
     UiIdle,
+    UiEveryOptionHere,
 
     // Remarks a run makes about what it found along the way.
     NoteEntriesFound,

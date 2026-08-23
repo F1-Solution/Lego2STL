@@ -223,6 +223,36 @@ public sealed class WindowTests
 #pragma warning restore CS0618
     }
 
+    /// <summary>
+    /// The window in Italian, which is where a layout breaks if it is going to: the wording is
+    /// longer than the English it was laid out against.
+    /// </summary>
+    [AvaloniaTheory]
+    [InlineData(Screen.Input)]
+    [InlineData(Screen.Options)]
+    public void A_picture_of_each_screen_in_italian_is_written(Screen screen)
+    {
+        var window = Open(out var model);
+
+        model.SelectedLanguage = Loc.Choices.First(c => c.Language == DisplayLanguage.Italian);
+        model.Screen = screen;
+
+        var frame = window.CaptureRenderedFrame();
+        frame.Should().NotBeNull();
+
+        var directory = Environment.GetEnvironmentVariable("LEGO2STL_UI_SHOTS");
+        if (string.IsNullOrWhiteSpace(directory))
+        {
+            return;
+        }
+
+        Directory.CreateDirectory(directory);
+        using var file = File.Create(Path.Combine(directory, $"{screen}-it.png"));
+#pragma warning disable CS0618
+        frame!.Save(file);
+#pragma warning restore CS0618
+    }
+
     /// <summary>Every piece of text the window is currently showing.</summary>
     private static IEnumerable<string> Texts(Visual root)
     {
