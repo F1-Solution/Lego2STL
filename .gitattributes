@@ -3,6 +3,16 @@
 *.csv text eol=lf
 *.md  text eol=lf
 
+# Anything a Unix system runs or reads must keep its line endings. A shell script checked out
+# with carriage returns fails at the first line with "bad interpreter", and a desktop entry
+# with them is ignored; both are baffling to debug from a Windows machine, because the file
+# looks perfectly fine there.
+*.sh      text eol=lf
+*.desktop text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.plist   text eol=lf
+
 *.pdf binary
 *.png binary
 *.jpg binary
@@ -10,3 +20,5 @@
 *.3mf binary
 *.zip binary
 *.dat binary
+*.msi binary
+*.rtf binary
