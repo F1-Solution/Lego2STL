@@ -8,7 +8,7 @@
 #   ./packaging/act/run.sh 1.2.0 "" --dryrun
 #
 # Only the version and linux jobs run: act cannot run Windows or macOS containers, so test,
-# windows, macos and release are out of reach locally. See packaging/act/README.md.
+# windows, macos and release are out of reach locally. See README-act.md.
 #
 # Needs Docker running with the Linux engine, and act on the path. The first run pulls about
 # 1.1 GB of image and then downloads the .NET SDK inside it, so allow ten to fifteen minutes.

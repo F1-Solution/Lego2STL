@@ -137,6 +137,10 @@ the tests that need it skip with a clear message when it is absent.
 The window has tests of its own that draw it off-screen and read back what it shows —
 including that every command-line option is reachable from it.
 
+Packages are built by [packaging/](packaging/README.md), and the workflow that builds them
+can be run on your own machine in Docker rather than on GitHub — see
+[README-act.md](README-act.md).
+
 ---
 
 ## Where things come from

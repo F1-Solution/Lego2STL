@@ -39,7 +39,7 @@ the only way to get all three: an installer needs the Windows toolset, a `.deb` 
 and a disk image needs macOS.
 
 `packaging/act/` runs the Linux part of that workflow on this machine, in Docker, without
-GitHub. See [packaging/act/README.md](act/README.md).
+GitHub. See [README-act.md](../README-act.md).
 
 ## The macOS package cannot be built anywhere else
 

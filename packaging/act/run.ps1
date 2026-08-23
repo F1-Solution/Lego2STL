@@ -7,7 +7,7 @@
   GitHub. Prints what the packages contain, and leaves them under .act-artifacts.
 
   Only the version and linux jobs run. act cannot run Windows or macOS containers, so the
-  test, windows, macos and release jobs are out of reach locally; see packaging/act/README.md.
+  test, windows, macos and release jobs are out of reach locally. See README-act.md.
 
   Needs Docker Desktop running with the Linux engine, and act on the path.
   The first run pulls about 1.1 GB of image and then downloads the .NET SDK inside it, so

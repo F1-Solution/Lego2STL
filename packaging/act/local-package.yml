@@ -5,7 +5,7 @@
 # runs there, and a green run locally means something about the real one.
 #
 # It lives outside .github/workflows on purpose: GitHub would otherwise list it, and it is not
-# for GitHub. act is pointed at it with -W. See packaging/act/README.md.
+# for GitHub. act is pointed at it with -W. See README-act.md.
 #
 # What is missing, and why:
 #

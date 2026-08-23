@@ -1,4 +1,4 @@
-# Defaults for act, so the command line stays short. See packaging/act/README.md.
+# Defaults for act, so the command line stays short. See README-act.md.
 
 # The medium image, about 1.1 GB. The default micro one has no Node and too little else for
 # actions/setup-dotnet to work; the full one is roughly 40 GB and buys nothing here.
