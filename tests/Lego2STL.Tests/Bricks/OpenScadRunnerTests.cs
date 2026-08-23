@@ -99,10 +99,12 @@ public sealed class OpenScadRunnerTests : IDisposable
     {
         var scad = AReadyRunner().Describe(BrickSpec.Parse("2x4x6"));
 
-        scad.Should().Contain("grid = [2, 4]");
-        scad.Should().Contain("base_layers = 6");
-        scad.Should().Contain("knobs = true");
-        scad.Should().Contain("stud_holes = true");
+        // The names are the library's own: one size vector with the height in plates as its
+        // third number, studs for the knobs on top and pillars for the tubes underneath.
+        scad.Should().Contain("machineblock(");
+        scad.Should().Contain("size = [2, 4, 6]");
+        scad.Should().Contain("studs = true");
+        scad.Should().Contain("pillars = true");
     }
 
     [Fact]
@@ -121,14 +123,29 @@ public sealed class OpenScadRunnerTests : IDisposable
     public void A_tile_asks_for_no_knobs()
     {
         AReadyRunner().Describe(BrickSpec.Parse("2x4", BrickKind.Tile))
-            .Should().Contain("knobs = false");
+            .Should().Contain("studs = false");
     }
 
     [Fact]
     public void A_solid_piece_asks_for_no_stud_holes()
     {
         AReadyRunner().Describe(BrickSpec.Parse("2x4", studHoles: false))
-            .Should().Contain("stud_holes = false");
+            .Should().Contain("pillars = false");
+    }
+
+    /// <summary>
+    /// Two of the library's defaults are file paths written relative to its own examples
+    /// folder. A description written anywhere else has to name them, or OpenSCAD looks for a
+    /// pattern beside the output and fails on a piece that asked for no pattern at all.
+    /// </summary>
+    [Fact]
+    public void The_description_leaves_no_default_pointing_at_a_file_that_is_not_there()
+    {
+        var scad = AReadyRunner().Describe(BrickSpec.Parse("2x4"));
+
+        scad.Should().Contain("studIcon = \"none\"");
+        scad.Should().Contain("surfacePattern = \"none\"");
+        scad.Should().NotContain(".svg");
     }
 
     /// <summary>

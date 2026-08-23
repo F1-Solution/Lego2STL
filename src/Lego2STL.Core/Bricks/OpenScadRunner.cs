@@ -70,7 +70,7 @@ public sealed class OpenScadRunner
             ?? throw new OpenScadUnavailableException(
                 "The MachineBlocks library was not found. It is not included here, because it " +
                 "is published under a non-commercial share-alike licence, so it has to be your " +
-                "own copy. Clone it from github.com/geoffkraft/machineblocks and name the " +
+                "own copy. Clone it from github.com/pks5/machineblocks and name the " +
                 "folder with --machineblocks.");
 
         return new OpenScadRunner(openScad, library);
@@ -83,6 +83,11 @@ public sealed class OpenScadRunner
         {
             yield return @"C:\Program Files\OpenSCAD\openscad.exe";
             yield return @"C:\Program Files (x86)\OpenSCAD\openscad.exe";
+
+            // The nightly installs beside the stable one rather than over it, and is what the
+            // brick library is developed against, so a machine with only that still works.
+            yield return @"C:\Program Files\OpenSCAD (Nightly)\openscad.exe";
+            yield return @"C:\Program Files (x86)\OpenSCAD (Nightly)\openscad.exe";
         }
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
@@ -229,11 +234,21 @@ public sealed class OpenScadRunner
         sb.AppendLine();
         sb.AppendLine(CultureInfo.InvariantCulture, $"use <{Escape(block)}>");
         sb.AppendLine();
-        sb.AppendLine("block(");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"    grid = [{spec.Columns}, {spec.Rows}],");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"    base_layers = {spec.PlateCount},");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"    knobs = {Boolean(spec.Knobs)},");
-        sb.AppendLine(CultureInfo.InvariantCulture, $"    stud_holes = {Boolean(spec.StudHoles)}");
+        sb.AppendLine("machineblock(");
+
+        // Width, depth and height in one vector, height counted in plates. Everything else the
+        // library needs has a default, so nothing here has to repeat its configuration file.
+        sb.AppendLine(
+            CultureInfo.InvariantCulture,
+            $"    size = [{spec.Columns}, {spec.Rows}, {spec.PlateCount}],");
+
+        sb.AppendLine(CultureInfo.InvariantCulture, $"    studs = {Boolean(spec.Knobs)},");
+        sb.AppendLine(CultureInfo.InvariantCulture, $"    pillars = {Boolean(spec.StudHoles)},");
+
+        // Named rather than left to the default, because the default is a file path relative
+        // to the library's own examples folder and these descriptions are not written there.
+        sb.AppendLine("    studIcon = \"none\",");
+        sb.AppendLine("    surfacePattern = \"none\"");
         sb.AppendLine(");");
 
         return sb.ToString();

@@ -27,7 +27,10 @@ public enum BrickKind
 /// overrides that, so "2x4x6" is a brick twice normal height.
 /// </param>
 /// <param name="Knobs">Studs on top. Off for a tile.</param>
-/// <param name="StudHoles">Hollow underside tubes, which is what makes a piece grip.</param>
+/// <param name="StudHoles">
+/// Hollow underside tubes, which is what makes a piece grip. The library calls these
+/// pillars.
+/// </param>
 public sealed partial record BrickSpec(
     int Columns,
     int Rows,
