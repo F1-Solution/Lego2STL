@@ -22,3 +22,9 @@
 *.dat binary
 *.msi binary
 *.rtf binary
+
+# Kept copies of what the tool produces. The text ones are compared with line endings
+# normalised, so either kind is safe; the rest are compared byte for byte and must not be
+# touched at all.
+tests/Lego2STL.Tests/Snapshots/*.stl binary
+tests/Lego2STL.Tests/Snapshots/*.3mf binary

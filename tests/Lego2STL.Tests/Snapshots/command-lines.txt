@@ -1,0 +1,4 @@
+lego2stl extract model.pdf 2-5
+lego2stl build parts.csv
+lego2stl build --set 42100-1 --include-spares
+lego2stl build parts.csv --clearance 0.15 --repair --printer A1mini --plate-spacing 5 --lang it

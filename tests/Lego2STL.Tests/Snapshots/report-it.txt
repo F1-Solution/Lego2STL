@@ -1,0 +1,29 @@
+Lego2STL - resoconto della lettura
+------------------------------------------------------------------------------
+File di partenza: parts.csv
+Geometria da    : in-memory test library
+Unità           : millimetri, appoggiate sullo zero
+Scala           : 100%
+Chiusura delle giunzioni: attiva
+Gioco           : 0.15 mm
+
+Totali
+  3 voci
+  6 pezzi
+  3 codici pezzo distinti (una forma ciascuno)
+
+pezzo          tri aperti  giunz  buchi  dimensioni (mm)
+openpyramid       8      0      0      1  7.515 x 7.515 x 7.515 mm  Open pyramid
+placed           6      0      0      0  7.515 x 7.515 x 7.515 mm  Placed pyramid
+pyramid          6      0      0      0  7.515 x 7.515 x 7.515 mm  Pyramid
+
+3 forme su 3 sono chiuse.
+La chiusura delle giunzioni ha saldato 0 spigoli e completato 0 forme.
+La copertura dei buchi ne ha chiusi 1 su 1 forme.
+Ogni faccia rientrata di 0.15 mm su 3 forme di 3.
+
+Nota sulla stampa
+  Ogni faccia è stata rientrata di 0.15 mm rispetto alla dimensione nominale
+  del catalogo. Se i pezzi restano duri, aumentare il valore; se ballano,
+  diminuirlo. Il comando di taratura stampa una serie a valori diversi, così
+  il valore giusto si misura invece di indovinarlo.

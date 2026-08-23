@@ -166,10 +166,14 @@ public static class RunReport
         sb.AppendLine(words.Format(
             TextKey.ReportShapesClosed, outcome.ClosedShapeCount, outcome.Shapes.Count));
 
+        // A shape only counts as completed by seam repair when no gaps had to be covered on
+        // it afterwards. Covering runs only on what is still open once the seams are closed,
+        // so a shape with gaps covered was, by definition, not finished by the seams alone.
         sb.AppendLine(words.Format(
             TextKey.ReportSeamsClosedSummary,
             outcome.Shapes.Sum(p => p.SeamsClosed),
-            outcome.Shapes.Count(p => !p.QualityBeforeRepair.IsClosed && p.Quality.IsClosed)));
+            outcome.Shapes.Count(p =>
+                !p.QualityBeforeRepair.IsClosed && p.Quality.IsClosed && p.GapsFilled == 0)));
 
         var gaps = outcome.Shapes.Sum(p => p.GapsFilled);
         if (gaps > 0)

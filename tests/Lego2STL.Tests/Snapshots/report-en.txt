@@ -1,0 +1,29 @@
+Lego2STL run report
+------------------------------------------------------------------------------
+Input           : parts.csv
+Geometry from   : in-memory test library
+Units           : millimetres, standing on zero
+Scale           : 100%
+Seam repair     : on
+Clearance       : 0.15 mm
+
+Totals
+  3 entries
+  6 pieces
+  3 distinct part numbers (one shape each)
+
+part          tris   open  seams   gaps  size (mm)
+openpyramid       8      0      0      1  7.515 x 7.515 x 7.515 mm  Open pyramid
+placed           6      0      0      0  7.515 x 7.515 x 7.515 mm  Placed pyramid
+pyramid          6      0      0      0  7.515 x 7.515 x 7.515 mm  Pyramid
+
+3 of 3 shapes are closed.
+Seam repair closed 0 edge(s) and completed 0 shape(s).
+Covering gaps closed 1 of them across 1 shape(s).
+Took every face in by 0.15 mm on 3 of 3 shape(s).
+
+Note on printing
+  Every face has been taken in by 0.15 mm from the catalogue's nominal size.
+  If parts still bind, raise the figure; if they fall apart, lower it. The
+  calibration command prints a set at several values so the right one can be
+  measured rather than guessed.

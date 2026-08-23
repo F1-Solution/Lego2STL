@@ -1,0 +1,44 @@
+solid pyramid
+  facet normal 0.000000e+00 -8.944271e-01 4.472136e-01
+    outer loop
+      vertex -4.000000e+00 -4.000000e+00 3.496911e-07
+      vertex 4.000000e+00 -4.000000e+00 3.496911e-07
+      vertex 0.000000e+00 3.496911e-07 8.000000e+00
+    endloop
+  endfacet
+  facet normal 8.944272e-01 1.954833e-08 4.472136e-01
+    outer loop
+      vertex 4.000000e+00 -4.000000e+00 3.496911e-07
+      vertex 4.000000e+00 4.000000e+00 0.000000e+00
+      vertex 0.000000e+00 3.496911e-07 8.000000e+00
+    endloop
+  endfacet
+  facet normal 0.000000e+00 8.944272e-01 4.472136e-01
+    outer loop
+      vertex 4.000000e+00 4.000000e+00 0.000000e+00
+      vertex -4.000000e+00 4.000000e+00 0.000000e+00
+      vertex 0.000000e+00 3.496911e-07 8.000000e+00
+    endloop
+  endfacet
+  facet normal -8.944272e-01 1.954833e-08 4.472136e-01
+    outer loop
+      vertex -4.000000e+00 4.000000e+00 0.000000e+00
+      vertex -4.000000e+00 -4.000000e+00 3.496911e-07
+      vertex 0.000000e+00 3.496911e-07 8.000000e+00
+    endloop
+  endfacet
+  facet normal 0.000000e+00 -4.371139e-08 -1.000000e+00
+    outer loop
+      vertex -4.000000e+00 -4.000000e+00 3.496911e-07
+      vertex -4.000000e+00 4.000000e+00 0.000000e+00
+      vertex 4.000000e+00 4.000000e+00 0.000000e+00
+    endloop
+  endfacet
+  facet normal 0.000000e+00 -4.371139e-08 -1.000000e+00
+    outer loop
+      vertex -4.000000e+00 -4.000000e+00 3.496911e-07
+      vertex 4.000000e+00 4.000000e+00 0.000000e+00
+      vertex 4.000000e+00 -4.000000e+00 3.496911e-07
+    endloop
+  endfacet
+endsolid pyramid
