@@ -1,11 +1,11 @@
 Lego2STL run report
 ------------------------------------------------------------------------------
-Input           : parts.csv
-Geometry from   : in-memory test library
-Units           : millimetres, standing on zero
-Scale           : 100%
-Seam repair     : on
-Clearance       : 0.15 mm
+Input                     : parts.csv
+Geometry from             : in-memory test library
+Units                     : millimetres, standing on zero
+Scale                     : 100%
+Seam repair               : on
+Clearance                 : 0.15 mm
 
 Totals
   3 entries

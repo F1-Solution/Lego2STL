@@ -306,6 +306,21 @@ public sealed partial class Strings
                 "Dove scrivere il file di riferimento. Per impostazione predefinita la copia nei sorgenti.",
             [TextKey.HelpOptRebrickableDump] =
                 "Una cartella con le tabelle scaricabili di Rebrickable, da usare al posto dell'API.",
+
+            // Remarks a run makes about what it found along the way.
+            [TextKey.NoteEntriesFound] = "Pagina {0}: {1} voci trovate.",
+            [TextKey.NoteLearnedLettering] =
+                "Caratteri del documento appresi da {0} righe di codice pezzo{1}. Forme conosciute: {2}.",
+            [TextKey.NoteLearnedSkipped] =
+                "; {0} scartate perché il numero di caratteri non corrispondeva",
+            [TextKey.NoteRecoveredQuantities] =
+                "Recuperate {0} righe di quantità che il riconoscitore non aveva restituito, usando i caratteri appresi.",
+            [TextKey.NoteDuplicateEntry] =
+                "{0} in {1} compare più di una volta; quantità sommate, ora {2}.",
+            [TextKey.NoteNoHeadingRow] =
+                "Il file non ha la riga dei nomi di colonna; letto come dati.",
+            [TextKey.NoteRead] = "Lette {0} voci, separate da '{1}'.",
+            [TextKey.ReportPrinter] = "Stampante",
         };
     }
 }

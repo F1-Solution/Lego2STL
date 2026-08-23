@@ -88,7 +88,7 @@ public static class RunReport
 
         if (outcome.Plates is not null)
         {
-            sb.AppendLine(Line(words[TextKey.ReportPlateColumnPlate], $"{s.Bed.Name} ({s.Bed})"));
+            sb.AppendLine(Line(words[TextKey.ReportPrinter], $"{s.Bed.Name} ({s.Bed})"));
         }
 
         sb.AppendLine();
@@ -304,7 +304,13 @@ public static class RunReport
         }
     }
 
-    private static string Line(string label, string value) => $"{label,-16}: {value}";
+    /// <summary>
+    /// A labelled line. The label column is wide enough for the longest wording in any
+    /// language, so the colons still line up when the words are not English.
+    /// </summary>
+    private const int LabelWidth = 26;
+
+    private static string Line(string label, string value) => $"{label.PadRight(LabelWidth)}: {value}";
 
     /// <summary>Breaks a paragraph into lines that fit, so the report reads in any terminal.</summary>
     private static IEnumerable<string> Wrap(string text, int width)

@@ -1,5 +1,6 @@
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Ocr;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Core.Catalogue;
 
@@ -32,8 +33,10 @@ public static class PartsListBuilder
     public static PartsList Build(
         IEnumerable<CatalogueReading> readings,
         ColorTable colors,
-        ColorScheme sourceScheme)
+        ColorScheme sourceScheme,
+        Strings? language = null)
     {
+        var words = language ?? Strings.English;
         ArgumentNullException.ThrowIfNull(readings);
         ArgumentNullException.ThrowIfNull(colors);
 
@@ -67,9 +70,11 @@ public static class PartsListBuilder
                 var existing = merged[existingIndex];
                 merged[existingIndex] = existing with { Quantity = existing.Quantity + reading.Quantity };
 
-                notes.Add(
-                    $"{reading.PartNumber} in {color.Name} appears more than once; " +
-                    $"quantities added to give {merged[existingIndex].Quantity}.");
+                notes.Add(words.Format(
+                    TextKey.NoteDuplicateEntry,
+                    reading.PartNumber,
+                    color.Name,
+                    merged[existingIndex].Quantity));
                 continue;
             }
 

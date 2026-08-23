@@ -142,7 +142,7 @@ public sealed class PipelineRunner
 
         _log(words.Format(TextKey.MsgReadingPages, PageRange.Format(pages), settings.ColorScheme));
 
-        var reader = new CatalogueReader(OcrEngines.Create());
+        var reader = new CatalogueReader(OcrEngines.Create(), null, words);
         var read = await ReadPagesAsync(reader, document, pages, cancellationToken).ConfigureAwait(false);
 
         notes.AddRange(read.Notes);
@@ -151,7 +151,8 @@ public sealed class PipelineRunner
             _log("  " + note);
         }
 
-        var list = PartsListBuilder.Build(read.Entries, ColorReference.Table, settings.ColorScheme);
+        var list = PartsListBuilder.Build(
+            read.Entries, ColorReference.Table, settings.ColorScheme, words);
         notes.AddRange(list.Notes);
 
         var layout = RunLayout.For(settings.InputPath!, settings.OutputDirectory);
@@ -221,7 +222,8 @@ public sealed class PipelineRunner
     {
         Report(RunStage.ReadingPartsList);
 
-        var list = await PartsListCsv.ReadFileAsync(settings.InputPath!, cancellationToken)
+        var list = await PartsListCsv
+            .ReadFileAsync(settings.InputPath!, cancellationToken, settings.Language)
             .ConfigureAwait(false);
 
         notes.AddRange(list.Notes);

@@ -1,11 +1,11 @@
 Lego2STL - resoconto della lettura
 ------------------------------------------------------------------------------
-File di partenza: parts.csv
-Geometria da    : in-memory test library
-Unità           : millimetri, appoggiate sullo zero
-Scala           : 100%
-Chiusura delle giunzioni: attiva
-Gioco           : 0.15 mm
+File di partenza          : parts.csv
+Geometria da              : in-memory test library
+Unità                     : millimetri, appoggiate sullo zero
+Scala                     : 100%
+Chiusura delle giunzioni  : attiva
+Gioco                     : 0.15 mm
 
 Totali
   3 voci

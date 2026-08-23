@@ -171,6 +171,16 @@ public enum TextKey
     UiFailed,
     UiIdle,
 
+    // Remarks a run makes about what it found along the way.
+    NoteEntriesFound,
+    NoteLearnedLettering,
+    NoteLearnedSkipped,
+    NoteRecoveredQuantities,
+    NoteDuplicateEntry,
+    NoteNoHeadingRow,
+    NoteRead,
+    ReportPrinter,
+
     // What --help says. Kept here with everything else so that a language cannot be
     // half-applied: messages in one language and the help in another is the state these
     // tables exist to prevent.

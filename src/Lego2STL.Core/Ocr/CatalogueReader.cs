@@ -1,5 +1,6 @@
 using Lego2STL.Core.Extraction;
 using Lego2STL.Core.Pdf;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Core.Ocr;
 
@@ -64,8 +65,14 @@ public sealed class CatalogueReader
     private readonly LabelLocator _locator;
     private readonly LabelLocatorOptions _locatorOptions;
 
-    public CatalogueReader(IOcrEngine engine, LabelLocatorOptions? locatorOptions = null)
+    private readonly Strings _words;
+
+    public CatalogueReader(
+        IOcrEngine engine,
+        LabelLocatorOptions? locatorOptions = null,
+        Strings? words = null)
     {
+        _words = words ?? Strings.English;
         _engine = engine ?? throw new ArgumentNullException(nameof(engine));
         _locatorOptions = locatorOptions ?? new LabelLocatorOptions();
         _locator = new LabelLocator(_locatorOptions);
@@ -96,7 +103,7 @@ public sealed class CatalogueReader
                 samples.Add((pageNumber, await reader.ReadAsync(page, ink, label, cancellationToken).ConfigureAwait(false)));
             }
 
-            notes.Add($"Page {pageNumber}: {labels.Count} entries found.");
+            notes.Add(_words.Format(TextKey.NoteEntriesFound, pageNumber, labels.Count));
         }
 
         var templates = LearnTemplates(samples.Select(s => s.Sample), notes);
@@ -108,7 +115,7 @@ public sealed class CatalogueReader
     /// Builds the character shapes from the part lines that were read, by pairing the text
     /// with the characters found in that line.
     /// </summary>
-    private static GlyphTemplateSet LearnTemplates(IEnumerable<LabelSample> samples, List<string> notes)
+    private GlyphTemplateSet LearnTemplates(IEnumerable<LabelSample> samples, List<string> notes)
     {
         var templates = new GlyphTemplateSet();
         var used = 0;
@@ -135,15 +142,16 @@ public sealed class CatalogueReader
             }
         }
 
-        notes.Add(
-            $"Learned this document's lettering from {used} part line(s)" +
-            (skipped > 0 ? $"; {skipped} skipped where the character count did not line up" : "") +
-            $". Shapes known: {string.Join("", templates.KnownCharacters.OrderBy(c => c))}.");
+        notes.Add(_words.Format(
+            TextKey.NoteLearnedLettering,
+            used,
+            skipped > 0 ? _words.Format(TextKey.NoteLearnedSkipped, skipped) : string.Empty,
+            string.Join("", templates.KnownCharacters.OrderBy(c => c))));
 
         return templates;
     }
 
-    private static CatalogueReadResult Resolve(
+    private CatalogueReadResult Resolve(
         List<(int Page, LabelSample Sample)> samples,
         GlyphTemplateSet templates,
         List<string> notes)
@@ -188,7 +196,7 @@ public sealed class CatalogueReader
 
         if (recovered > 0)
         {
-            notes.Add($"Recovered {recovered} quantity line(s) the text recogniser did not return, using the learned lettering.");
+            notes.Add(_words.Format(TextKey.NoteRecoveredQuantities, recovered));
         }
 
         return new CatalogueReadResult(entries, unresolved, notes);

@@ -114,7 +114,10 @@ public static class PartsListCsv
             .ConfigureAwait(false);
     }
 
-    public static async Task<PartsList> ReadFileAsync(string path, CancellationToken cancellationToken = default)
+    public static async Task<PartsList> ReadFileAsync(
+        string path,
+        CancellationToken cancellationToken = default,
+        DisplayLanguage language = DisplayLanguages.Fallback)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
 
@@ -124,12 +127,17 @@ public static class PartsListCsv
         }
 
         var text = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);
-        return Read(text);
+        return Read(text, null, language);
     }
 
-    public static PartsList Read(string content, char? delimiter = null)
+    public static PartsList Read(
+        string content,
+        char? delimiter = null,
+        DisplayLanguage language = DisplayLanguages.Fallback)
     {
         ArgumentNullException.ThrowIfNull(content);
+
+        var words = Strings.For(language);
 
         var lines = content.Split('\n')
             .Select(l => l.TrimEnd('\r'))
@@ -152,7 +160,7 @@ public static class PartsListCsv
 
         if (startIndex == 0)
         {
-            notes.Add("The file has no heading row; reading it as data.");
+            notes.Add(words[TextKey.NoteNoHeadingRow]);
         }
 
         for (var i = startIndex; i < lines.Count; i++)
@@ -165,7 +173,7 @@ public static class PartsListCsv
             throw new FormatException("The parts list has a heading row but no entries.");
         }
 
-        notes.Add($"Read {entries.Count} entries, separated by '{separator}'.");
+        notes.Add(words.Format(TextKey.NoteRead, entries.Count, separator));
         return new PartsList(entries, notes);
     }
 

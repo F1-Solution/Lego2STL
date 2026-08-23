@@ -292,6 +292,20 @@ public sealed partial class Strings
                 "Where to write the reference file. Defaults to the copy inside the source tree.",
             [TextKey.HelpOptRebrickableDump] =
                 "A folder holding Rebrickable's downloadable tables, used instead of the API.",
+
+            // Remarks a run makes about what it found along the way.
+            [TextKey.NoteEntriesFound] = "Page {0}: {1} entries found.",
+            [TextKey.NoteLearnedLettering] =
+                "Learned this document's lettering from {0} part line(s){1}. Shapes known: {2}.",
+            [TextKey.NoteLearnedSkipped] =
+                "; {0} skipped where the character count did not line up",
+            [TextKey.NoteRecoveredQuantities] =
+                "Recovered {0} quantity line(s) the text recogniser did not return, using the learned lettering.",
+            [TextKey.NoteDuplicateEntry] =
+                "{0} in {1} appears more than once; quantities added to give {2}.",
+            [TextKey.NoteNoHeadingRow] = "The file has no heading row; reading it as data.",
+            [TextKey.NoteRead] = "Read {0} entries, separated by '{1}'.",
+            [TextKey.ReportPrinter] = "Printer",
         };
     }
 }
