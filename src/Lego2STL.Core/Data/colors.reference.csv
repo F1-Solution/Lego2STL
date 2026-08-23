@@ -1,0 +1,1137 @@
+# Lego2STL colour cross-reference. Generated from the Rebrickable API; do not hand-edit.
+# Regenerate with: lego2stl refresh-colors
+# C lines are colours. M lines are the reverse map: scheme;code;rebrickable_id.
+C;rebrickable_id;name;rgb;is_trans;bricklink_id;lego_id;ldraw_id;part_count
+C;-1;[Unknown];#0033B2;0;;125;16;17
+C;0;Black;#05131D;0;11;26;0;840746
+C;1;Blue;#0055BF;0;7;23;1;208588
+C;2;Green;#237841;0;6;28;2;91733
+C;3;Dark Turquoise;#008F9B;0;39;107;3;23925
+C;4;Red;#C91A09;0;5;21;4;322469
+C;5;Dark Pink;#C870A0;0;47;221;5;16401
+C;6;Brown;#583927;0;8;25;6;9557
+C;7;Light Gray;#9BA19D;0;9;2;7;92819
+C;8;Dark Gray;#6D6E5C;0;10;27;8;22448
+C;9;Light Blue;#B4D2E3;0;62;45;9;43
+C;10;Bright Green;#4B9F4A;0;36;37;10;28395
+C;11;Light Turquoise;#55A5AF;0;40;116;11;164
+C;12;Salmon;#F2705E;0;25;101;12;185
+C;13;Pink;#FC97AC;0;23;9;13;482
+C;14;Yellow;#F2CD37;0;3;24;14;217009
+C;15;White;#FFFFFF;0;1;1;15;520707
+C;17;Light Green;#C2DAB8;0;38;6;17;166
+C;18;Light Yellow;#FBE696;0;33;3;18;340
+C;19;Tan;#E4CD9E;0;2;5;19;197138
+C;20;Light Violet;#C9CAE2;0;44;39;20;186
+C;21;Glow In Dark Opaque;#D4D5C9;0;46;50;21;215
+C;22;Purple;#81007B;0;24;104;22;1005
+C;23;Dark Blue-Violet;#2032B0;0;109;196;23;9
+C;25;Orange;#FE8A18;0;4;106;25;55299
+C;26;Magenta;#923978;0;71;124;26;13915
+C;27;Lime;#BBE90B;0;34;119;27;46345
+C;28;Dark Tan;#958A73;0;69;138;28;73972
+C;29;Bright Pink;#E4ADC8;0;104;222;29;19016
+C;30;Medium Lavender;#AC78BA;0;157;324;30;10233
+C;31;Lavender;#E1D5ED;0;154;325;31;8870
+C;32;Trans-Black IR Lens;#635F52;1;;109;32;0
+C;33;Trans-Dark Blue;#0020A0;1;14;43;33;10704
+C;34;Trans-Green;#84B68D;1;20;48;34;5422
+C;35;Trans-Bright Green;#D9E4A7;1;108;311;35;3730
+C;36;Trans-Red;#C91A09;1;17;41;36;20608
+C;40;Trans-Brown;#635F52;1;13;111;40;8657
+C;41;Trans-Light Blue;#AEEFEC;1;15;42;43;33081
+C;42;Trans-Neon Green;#F8F184;1;16;49;42;6803
+C;43;Trans-Very Lt Blue;#C1DFF0;1;113;229;39;232
+C;45;Trans-Dark Pink;#DF6695;1;50;113;37;5762
+C;46;Trans-Yellow;#F5CD2F;1;19;44;46;13363
+C;47;Trans-Clear;#FCFCFC;1;12;40;47;47524
+C;52;Trans-Purple;#A5A5CB;1;51;126;52;3090
+C;54;Trans-Neon Yellow;#DAB000;1;121;157;54;187
+C;57;Trans-Neon Orange;#FF800D;1;18;47;38;5612
+C;60;Chrome Antique Brass;#645A4C;0;57;;60;33
+C;61;Chrome Blue;#6C96BF;0;52;;61;26
+C;62;Chrome Green;#3CB371;0;64;;62;2
+C;63;Chrome Pink;#AA4D8E;0;82;;63;19
+C;64;Chrome Black;#1B2A34;0;122;;64;10
+C;68;Very Light Orange;#F3CF9B;0;96;36;68;16
+C;69;Light Purple;#CD6298;0;93;198;69;102
+C;70;Reddish Brown;#582A12;0;88;192;70;180228
+C;71;Light Bluish Gray;#A0A5A9;0;86;194;71;519221
+C;72;Dark Bluish Gray;#6C6E68;0;85;199;72;374865
+C;73;Medium Blue;#5A93DB;0;42;102;73;13324
+C;74;Medium Green;#73DCA1;0;37;29;74;572
+C;75;Speckle Black-Copper;#05131D;0;116;306;75;10
+C;76;Speckle DBGray-Silver;#6C6E68;0;117;304;76;12
+C;77;Light Pink;#FECCCF;0;56;223;77;184
+C;78;Light Nougat;#F6D7B3;0;90;283;78;11803
+C;79;Milky White;#FFFFFF;0;60;20;79;239
+C;80;Metallic Silver;#A5A9B4;0;67;336;80;4164
+C;81;Metallic Green;#899B5F;0;70;;81;24
+C;82;Metallic Gold;#DBAC34;0;65;335;82;3672
+C;84;Medium Nougat;#AA7D55;0;150;312;84;44806
+C;85;Dark Purple;#3F3691;0;89;268;85;17377
+C;86;Light Brown;#7C503A;0;91;217;86;168
+C;89;Royal Blue;#4C61DB;0;97;195;89;191
+C;92;Nougat;#D09168;0;28;18;92;3076
+C;100;Light Salmon;#FEBABD;0;26;100;100;180
+C;110;Violet;#4354A3;0;43;110;110;191
+C;112;Medium Bluish Violet;#6874CA;0;73;112;112;62
+C;114;Glitter Trans-Dark Pink;#DF6695;1;100;114;114;234
+C;115;Medium Lime;#C7D23C;0;76;115;115;192
+C;117;Glitter Trans-Clear;#FFFFFF;1;101;117;117;230
+C;118;Aqua;#B3D7D1;0;41;118;118;322
+C;120;Light Lime;#D9E4A7;0;35;120;120;29
+C;125;Light Orange;#F9BA61;0;32;121;125;66
+C;129;Glitter Trans-Purple;#A5A5CB;1;102;129;129;169
+C;132;Speckle Black-Silver;#05131D;0;111;304;132;246
+C;133;Speckle Black-Gold;#05131D;0;151;305;133;5
+C;134;Copper;#AE7A59;0;84;139;134;192
+C;135;Pearl Light Gray;#9CA3A8;0;66;296;135;5501
+C;137;Pearl Sand Blue;#7988A1;0;78;145;137;172
+C;142;Pearl Light Gold;#DCBC81;0;61;127;142;29
+C;143;Trans-Medium Blue;#CFE2F7;1;74;143;41;704
+C;148;Pearl Dark Gray;#575857;0;77;148;148;533
+C;150;Pearl Very Light Gray;#ABADAC;0;119;150;150;40
+C;151;Very Light Bluish Gray;#E6E3E0;0;99;208;151;282
+C;158;Yellowish Green;#DFEEA5;0;158;326;326;3944
+C;178;Flat Dark Gold;#B48455;0;81;147;178;141
+C;179;Flat Silver;#898788;0;95;315;179;23116
+C;182;Trans-Orange;#F08F1C;1;98;182;57;15940
+C;183;Pearl White;#F2F3F2;0;83;183;183;46
+C;191;Bright Light Orange;#F8BB3D;0;110;191;191;30477
+C;212;Bright Light Blue;#9FC3E9;0;105;212;212;9887
+C;216;Rust;#B31004;0;27;;216;31
+C;226;Bright Light Yellow;#FFF03A;0;103;226;226;12414
+C;230;Trans-Pink;#E4ADC8;1;107;230;45;434
+C;232;Sky Blue;#7DBFDD;0;87;232;232;131
+C;236;Trans-Light Purple;#96709F;1;114;284;44;71
+C;272;Dark Blue;#0A3463;0;63;140;272;53947
+C;288;Dark Green;#184632;0;80;141;288;26874
+C;294;Glow In Dark Trans;#BDC6AD;1;118;294;294;131
+C;297;Pearl Gold;#AA7F2E;0;115;297;297;54651
+C;308;Dark Brown;#352100;0;120;308;308;25286
+C;313;Maersk Blue;#3592C3;0;72;;313;469
+C;320;Dark Red;#720E0F;0;59;154;320;50525
+C;321;Dark Azure;#078BC9;0;153;321;321;17647
+C;322;Medium Azure;#36AEBF;0;156;322;322;31000
+C;323;Light Aqua;#ADC3C0;0;152;323;323;10815
+C;326;Olive Green;#9B9A5A;0;155;330;330;12065
+C;334;Chrome Gold;#BBA53D;0;21;310;334;2202
+C;335;Sand Red;#D67572;0;58;153;335;603
+C;351;Medium Dark Pink;#F785B1;0;94;22;351;1093
+C;366;Earth Orange;#FA9C1C;0;29;12;366;170
+C;373;Sand Purple;#845E84;0;54;136;373;73
+C;378;Sand Green;#A0BCAC;0;48;151;378;26181
+C;379;Sand Blue;#6074A1;0;55;135;379;10608
+C;383;Chrome Silver;#E0E0E0;0;22;309;383;1336
+C;450;Fabuland Brown;#B67B50;0;106;4;450;56
+C;462;Medium Orange;#FFA70B;0;31;105;462;491
+C;484;Dark Orange;#A95500;0;68;38;484;28425
+C;503;Very Light Gray;#E6E3DA;0;49;103;503;261
+C;1000;Glow in Dark White;#D9D9D9;0;159;329;329;664
+C;1001;Medium Violet;#9391E4;0;245;219;219;13
+C;1002;Glitter Trans-Neon Green;#C0F500;1;163;339;339;9
+C;1003;Glitter Trans-Light Blue;#68BCC5;1;162;302;302;91
+C;1004;Trans-Flame Yellowish Orange;#FCB76D;1;164;231;231;214
+C;1005;Trans-Fire Yellow;#FBE890;1;;234;234;41
+C;1006;Trans-Light Royal Blue;#B4D4F7;1;;293;293;90
+C;1007;Reddish Lilac;#8E5597;0;227;218;218;50
+C;1008;Vintage Blue;#039CBD;0;;;;24
+C;1009;Vintage Green;#1E601E;0;;;;32
+C;1010;Vintage Red;#CA1F08;0;;;;31
+C;1011;Vintage Yellow;#F3C305;0;;;;24
+C;1012;Fabuland Orange;#EF9121;0;160;19;509;5
+C;1013;Modulex White;#F4F4F4;0;123;;;2998
+C;1014;Modulex Light Bluish Gray;#AFB5C7;0;124;;;10
+C;1015;Modulex Light Gray;#9C9C9C;0;125;;;2249
+C;1016;Modulex Charcoal Gray;#595D60;0;126;;;2
+C;1017;Modulex Tile Gray;#6B5A5A;0;127;;;219
+C;1018;Modulex Black;#4D4C52;0;128;;;2499
+C;1019;Modulex Tile Brown;#330000;0;131;;;158
+C;1020;Modulex Terracotta;#5C5030;0;134;;;1622
+C;1021;Modulex Brown;#907450;0;132;;;2223
+C;1022;Modulex Buff;#DEC69C;0;133;;;1626
+C;1023;Modulex Red;#B52C20;0;129;;;26
+C;1024;Modulex Pink Red;#F45C40;0;130;;;7
+C;1025;Modulex Orange;#F47B30;0;135;;;126
+C;1026;Modulex Light Orange;#F7AD63;0;136;;;7
+C;1027;Modulex Light Yellow;#FFE371;0;137;;;8
+C;1028;Modulex Ochre Yellow;#FED557;0;138;;;1107
+C;1029;Modulex Lemon;#BDC618;0;139;;;23
+C;1030;Modulex Pastel Green;#7DB538;0;141;;;35
+C;1031;Modulex Olive Green;#7C9051;0;140;;;1111
+C;1032;Modulex Aqua Green;#27867E;0;142;;;16
+C;1033;Modulex Teal Blue;#467083;0;146;;;1104
+C;1034;Modulex Tile Blue;#0057A6;0;143;;;80
+C;1035;Modulex Medium Blue;#61AFFF;0;144;;;8
+C;1036;Modulex Pastel Blue;#68AECE;0;145;;;19
+C;1037;Modulex Violet;#BD7D85;0;147;;;7
+C;1038;Modulex Pink;#F785B1;0;148;;;20
+C;1039;Modulex Clear;#FFFFFF;0;149;;;1394
+C;1040;Modulex Foil Dark Gray;#595D60;0;210;;;1
+C;1041;Modulex Foil Light Gray;#9C9C9C;0;211;;;1
+C;1042;Modulex Foil Dark Green;#006400;0;212;;;1
+C;1043;Modulex Foil Light Green;#7DB538;0;213;;;1
+C;1044;Modulex Foil Dark Blue;#0057A6;0;214;;;1
+C;1045;Modulex Foil Light Blue;#68AECE;0;215;;;1
+C;1046;Modulex Foil Violet;#4B0082;0;216;;;1
+C;1047;Modulex Foil Red;#8B0000;0;217;;;1
+C;1048;Modulex Foil Yellow;#FED557;0;218;;;1
+C;1049;Modulex Foil Orange;#F7AD63;0;219;;;1
+C;1050;Coral;#FF698F;0;220;353;353;7849
+C;1051;Pastel Blue;#5AC4DA;0;72;11;;734
+C;1052;Glitter Trans-Orange;#F08F1C;1;222;341;341;1
+C;1053;Opal Trans-Light Blue;#68BCC5;1;223;362;362;1014
+C;1054;Opal Trans-Dark Pink;#CE1D9B;1;224;364;364;253
+C;1055;Opal Trans-Clear;#FCFCFC;1;228;360;360;988
+C;1056;Opal Trans-Brown;#583927;1;229;363;363;140
+C;1057;Trans-Light Bright Green;#C9E788;1;226;227;227;119
+C;1058;Trans-Light Green;#94E5AB;1;221;285;285;42
+C;1059;Opal Trans-Purple;#8320B7;1;230;365;365;321
+C;1060;Opal Trans-Bright Green;#84B68D;1;233;367;367;182
+C;1061;Opal Trans-Dark Blue;#0020A0;1;232;366;10366;216
+C;1062;Vibrant Yellow;#EBD800;0;236;368;368;2258
+C;1063;Pearl Copper;#B46A00;0;249;346;;72
+C;1064;Fabuland Red;#FF8014;0;;13;508;23
+C;1065;Reddish Gold;#AC8247;0;235;189;189;79
+C;1066;Curry;#DD982E;0;161;180;;10
+C;1067;Dark Nougat;#AD6140;0;225;128;128;10
+C;1068;Bright Reddish Orange;#EE5434;0;231;123;;16
+C;1069;Pearl Red;#D60026;0;252;184;184;24
+C;1070;Pearl Blue;#0059A3;0;254;185;185;21
+C;1071;Pearl Green;#008E3C;0;253;186;186;21
+C;1072;Pearl Brown;#57392C;0;255;187;;35
+C;1073;Pearl Black;#0A1327;0;244;149;83;35
+C;1074;Duplo Blue;#009ECE;0;247;188;;6
+C;1075;Duplo Medium Blue;#3E95B6;0;;269;;1
+C;1076;Duplo Lime;#FFF230;0;171;15;;5
+C;1077;Fabuland Lime;#78FC78;0;248;14;510;16
+C;1078;Duplo Medium Green;#468A5F;0;;210;;1
+C;1079;Duplo Light Green;#60BA76;0;;233;;1
+C;1080;Light Tan;#F3C988;0;;224;;1
+C;1081;Rust Orange;#872B17;0;;216;216;3
+C;1082;Clikits Pink;#FE78B0;0;;295;295;32
+C;1083;Two-tone Copper;#945148;0;237;176;;2
+C;1084;Two-tone Gold;#AB673A;0;238;178;;6
+C;1085;Two-tone Silver;#737271;0;239;179;;6
+C;1086;Pearl Lime;#6A7944;0;;200;200;41
+C;1087;Duplo Pink;#FF879C;0;;16;;47
+C;1088;Medium Brown;#755945;0;240;370;370;225
+C;1089;Warm Tan;#CCA373;0;241;371;371;624
+C;1090;Duplo Turquoise;#3FB69E;0;;;;2
+C;1091;Warm Yellowish Orange;#FFCB78;0;172;225;;19
+C;1092;Metallic Copper;#764D3B;0;250;300;300;52
+C;1093;Light Lilac;#9195CA;0;246;220;;51
+C;1094;Trans-Medium Purple;#8D73B3;1;234;236;;258
+C;1095;Trans-Black;#635F52;1;251;375;10375;935
+C;1096;Glitter Trans-Bright Green;#D9E4A7;1;;351;;0
+C;1097;Glitter Trans-Medium Purple;#8D73B3;1;;303;;6
+C;1098;Glitter Trans-Green;#84B68D;1;;155;;1
+C;1099;Glitter Trans-Pink;#E4ADC8;1;;301;;2
+C;1100;Clikits Yellow;#FFCF0B;0;;190;;22
+C;1101;Duplo Dark Purple;#5F27AA;0;;197;;1
+C;1102;Trans-Neon Red;#FF0040;1;;158;158;22
+C;1103;Pearl Titanium;#3E3C39;0;77;316;87;7874
+C;1104;HO Aqua;#B3D7D1;0;;;;1
+C;1105;HO Azure;#1591CB;0;;;;1
+C;1106;HO Blue-gray;#354E5A;0;;;;3
+C;1107;HO Cyan;#5B98B3;0;;;;1
+C;1108;HO Dark Aqua;#A7DCCF;0;;;;1
+C;1109;HO Dark Blue;#0A3463;0;;;;9
+C;1110;HO Dark Gray;#6D6E5C;0;;;;11
+C;1111;HO Dark Green;#184632;0;;;;4
+C;1112;HO Dark Lime;#B2B955;0;;;;1
+C;1113;HO Dark Red;#631314;0;;;;10
+C;1114;HO Dark Sand Green;#627A62;0;;;;1
+C;1115;HO Dark Turquoise;#10929D;0;;;;1
+C;1116;HO Earth Orange;#BB771B;0;;;;2
+C;1117;HO Gold;#B4A774;0;;;;1
+C;1118;HO Light Aqua;#A3D1C0;0;;;;1
+C;1119;HO Light Brown;#965336;0;;;;1
+C;1120;HO Light Gold;#CDC298;0;;;;2
+C;1121;HO Light Tan;#F9F1C7;0;;;;4
+C;1122;HO Light Yellow;#F5FAB7;0;;;;1
+C;1123;HO Medium Blue;#7396C8;0;;;;2
+C;1124;HO Medium Red;#C01111;0;;;;4
+C;1125;HO Metallic Blue;#0D4763;0;;;;3
+C;1126;HO Metallic Dark Gray;#5E5E5E;0;;;;2
+C;1127;HO Metallic Green;#879867;0;;;;1
+C;1128;HO Metallic Sand Blue;#5F7D8C;0;;;;1
+C;1129;HO Olive Green;#9B9A5A;0;;;;14
+C;1130;HO Rose;#D06262;0;;;;1
+C;1131;HO Sand Blue;#6E8AA6;0;;;;2
+C;1132;HO Sand Green;#A0BCAC;0;;;;4
+C;1133;HO Tan;#E4CD9E;0;;;;3
+C;1134;HO Titanium;#616161;0;;;;1
+C;1135;Metal;#A5ADB4;0;;;;55
+C;1136;Reddish Orange;#CA4C0B;0;167;402;402;3674
+C;1137;Sienna Brown;#915C3C;0;169;422;422;64
+C;1138;Umber Brown;#5E3F33;0;168;423;423;17
+C;1139;Opal Trans-Yellow;#F5CD2F;1;170;376;;26
+C;1140;Neon Orange;#EC4612;0;165;133;;14
+C;1141;Neon Green;#D2FC43;0;166;134;;25
+C;1142;Dark Olive Green;#5D5C36;0;242;144;;11
+C;1143;Glitter Milky White;#FFFFFF;0;;122;;4
+C;1144;Chrome Red;#CE3021;0;;;;4
+C;1145;Ochre Yellow;#DD9E47;0;173;424;;12
+C;1146;Warm Pink;#F6B7BF;0;175;430;430;417
+C;1147;Blue Violet;#A3A9FF;0;174;431;431;855
+C;9999;[No Color/Any Color];#05131D;0;0;;;10660
+M;BrickLink;0;9999
+M;BrickLink;1;15
+M;BrickLink;2;19
+M;BrickLink;3;14
+M;BrickLink;4;25
+M;BrickLink;5;4
+M;BrickLink;6;2
+M;BrickLink;7;1
+M;BrickLink;8;6
+M;BrickLink;9;7
+M;BrickLink;10;8
+M;BrickLink;11;0
+M;BrickLink;12;47
+M;BrickLink;13;40
+M;BrickLink;14;33
+M;BrickLink;15;41
+M;BrickLink;16;42
+M;BrickLink;17;36
+M;BrickLink;18;57
+M;BrickLink;19;46
+M;BrickLink;20;34
+M;BrickLink;21;334
+M;BrickLink;22;383
+M;BrickLink;23;13
+M;BrickLink;24;22
+M;BrickLink;25;12
+M;BrickLink;26;100
+M;BrickLink;27;216
+M;BrickLink;28;92
+M;BrickLink;29;366
+M;BrickLink;31;462
+M;BrickLink;32;125
+M;BrickLink;33;18
+M;BrickLink;34;27
+M;BrickLink;35;120
+M;BrickLink;36;10
+M;BrickLink;37;74
+M;BrickLink;38;17
+M;BrickLink;39;3
+M;BrickLink;40;11
+M;BrickLink;41;118
+M;BrickLink;42;73
+M;BrickLink;43;110
+M;BrickLink;44;20
+M;BrickLink;46;21
+M;BrickLink;47;5
+M;BrickLink;48;378
+M;BrickLink;49;503
+M;BrickLink;50;45
+M;BrickLink;51;52
+M;BrickLink;52;61
+M;BrickLink;54;373
+M;BrickLink;55;379
+M;BrickLink;56;77
+M;BrickLink;57;60
+M;BrickLink;58;335
+M;BrickLink;59;320
+M;BrickLink;60;79
+M;BrickLink;61;142
+M;BrickLink;62;9
+M;BrickLink;63;272
+M;BrickLink;64;62
+M;BrickLink;65;82
+M;BrickLink;66;135
+M;BrickLink;67;80
+M;BrickLink;68;484
+M;BrickLink;69;28
+M;BrickLink;70;81
+M;BrickLink;71;26
+M;BrickLink;72;313
+M;BrickLink;73;112
+M;BrickLink;74;143
+M;BrickLink;76;115
+M;BrickLink;77;148
+M;BrickLink;78;137
+M;BrickLink;80;288
+M;BrickLink;81;178
+M;BrickLink;82;63
+M;BrickLink;83;183
+M;BrickLink;84;134
+M;BrickLink;85;72
+M;BrickLink;86;71
+M;BrickLink;87;232
+M;BrickLink;88;70
+M;BrickLink;89;85
+M;BrickLink;90;78
+M;BrickLink;91;86
+M;BrickLink;93;69
+M;BrickLink;94;351
+M;BrickLink;95;179
+M;BrickLink;96;68
+M;BrickLink;97;89
+M;BrickLink;98;182
+M;BrickLink;99;151
+M;BrickLink;100;114
+M;BrickLink;101;117
+M;BrickLink;102;129
+M;BrickLink;103;226
+M;BrickLink;104;29
+M;BrickLink;105;212
+M;BrickLink;106;450
+M;BrickLink;107;230
+M;BrickLink;108;35
+M;BrickLink;109;23
+M;BrickLink;110;191
+M;BrickLink;111;132
+M;BrickLink;113;43
+M;BrickLink;114;236
+M;BrickLink;115;297
+M;BrickLink;116;75
+M;BrickLink;117;76
+M;BrickLink;118;294
+M;BrickLink;119;150
+M;BrickLink;120;308
+M;BrickLink;121;54
+M;BrickLink;122;64
+M;BrickLink;123;1013
+M;BrickLink;124;1014
+M;BrickLink;125;1015
+M;BrickLink;126;1016
+M;BrickLink;127;1017
+M;BrickLink;128;1018
+M;BrickLink;129;1023
+M;BrickLink;130;1024
+M;BrickLink;131;1019
+M;BrickLink;132;1021
+M;BrickLink;133;1022
+M;BrickLink;134;1020
+M;BrickLink;135;1025
+M;BrickLink;136;1026
+M;BrickLink;137;1027
+M;BrickLink;138;1028
+M;BrickLink;139;1029
+M;BrickLink;140;1031
+M;BrickLink;141;1030
+M;BrickLink;142;1032
+M;BrickLink;143;1034
+M;BrickLink;144;1035
+M;BrickLink;145;1036
+M;BrickLink;146;1033
+M;BrickLink;147;1037
+M;BrickLink;148;1038
+M;BrickLink;149;1039
+M;BrickLink;150;84
+M;BrickLink;151;133
+M;BrickLink;152;323
+M;BrickLink;153;321
+M;BrickLink;154;31
+M;BrickLink;155;326
+M;BrickLink;156;322
+M;BrickLink;157;30
+M;BrickLink;158;158
+M;BrickLink;159;1000
+M;BrickLink;160;1012
+M;BrickLink;161;1066
+M;BrickLink;162;1003
+M;BrickLink;163;1002
+M;BrickLink;164;1004
+M;BrickLink;165;1140
+M;BrickLink;166;1141
+M;BrickLink;167;1136
+M;BrickLink;168;1138
+M;BrickLink;169;1137
+M;BrickLink;170;1139
+M;BrickLink;171;1076
+M;BrickLink;172;1091
+M;BrickLink;173;1145
+M;BrickLink;174;1147
+M;BrickLink;175;1146
+M;BrickLink;210;1040
+M;BrickLink;211;1041
+M;BrickLink;212;1042
+M;BrickLink;213;1043
+M;BrickLink;214;1044
+M;BrickLink;215;1045
+M;BrickLink;216;1046
+M;BrickLink;217;1047
+M;BrickLink;218;1048
+M;BrickLink;219;1049
+M;BrickLink;220;1050
+M;BrickLink;221;1058
+M;BrickLink;222;1052
+M;BrickLink;223;1053
+M;BrickLink;224;1054
+M;BrickLink;225;1067
+M;BrickLink;226;1057
+M;BrickLink;227;1007
+M;BrickLink;228;1055
+M;BrickLink;229;1056
+M;BrickLink;230;1059
+M;BrickLink;231;1068
+M;BrickLink;232;1061
+M;BrickLink;233;1060
+M;BrickLink;234;1094
+M;BrickLink;235;1065
+M;BrickLink;236;1062
+M;BrickLink;237;1083
+M;BrickLink;238;1084
+M;BrickLink;239;1085
+M;BrickLink;240;1088
+M;BrickLink;241;1089
+M;BrickLink;242;1142
+M;BrickLink;244;1073
+M;BrickLink;245;1001
+M;BrickLink;246;1093
+M;BrickLink;247;1074
+M;BrickLink;248;1077
+M;BrickLink;249;1063
+M;BrickLink;250;1092
+M;BrickLink;251;1095
+M;BrickLink;252;1069
+M;BrickLink;253;1071
+M;BrickLink;254;1070
+M;BrickLink;255;1072
+M;Rebrickable;-1;-1
+M;Rebrickable;0;0
+M;Rebrickable;1;1
+M;Rebrickable;2;2
+M;Rebrickable;3;3
+M;Rebrickable;4;4
+M;Rebrickable;5;5
+M;Rebrickable;6;6
+M;Rebrickable;7;7
+M;Rebrickable;8;8
+M;Rebrickable;9;9
+M;Rebrickable;10;10
+M;Rebrickable;11;11
+M;Rebrickable;12;12
+M;Rebrickable;13;13
+M;Rebrickable;14;14
+M;Rebrickable;15;15
+M;Rebrickable;17;17
+M;Rebrickable;18;18
+M;Rebrickable;19;19
+M;Rebrickable;20;20
+M;Rebrickable;21;21
+M;Rebrickable;22;22
+M;Rebrickable;23;23
+M;Rebrickable;25;25
+M;Rebrickable;26;26
+M;Rebrickable;27;27
+M;Rebrickable;28;28
+M;Rebrickable;29;29
+M;Rebrickable;30;30
+M;Rebrickable;31;31
+M;Rebrickable;32;32
+M;Rebrickable;33;33
+M;Rebrickable;34;34
+M;Rebrickable;35;35
+M;Rebrickable;36;36
+M;Rebrickable;40;40
+M;Rebrickable;41;41
+M;Rebrickable;42;42
+M;Rebrickable;43;43
+M;Rebrickable;45;45
+M;Rebrickable;46;46
+M;Rebrickable;47;47
+M;Rebrickable;52;52
+M;Rebrickable;54;54
+M;Rebrickable;57;57
+M;Rebrickable;60;60
+M;Rebrickable;61;61
+M;Rebrickable;62;62
+M;Rebrickable;63;63
+M;Rebrickable;64;64
+M;Rebrickable;68;68
+M;Rebrickable;69;69
+M;Rebrickable;70;70
+M;Rebrickable;71;71
+M;Rebrickable;72;72
+M;Rebrickable;73;73
+M;Rebrickable;74;74
+M;Rebrickable;75;75
+M;Rebrickable;76;76
+M;Rebrickable;77;77
+M;Rebrickable;78;78
+M;Rebrickable;79;79
+M;Rebrickable;80;80
+M;Rebrickable;81;81
+M;Rebrickable;82;82
+M;Rebrickable;84;84
+M;Rebrickable;85;85
+M;Rebrickable;86;86
+M;Rebrickable;89;89
+M;Rebrickable;92;92
+M;Rebrickable;100;100
+M;Rebrickable;110;110
+M;Rebrickable;112;112
+M;Rebrickable;114;114
+M;Rebrickable;115;115
+M;Rebrickable;117;117
+M;Rebrickable;118;118
+M;Rebrickable;120;120
+M;Rebrickable;125;125
+M;Rebrickable;129;129
+M;Rebrickable;132;132
+M;Rebrickable;133;133
+M;Rebrickable;134;134
+M;Rebrickable;135;135
+M;Rebrickable;137;137
+M;Rebrickable;142;142
+M;Rebrickable;143;143
+M;Rebrickable;148;148
+M;Rebrickable;150;150
+M;Rebrickable;151;151
+M;Rebrickable;158;158
+M;Rebrickable;178;178
+M;Rebrickable;179;179
+M;Rebrickable;182;182
+M;Rebrickable;183;183
+M;Rebrickable;191;191
+M;Rebrickable;212;212
+M;Rebrickable;216;216
+M;Rebrickable;226;226
+M;Rebrickable;230;230
+M;Rebrickable;232;232
+M;Rebrickable;236;236
+M;Rebrickable;272;272
+M;Rebrickable;288;288
+M;Rebrickable;294;294
+M;Rebrickable;297;297
+M;Rebrickable;308;308
+M;Rebrickable;313;313
+M;Rebrickable;320;320
+M;Rebrickable;321;321
+M;Rebrickable;322;322
+M;Rebrickable;323;323
+M;Rebrickable;326;326
+M;Rebrickable;334;334
+M;Rebrickable;335;335
+M;Rebrickable;351;351
+M;Rebrickable;366;366
+M;Rebrickable;373;373
+M;Rebrickable;378;378
+M;Rebrickable;379;379
+M;Rebrickable;383;383
+M;Rebrickable;450;450
+M;Rebrickable;462;462
+M;Rebrickable;484;484
+M;Rebrickable;503;503
+M;Rebrickable;1000;1000
+M;Rebrickable;1001;1001
+M;Rebrickable;1002;1002
+M;Rebrickable;1003;1003
+M;Rebrickable;1004;1004
+M;Rebrickable;1005;1005
+M;Rebrickable;1006;1006
+M;Rebrickable;1007;1007
+M;Rebrickable;1008;1008
+M;Rebrickable;1009;1009
+M;Rebrickable;1010;1010
+M;Rebrickable;1011;1011
+M;Rebrickable;1012;1012
+M;Rebrickable;1013;1013
+M;Rebrickable;1014;1014
+M;Rebrickable;1015;1015
+M;Rebrickable;1016;1016
+M;Rebrickable;1017;1017
+M;Rebrickable;1018;1018
+M;Rebrickable;1019;1019
+M;Rebrickable;1020;1020
+M;Rebrickable;1021;1021
+M;Rebrickable;1022;1022
+M;Rebrickable;1023;1023
+M;Rebrickable;1024;1024
+M;Rebrickable;1025;1025
+M;Rebrickable;1026;1026
+M;Rebrickable;1027;1027
+M;Rebrickable;1028;1028
+M;Rebrickable;1029;1029
+M;Rebrickable;1030;1030
+M;Rebrickable;1031;1031
+M;Rebrickable;1032;1032
+M;Rebrickable;1033;1033
+M;Rebrickable;1034;1034
+M;Rebrickable;1035;1035
+M;Rebrickable;1036;1036
+M;Rebrickable;1037;1037
+M;Rebrickable;1038;1038
+M;Rebrickable;1039;1039
+M;Rebrickable;1040;1040
+M;Rebrickable;1041;1041
+M;Rebrickable;1042;1042
+M;Rebrickable;1043;1043
+M;Rebrickable;1044;1044
+M;Rebrickable;1045;1045
+M;Rebrickable;1046;1046
+M;Rebrickable;1047;1047
+M;Rebrickable;1048;1048
+M;Rebrickable;1049;1049
+M;Rebrickable;1050;1050
+M;Rebrickable;1051;1051
+M;Rebrickable;1052;1052
+M;Rebrickable;1053;1053
+M;Rebrickable;1054;1054
+M;Rebrickable;1055;1055
+M;Rebrickable;1056;1056
+M;Rebrickable;1057;1057
+M;Rebrickable;1058;1058
+M;Rebrickable;1059;1059
+M;Rebrickable;1060;1060
+M;Rebrickable;1061;1061
+M;Rebrickable;1062;1062
+M;Rebrickable;1063;1063
+M;Rebrickable;1064;1064
+M;Rebrickable;1065;1065
+M;Rebrickable;1066;1066
+M;Rebrickable;1067;1067
+M;Rebrickable;1068;1068
+M;Rebrickable;1069;1069
+M;Rebrickable;1070;1070
+M;Rebrickable;1071;1071
+M;Rebrickable;1072;1072
+M;Rebrickable;1073;1073
+M;Rebrickable;1074;1074
+M;Rebrickable;1075;1075
+M;Rebrickable;1076;1076
+M;Rebrickable;1077;1077
+M;Rebrickable;1078;1078
+M;Rebrickable;1079;1079
+M;Rebrickable;1080;1080
+M;Rebrickable;1081;1081
+M;Rebrickable;1082;1082
+M;Rebrickable;1083;1083
+M;Rebrickable;1084;1084
+M;Rebrickable;1085;1085
+M;Rebrickable;1086;1086
+M;Rebrickable;1087;1087
+M;Rebrickable;1088;1088
+M;Rebrickable;1089;1089
+M;Rebrickable;1090;1090
+M;Rebrickable;1091;1091
+M;Rebrickable;1092;1092
+M;Rebrickable;1093;1093
+M;Rebrickable;1094;1094
+M;Rebrickable;1095;1095
+M;Rebrickable;1096;1096
+M;Rebrickable;1097;1097
+M;Rebrickable;1098;1098
+M;Rebrickable;1099;1099
+M;Rebrickable;1100;1100
+M;Rebrickable;1101;1101
+M;Rebrickable;1102;1102
+M;Rebrickable;1103;1103
+M;Rebrickable;1104;1104
+M;Rebrickable;1105;1105
+M;Rebrickable;1106;1106
+M;Rebrickable;1107;1107
+M;Rebrickable;1108;1108
+M;Rebrickable;1109;1109
+M;Rebrickable;1110;1110
+M;Rebrickable;1111;1111
+M;Rebrickable;1112;1112
+M;Rebrickable;1113;1113
+M;Rebrickable;1114;1114
+M;Rebrickable;1115;1115
+M;Rebrickable;1116;1116
+M;Rebrickable;1117;1117
+M;Rebrickable;1118;1118
+M;Rebrickable;1119;1119
+M;Rebrickable;1120;1120
+M;Rebrickable;1121;1121
+M;Rebrickable;1122;1122
+M;Rebrickable;1123;1123
+M;Rebrickable;1124;1124
+M;Rebrickable;1125;1125
+M;Rebrickable;1126;1126
+M;Rebrickable;1127;1127
+M;Rebrickable;1128;1128
+M;Rebrickable;1129;1129
+M;Rebrickable;1130;1130
+M;Rebrickable;1131;1131
+M;Rebrickable;1132;1132
+M;Rebrickable;1133;1133
+M;Rebrickable;1134;1134
+M;Rebrickable;1135;1135
+M;Rebrickable;1136;1136
+M;Rebrickable;1137;1137
+M;Rebrickable;1138;1138
+M;Rebrickable;1139;1139
+M;Rebrickable;1140;1140
+M;Rebrickable;1141;1141
+M;Rebrickable;1142;1142
+M;Rebrickable;1143;1143
+M;Rebrickable;1144;1144
+M;Rebrickable;1145;1145
+M;Rebrickable;1146;1146
+M;Rebrickable;1147;1147
+M;Rebrickable;9999;9999
+M;Lego;1;15
+M;Lego;2;7
+M;Lego;3;18
+M;Lego;4;450
+M;Lego;5;19
+M;Lego;6;17
+M;Lego;9;13
+M;Lego;11;1051
+M;Lego;12;366
+M;Lego;13;1064
+M;Lego;14;1077
+M;Lego;15;1076
+M;Lego;16;1087
+M;Lego;17;77
+M;Lego;18;92
+M;Lego;19;1012
+M;Lego;20;79
+M;Lego;21;4
+M;Lego;22;351
+M;Lego;23;1
+M;Lego;24;14
+M;Lego;25;6
+M;Lego;26;0
+M;Lego;27;8
+M;Lego;28;2
+M;Lego;29;74
+M;Lego;36;68
+M;Lego;37;10
+M;Lego;38;484
+M;Lego;39;20
+M;Lego;40;47
+M;Lego;41;36
+M;Lego;42;41
+M;Lego;43;33
+M;Lego;44;46
+M;Lego;45;9
+M;Lego;47;57
+M;Lego;48;34
+M;Lego;49;42
+M;Lego;50;21
+M;Lego;100;100
+M;Lego;101;12
+M;Lego;102;73
+M;Lego;103;503
+M;Lego;104;22
+M;Lego;105;462
+M;Lego;106;25
+M;Lego;107;3
+M;Lego;109;32
+M;Lego;110;110
+M;Lego;111;40
+M;Lego;112;112
+M;Lego;113;45
+M;Lego;114;114
+M;Lego;115;115
+M;Lego;116;11
+M;Lego;117;117
+M;Lego;118;118
+M;Lego;119;27
+M;Lego;120;120
+M;Lego;121;125
+M;Lego;122;1143
+M;Lego;123;1068
+M;Lego;124;26
+M;Lego;126;52
+M;Lego;127;142
+M;Lego;128;1067
+M;Lego;129;129
+M;Lego;131;135
+M;Lego;133;1140
+M;Lego;134;1141
+M;Lego;135;379
+M;Lego;136;373
+M;Lego;138;28
+M;Lego;139;134
+M;Lego;140;272
+M;Lego;141;288
+M;Lego;143;143
+M;Lego;144;1142
+M;Lego;145;137
+M;Lego;147;178
+M;Lego;148;148
+M;Lego;149;1073
+M;Lego;150;150
+M;Lego;151;378
+M;Lego;153;335
+M;Lego;154;320
+M;Lego;155;1098
+M;Lego;157;54
+M;Lego;158;1102
+M;Lego;175;1098
+M;Lego;176;1083
+M;Lego;178;1084
+M;Lego;179;1085
+M;Lego;180;1066
+M;Lego;182;182
+M;Lego;183;183
+M;Lego;184;1069
+M;Lego;185;1070
+M;Lego;186;1071
+M;Lego;187;1072
+M;Lego;188;1074
+M;Lego;189;1065
+M;Lego;190;1100
+M;Lego;191;191
+M;Lego;192;70
+M;Lego;194;71
+M;Lego;195;89
+M;Lego;196;23
+M;Lego;197;1101
+M;Lego;198;69
+M;Lego;199;72
+M;Lego;200;1086
+M;Lego;208;151
+M;Lego;210;1078
+M;Lego;212;212
+M;Lego;213;112
+M;Lego;216;1081
+M;Lego;217;86
+M;Lego;218;1007
+M;Lego;219;1001
+M;Lego;220;1093
+M;Lego;221;5
+M;Lego;222;29
+M;Lego;223;77
+M;Lego;224;1080
+M;Lego;225;1091
+M;Lego;226;226
+M;Lego;227;1057
+M;Lego;229;43
+M;Lego;230;230
+M;Lego;231;1004
+M;Lego;232;232
+M;Lego;233;1079
+M;Lego;234;1005
+M;Lego;236;1094
+M;Lego;268;85
+M;Lego;269;1075
+M;Lego;283;78
+M;Lego;284;236
+M;Lego;285;1058
+M;Lego;293;1006
+M;Lego;294;294
+M;Lego;295;1082
+M;Lego;296;135
+M;Lego;297;297
+M;Lego;298;80
+M;Lego;299;82
+M;Lego;300;1092
+M;Lego;301;1099
+M;Lego;302;1003
+M;Lego;303;1097
+M;Lego;304;132
+M;Lego;305;133
+M;Lego;306;75
+M;Lego;308;308
+M;Lego;309;383
+M;Lego;310;334
+M;Lego;311;35
+M;Lego;312;84
+M;Lego;315;179
+M;Lego;316;1103
+M;Lego;321;321
+M;Lego;322;322
+M;Lego;323;323
+M;Lego;324;30
+M;Lego;325;31
+M;Lego;326;158
+M;Lego;329;1000
+M;Lego;330;326
+M;Lego;334;1092
+M;Lego;335;82
+M;Lego;336;80
+M;Lego;339;1002
+M;Lego;341;1052
+M;Lego;342;0
+M;Lego;346;1063
+M;Lego;351;1096
+M;Lego;353;1050
+M;Lego;355;32
+M;Lego;360;1055
+M;Lego;362;1053
+M;Lego;363;1056
+M;Lego;364;1054
+M;Lego;365;1059
+M;Lego;366;1061
+M;Lego;367;1060
+M;Lego;368;1062
+M;Lego;370;1088
+M;Lego;371;1089
+M;Lego;375;1095
+M;Lego;376;1139
+M;Lego;402;1136
+M;Lego;422;1137
+M;Lego;423;1138
+M;Lego;424;1145
+M;Lego;428;272
+M;Lego;430;1146
+M;Lego;431;1147
+M;Lego;491;322
+M;LDraw;0;0
+M;LDraw;1;1
+M;LDraw;2;2
+M;LDraw;3;3
+M;LDraw;4;4
+M;LDraw;5;5
+M;LDraw;6;6
+M;LDraw;7;7
+M;LDraw;8;8
+M;LDraw;9;9
+M;LDraw;10;10
+M;LDraw;11;11
+M;LDraw;12;12
+M;LDraw;13;13
+M;LDraw;14;14
+M;LDraw;15;15
+M;LDraw;17;17
+M;LDraw;18;18
+M;LDraw;19;19
+M;LDraw;20;20
+M;LDraw;21;21
+M;LDraw;22;22
+M;LDraw;23;23
+M;LDraw;25;25
+M;LDraw;26;26
+M;LDraw;27;27
+M;LDraw;28;28
+M;LDraw;29;29
+M;LDraw;30;30
+M;LDraw;31;31
+M;LDraw;32;32
+M;LDraw;33;33
+M;LDraw;34;34
+M;LDraw;35;35
+M;LDraw;36;36
+M;LDraw;37;45
+M;LDraw;38;57
+M;LDraw;39;43
+M;LDraw;40;40
+M;LDraw;41;143
+M;LDraw;42;42
+M;LDraw;43;41
+M;LDraw;44;236
+M;LDraw;45;230
+M;LDraw;46;46
+M;LDraw;47;47
+M;LDraw;52;52
+M;LDraw;54;54
+M;LDraw;57;182
+M;LDraw;60;60
+M;LDraw;61;61
+M;LDraw;62;62
+M;LDraw;63;63
+M;LDraw;64;64
+M;LDraw;68;68
+M;LDraw;69;69
+M;LDraw;70;70
+M;LDraw;71;71
+M;LDraw;72;72
+M;LDraw;73;73
+M;LDraw;74;74
+M;LDraw;75;75
+M;LDraw;76;76
+M;LDraw;77;77
+M;LDraw;78;78
+M;LDraw;79;79
+M;LDraw;80;80
+M;LDraw;81;81
+M;LDraw;82;82
+M;LDraw;83;1073
+M;LDraw;84;84
+M;LDraw;85;85
+M;LDraw;86;86
+M;LDraw;87;1103
+M;LDraw;89;89
+M;LDraw;92;92
+M;LDraw;100;100
+M;LDraw;110;110
+M;LDraw;112;112
+M;LDraw;114;114
+M;LDraw;115;115
+M;LDraw;117;117
+M;LDraw;118;118
+M;LDraw;120;120
+M;LDraw;125;125
+M;LDraw;128;1067
+M;LDraw;129;129
+M;LDraw;132;132
+M;LDraw;133;133
+M;LDraw;134;134
+M;LDraw;135;135
+M;LDraw;137;137
+M;LDraw;142;142
+M;LDraw;148;148
+M;LDraw;150;150
+M;LDraw;151;151
+M;LDraw;158;1102
+M;LDraw;178;178
+M;LDraw;179;179
+M;LDraw;183;183
+M;LDraw;184;1069
+M;LDraw;185;1070
+M;LDraw;186;1071
+M;LDraw;189;1065
+M;LDraw;191;191
+M;LDraw;200;1086
+M;LDraw;212;212
+M;LDraw;216;216
+M;LDraw;218;1007
+M;LDraw;219;1001
+M;LDraw;226;226
+M;LDraw;227;1057
+M;LDraw;231;1004
+M;LDraw;232;232
+M;LDraw;234;1005
+M;LDraw;256;0
+M;LDraw;272;272
+M;LDraw;284;236
+M;LDraw;285;1058
+M;LDraw;288;288
+M;LDraw;293;1006
+M;LDraw;294;294
+M;LDraw;295;1082
+M;LDraw;297;297
+M;LDraw;300;1092
+M;LDraw;302;1003
+M;LDraw;308;308
+M;LDraw;313;313
+M;LDraw;320;320
+M;LDraw;321;321
+M;LDraw;322;322
+M;LDraw;323;323
+M;LDraw;326;158
+M;LDraw;329;1000
+M;LDraw;330;326
+M;LDraw;334;334
+M;LDraw;335;335
+M;LDraw;339;1002
+M;LDraw;341;1052
+M;LDraw;351;351
+M;LDraw;353;1050
+M;LDraw;360;1055
+M;LDraw;362;1053
+M;LDraw;363;1056
+M;LDraw;364;1054
+M;LDraw;365;1059
+M;LDraw;366;366
+M;LDraw;367;1060
+M;LDraw;368;1062
+M;LDraw;370;1088
+M;LDraw;371;1089
+M;LDraw;373;373
+M;LDraw;378;378
+M;LDraw;379;379
+M;LDraw;383;383
+M;LDraw;402;1136
+M;LDraw;422;1137
+M;LDraw;423;1138
+M;LDraw;430;1146
+M;LDraw;431;1147
+M;LDraw;450;450
+M;LDraw;462;462
+M;LDraw;484;484
+M;LDraw;503;503
+M;LDraw;508;1064
+M;LDraw;509;1012
+M;LDraw;510;1077
+M;LDraw;10366;1061
+M;LDraw;10375;1095
