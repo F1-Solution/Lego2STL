@@ -10,6 +10,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
+    <AssemblyName>lego2stl</AssemblyName>
   </PropertyGroup>
 
 </Project>

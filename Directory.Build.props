@@ -19,7 +19,9 @@
   <PropertyGroup Label="Publish defaults for self-contained single-file output">
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <!-- Avalonia loads XAML by reflection; trimming breaks it. Not trimmed anywhere. -->
     <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>
