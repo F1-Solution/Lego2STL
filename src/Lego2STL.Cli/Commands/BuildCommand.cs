@@ -9,22 +9,22 @@ namespace Lego2STL.Cli.Commands;
 /// </summary>
 internal static class BuildCommand
 {
-    public static Command Create()
+    public static Command Create(Strings words)
     {
         var input = new Argument<FileInfo?>("parts-list")
         {
-            Description = "A parts list from an earlier run. Leave it out when using --set.",
+            Description = words[TextKey.HelpArgPartsList],
             Arity = ArgumentArity.ZeroOrOne,
         };
 
         var set = new Option<string?>("--set")
         {
-            Description = "A set number to look up instead of reading a parts list, e.g. 42100-1.",
+            Description = words[TextKey.HelpOptSet],
         };
 
-        var options = new PipelineOptions();
+        var options = new PipelineOptions(words);
 
-        var command = new Command("build", "Turn a parts list into shape files and coloured plates.")
+        var command = new Command("build", words[TextKey.HelpBuild])
         {
             input,
             set,
@@ -34,7 +34,7 @@ internal static class BuildCommand
 
         command.SetAction(async (parseResult, cancellationToken) =>
         {
-            var words = Strings.For(parseResult.GetValue(CommonOptions.Language));
+            var spoken = Strings.For(parseResult.GetValue(CommonOptions.Language));
 
             var file = parseResult.GetValue(input);
             var setNumber = parseResult.GetValue(set);
@@ -48,14 +48,14 @@ internal static class BuildCommand
             if (file is null)
             {
                 Console.Error.WriteLine(
-                    $"{words[TextKey.MsgError]}: name a parts list, or use --set to look one up.");
+                    $"{spoken[TextKey.MsgError]}: name a parts list, or use --set to look one up.");
                 return Program.ExitFailure;
             }
 
             if (!file.Exists)
             {
                 Console.Error.WriteLine(
-                    $"{words[TextKey.MsgError]}: {words.Format(TextKey.MsgNoSuchPartsList, file.FullName)}");
+                    $"{spoken[TextKey.MsgError]}: {spoken.Format(TextKey.MsgNoSuchPartsList, file.FullName)}");
                 return Program.ExitFailure;
             }
 

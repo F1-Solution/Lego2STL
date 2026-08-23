@@ -329,6 +329,14 @@ what it shows.
 | — | `extract` then `build` | One command goes the whole way. Both still exist as entry points, but they build the same settings and call one pipeline, which is what makes the window's parity a fact about the code rather than a promise. |
 | 11 | `--repair` fills boundary loops with geometry3Sharp | Hand-written, and not opt-in-only: it turned out to be what a clearance needs before it can be applied at all. No dependency was needed — walking free edges into loops and covering each is about 150 lines. |
 
+### One thing the framework keeps in English
+
+`--help` is translated: the description of every command, argument and option comes from the
+same tables as everything else, chosen before the commands are declared by glancing at the
+arguments for `--lang`. The three lines the command-line framework writes itself - the
+`Description:`, `Usage:` and `Options:` headings, and `-h` and `--version` - stay English,
+because they belong to the framework and not to this.
+
 ### Not verified
 
 **The OpenSCAD run in `lego2stl bricks`.** OpenSCAD is not installed on this machine and was

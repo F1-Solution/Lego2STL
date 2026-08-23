@@ -211,6 +211,87 @@ public sealed partial class Strings
             [TextKey.UiDone] = "Done",
             [TextKey.UiFailed] = "Failed",
             [TextKey.UiIdle] = "Ready",
+
+            // What --help says.
+            [TextKey.HelpRoot] =
+                "Turn a LEGO parts catalogue into a parts list and shapes you can print.",
+            [TextKey.HelpExtract] = "Read a catalogue out of a document and take it onward.",
+            [TextKey.HelpBuild] =
+                "Turn a parts list, or a set number, into shape files and coloured plates.",
+            [TextKey.HelpCalibration] =
+                "Write one small part at several clearances, to find the one your printer needs.",
+            [TextKey.HelpBricks] =
+                "Make a piece to a size, using your own OpenSCAD and your own copy of MachineBlocks.",
+            [TextKey.HelpRefreshColors] =
+                "Rebuild the colour cross-reference from the Rebrickable API.",
+            [TextKey.HelpArgDocument] = "The document to read.",
+            [TextKey.HelpArgPages] =
+                "Which pages hold the catalogue, e.g. 2-5 or 2-5,8,11-13. Omit to search for them.",
+            [TextKey.HelpArgPartsList] =
+                "A parts list from an earlier run. Leave it out when using --set.",
+            [TextKey.HelpArgSizes] =
+                "Sizes to make, e.g. 2x4, or 2x4x6 to say how many plates tall.",
+            [TextKey.HelpArgSteps] = "The clearances to try, in millimetres, separated by commas.",
+            [TextKey.HelpOptLang] =
+                "Language for messages, the help, the report and the parts list's column names: en or it. Defaults to the machine's own.",
+            [TextKey.HelpOptOutputDir] =
+                "Where to put the run folder. Defaults to beside the input.",
+            [TextKey.HelpOptAscii] = "Write the readable form of STL instead of the compact one.",
+            [TextKey.HelpOptOffline] =
+                "Never use the network; a part that is not already available is reported.",
+            [TextKey.HelpOptLDrawDir] =
+                "An existing LDraw library to use instead of downloading anything.",
+            [TextKey.HelpOptApiKey] =
+                "A Rebrickable key, for looking up a set. Also read from REBRICKABLE_API_KEY.",
+            [TextKey.HelpOptListPages] =
+                "Report what is on each page and stop, without reading anything.",
+            [TextKey.HelpOptColorScheme] = "Whose colour numbering the document prints.",
+            [TextKey.HelpOptSet] =
+                "A set number to look up instead of reading a parts list, e.g. 42100-1.",
+            [TextKey.HelpOptIncludeSpares] =
+                "Keep a set's spare pieces as well as the ones the model uses.",
+            [TextKey.HelpOptCsvOnly] = "Write the parts list and stop, without making any shapes.",
+            [TextKey.HelpOptNoPlates] = "Write the shape files but no coloured plates.",
+            [TextKey.HelpOptDelimiter] =
+                "Separator for the parts list, or \"tab\". Defaults to a semicolon.",
+            [TextKey.HelpOptKeepOrigin] =
+                "Keep each part's own origin instead of standing it on the bed.",
+            [TextKey.HelpOptScale] = "Scale as a percentage. 100 is true size.",
+            [TextKey.HelpOptClearance] =
+                "Take every face in by this many millimetres, so printed parts clip together. Use the calibration command to find the right figure for your printer.",
+            [TextKey.HelpOptRepair] =
+                "Cover over the gaps a shape's surface arrives with, making it a solid. Needed before a clearance can be applied to a part that has any.",
+            [TextKey.HelpOptNoSeamRepair] =
+                "Skip closing seams where a corner lies part-way along another edge.",
+            [TextKey.HelpOptWeldTolerance] =
+                "How close two corners have to be to count as the same point.",
+            [TextKey.HelpOptLDrawCache] = "Where to keep fetched shape files between runs.",
+            [TextKey.HelpOptNoUnofficial] =
+                "Use only the official shape library, not the unofficial collection.",
+            [TextKey.HelpOptPrinter] = "Which printer's bed to lay plates out for: {0}.",
+            [TextKey.HelpOptPlateSize] =
+                "A bed size in millimetres instead of a printer name, e.g. 220x220 or 300x300x400.",
+            [TextKey.HelpOptPlateSpacing] = "Millimetres to leave between parts on a plate.",
+            [TextKey.HelpOptQuiet] =
+                "Say only what matters: warnings, failures and where things were written.",
+            [TextKey.HelpOptLog] = "Also write everything said during the run to this file.",
+            [TextKey.HelpOptPart] = "Which part to print the set from. Repeat for several.",
+            [TextKey.HelpOptKind] =
+                "Brick (three plates), plate (one), or tile (one, smooth on top).",
+            [TextKey.HelpOptNoKnobs] = "Leave the top smooth. A tile is already smooth.",
+            [TextKey.HelpOptNoStudHoles] =
+                "Make it solid underneath. The hollow tubes are what make a piece grip.",
+            [TextKey.HelpOptOpenScad] = "Where OpenSCAD is, when it is not on the path.",
+            [TextKey.HelpOptMachineBlocks] =
+                "Your copy of the MachineBlocks library. Also read from MACHINEBLOCKS_DIR.",
+            [TextKey.HelpOptScadOnly] =
+                "Write the OpenSCAD description and stop, without making a shape.",
+            [TextKey.HelpOptBricksOutputDir] =
+                "Where to write. Defaults to a folder here named after the command.",
+            [TextKey.HelpOptOut] =
+                "Where to write the reference file. Defaults to the copy inside the source tree.",
+            [TextKey.HelpOptRebrickableDump] =
+                "A folder holding Rebrickable's downloadable tables, used instead of the API.",
         };
     }
 }

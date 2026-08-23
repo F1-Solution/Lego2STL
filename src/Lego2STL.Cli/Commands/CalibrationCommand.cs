@@ -34,46 +34,42 @@ internal static class CalibrationCommand
 
     private static readonly double[] DefaultSteps = [0.00, 0.05, 0.10, 0.15, 0.20, 0.25];
 
-    public static Command Create()
+    public static Command Create(Strings words)
     {
         var parts = new Option<string[]>("--part")
         {
-            Description =
-                "Which part to print the set from. Repeat for several. " +
-                $"Defaults to {string.Join(" and ", DefaultParts)}, an axle and the bush that fits it.",
+            Description = words[TextKey.HelpOptPart] +
+                $" Defaults to {string.Join(" and ", DefaultParts)}.",
             AllowMultipleArgumentsPerToken = true,
         };
 
         var steps = new Option<string?>("--steps")
         {
-            Description =
-                "The clearances to try, in millimetres, separated by commas. " +
-                $"Defaults to {string.Join(",", DefaultSteps.Select(s => s.ToString("0.00", CultureInfo.InvariantCulture)))}.",
+            Description = words[TextKey.HelpArgSteps] +
+                $" Defaults to {string.Join(",", DefaultSteps.Select(s => s.ToString("0.00", CultureInfo.InvariantCulture)))}.",
         };
 
         var outputDirectory = new Option<DirectoryInfo?>("--output-dir")
         {
-            Description = "Where to write the set. Defaults to a 'calibration' folder here.",
+            Description = words[TextKey.HelpOptBricksOutputDir],
         };
 
         var ldrawDirectory = new Option<DirectoryInfo?>("--ldraw-dir")
         {
-            Description = "An existing LDraw library to use instead of downloading anything.",
+            Description = words[TextKey.HelpOptLDrawDir],
         };
 
         var offline = new Option<bool>("--offline")
         {
-            Description = "Never use the network.",
+            Description = words[TextKey.HelpOptOffline],
         };
 
         var asText = new Option<bool>("--ascii")
         {
-            Description = "Write the readable form of STL instead of the compact one.",
+            Description = words[TextKey.HelpOptAscii],
         };
 
-        var command = new Command(
-            "calibration",
-            "Write one small part at several clearances, to find the one your printer needs.")
+        var command = new Command("calibration", words[TextKey.HelpCalibration])
         {
             parts, steps, outputDirectory, ldrawDirectory, offline, asText,
         };

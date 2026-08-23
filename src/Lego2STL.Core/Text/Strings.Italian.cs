@@ -9,8 +9,8 @@ public sealed partial class Strings
     {
         internal static readonly Dictionary<TextKey, string> Table = new()
         {
-            // Le colonne dell'elenco pezzi. Questa e' la forma richiesta in origine, ed e'
-            // quella che i file scritti dalle versioni precedenti portano gia'.
+            // Le colonne dell'elenco pezzi. Questa è la forma richiesta in origine, ed è
+            // quella che i file scritti dalle versioni precedenti portano già.
             [TextKey.CsvId] = "ID",
             [TextKey.CsvLegoCode] = "Codice Lego",
             [TextKey.CsvBrickLinkCode] = "Codice BrickLink",
@@ -219,6 +219,93 @@ public sealed partial class Strings
             [TextKey.UiDone] = "Fatto",
             [TextKey.UiFailed] = "Non riuscito",
             [TextKey.UiIdle] = "Pronto",
+
+            // What --help says.
+            [TextKey.HelpRoot] =
+                "Trasforma un catalogo di pezzi LEGO in un elenco pezzi e in forme da stampare.",
+            [TextKey.HelpExtract] = "Legge un catalogo da un documento e prosegue.",
+            [TextKey.HelpBuild] =
+                "Trasforma un elenco pezzi, o un numero di set, in forme e piani di stampa colorati.",
+            [TextKey.HelpCalibration] =
+                "Scrive un pezzo piccolo con giochi diversi, per trovare quello che serve alla stampante.",
+            [TextKey.HelpBricks] =
+                "Crea un pezzo su misura, con il proprio OpenSCAD e la propria copia di MachineBlocks.",
+            [TextKey.HelpRefreshColors] =
+                "Rigenera la corrispondenza fra i colori a partire dall'API di Rebrickable.",
+            [TextKey.HelpArgDocument] = "Il documento da leggere.",
+            [TextKey.HelpArgPages] =
+                "Quali pagine contengono il catalogo, ad esempio 2-5 oppure 2-5,8,11-13. Se omesso vengono cercate.",
+            [TextKey.HelpArgPartsList] =
+                "Un elenco pezzi di un'esecuzione precedente. Non serve se si usa --set.",
+            [TextKey.HelpArgSizes] =
+                "Misure da creare, ad esempio 2x4, oppure 2x4x6 per indicare l'altezza in piastre.",
+            [TextKey.HelpArgSteps] = "I giochi da provare, in millimetri, separati da virgole.",
+            [TextKey.HelpOptLang] =
+                "Lingua dei messaggi, della guida, del resoconto e dei nomi di colonna dell'elenco pezzi: en oppure it. Per impostazione predefinita quella della macchina.",
+            [TextKey.HelpOptOutputDir] =
+                "Dove creare la cartella dei risultati. Per impostazione predefinita accanto al file di partenza.",
+            [TextKey.HelpOptAscii] = "Scrive la forma leggibile di STL invece di quella compatta.",
+            [TextKey.HelpOptOffline] =
+                "Non usare mai la rete; un pezzo non ancora disponibile viene segnalato.",
+            [TextKey.HelpOptLDrawDir] =
+                "Una libreria LDraw già presente, da usare invece di scaricare qualcosa.",
+            [TextKey.HelpOptApiKey] =
+                "Una chiave Rebrickable, per cercare un set. Letta anche da REBRICKABLE_API_KEY.",
+            [TextKey.HelpOptListPages] =
+                "Indica che cosa c'è su ogni pagina e si ferma, senza leggere nulla.",
+            [TextKey.HelpOptColorScheme] =
+                "Di chi è la numerazione dei colori stampata nel documento.",
+            [TextKey.HelpOptSet] =
+                "Un numero di set da cercare invece di leggere un elenco pezzi, ad esempio 42100-1.",
+            [TextKey.HelpOptIncludeSpares] =
+                "Tiene anche i pezzi di scorta del set, oltre a quelli usati dal modello.",
+            [TextKey.HelpOptCsvOnly] = "Scrive l'elenco pezzi e si ferma, senza creare forme.",
+            [TextKey.HelpOptNoPlates] = "Scrive le forme ma nessun piano di stampa colorato.",
+            [TextKey.HelpOptDelimiter] =
+                "Separatore dell'elenco pezzi, oppure \"tab\". Predefinito: punto e virgola.",
+            [TextKey.HelpOptKeepOrigin] =
+                "Mantiene l'origine di ogni pezzo invece di appoggiarlo sul piano.",
+            [TextKey.HelpOptScale] = "Scala in percentuale. 100 è la grandezza reale.",
+            [TextKey.HelpOptClearance] =
+                "Rientra ogni faccia di tanti millimetri, perché i pezzi stampati si incastrino. Il comando calibration serve a trovare il valore giusto per la propria stampante.",
+            [TextKey.HelpOptRepair] =
+                "Copre i buchi con cui arriva la superficie di una forma, rendendola un solido. Necessario prima di poter applicare un gioco a un pezzo che ne ha.",
+            [TextKey.HelpOptNoSeamRepair] =
+                "Non chiude le giunzioni dove un vertice cade a metà dello spigolo di un altro.",
+            [TextKey.HelpOptWeldTolerance] =
+                "Quanto devono essere vicini due vertici per contare come lo stesso punto.",
+            [TextKey.HelpOptLDrawCache] =
+                "Dove conservare fra un'esecuzione e l'altra le forme scaricate.",
+            [TextKey.HelpOptNoUnofficial] =
+                "Usa solo la libreria ufficiale, non la raccolta non ufficiale.",
+            [TextKey.HelpOptPrinter] = "Per il piano di quale stampante disporre i pezzi: {0}.",
+            [TextKey.HelpOptPlateSize] =
+                "Una dimensione del piano in millimetri invece del nome di una stampante, ad esempio 220x220 oppure 300x300x400.",
+            [TextKey.HelpOptPlateSpacing] =
+                "Millimetri da lasciare fra un pezzo e l'altro sul piano.",
+            [TextKey.HelpOptQuiet] =
+                "Dice solo l'essenziale: avvisi, errori e dove sono state scritte le cose.",
+            [TextKey.HelpOptLog] =
+                "Scrive anche su questo file tutto quello che viene detto durante l'esecuzione.",
+            [TextKey.HelpOptPart] =
+                "Con quale pezzo stampare la serie. Ripetere per averne più di uno.",
+            [TextKey.HelpOptKind] =
+                "Mattoncino (tre piastre), piastra (una) o piastrella (una, liscia sopra).",
+            [TextKey.HelpOptNoKnobs] =
+                "Lascia la parte superiore liscia. Una piastrella lo è già.",
+            [TextKey.HelpOptNoStudHoles] =
+                "Lo rende pieno sotto. Sono i tubi cavi a dare la presa.",
+            [TextKey.HelpOptOpenScad] = "Dove si trova OpenSCAD, se non è nel percorso.",
+            [TextKey.HelpOptMachineBlocks] =
+                "La propria copia della libreria MachineBlocks. Letta anche da MACHINEBLOCKS_DIR.",
+            [TextKey.HelpOptScadOnly] =
+                "Scrive la descrizione per OpenSCAD e si ferma, senza creare la forma.",
+            [TextKey.HelpOptBricksOutputDir] =
+                "Dove scrivere. Per impostazione predefinita una cartella qui col nome del comando.",
+            [TextKey.HelpOptOut] =
+                "Dove scrivere il file di riferimento. Per impostazione predefinita la copia nei sorgenti.",
+            [TextKey.HelpOptRebrickableDump] =
+                "Una cartella con le tabelle scaricabili di Rebrickable, da usare al posto dell'API.",
         };
     }
 }

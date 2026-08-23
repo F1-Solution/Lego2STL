@@ -1,6 +1,7 @@
 using System.CommandLine;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Rebrickable;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Cli.Commands;
 
@@ -15,11 +16,11 @@ namespace Lego2STL.Cli.Commands;
 /// </remarks>
 internal static class RefreshColorsCommand
 {
-    public static Command Create()
+    public static Command Create(Strings words)
     {
         var outputOption = new Option<FileInfo?>("--out", "-o")
         {
-            Description = "Where to write the reference file. Defaults to the copy inside the source tree.",
+            Description = words[TextKey.HelpOptOut],
         };
 
         var apiKeyOption = new Option<string?>("--api-key")
@@ -36,7 +37,7 @@ internal static class RefreshColorsCommand
                 "part counts, which act as a tie-break when two colours claim the same external code.",
         };
 
-        var command = new Command("refresh-colors", "Regenerate the colour cross-reference from the Rebrickable API.")
+        var command = new Command("refresh-colors", words[TextKey.HelpRefreshColors])
         {
             outputOption,
             apiKeyOption,

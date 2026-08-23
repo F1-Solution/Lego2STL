@@ -15,54 +15,51 @@ namespace Lego2STL.Cli.Commands;
 /// </remarks>
 internal static class BricksCommand
 {
-    public static Command Create()
+    public static Command Create(Strings words)
     {
         var sizes = new Argument<string[]>("size")
         {
-            Description = "Sizes to make, e.g. 2x4 or 2x4x6 to say how many plates tall.",
+            Description = words[TextKey.HelpArgSizes],
             Arity = ArgumentArity.OneOrMore,
         };
 
         var kind = new Option<BrickKind>("--kind")
         {
-            Description = "Brick (three plates), plate (one), or tile (one, smooth on top).",
+            Description = words[TextKey.HelpOptKind],
             DefaultValueFactory = _ => BrickKind.Brick,
         };
 
         var noKnobs = new Option<bool>("--no-knobs")
         {
-            Description = "Leave the top smooth. A tile is already smooth.",
+            Description = words[TextKey.HelpOptNoKnobs],
         };
 
         var noStudHoles = new Option<bool>("--no-stud-holes")
         {
-            Description = "Make it solid underneath. The hollow tubes are what make a piece grip.",
+            Description = words[TextKey.HelpOptNoStudHoles],
         };
 
         var outputDirectory = new Option<DirectoryInfo?>("--output-dir")
         {
-            Description = "Where to write. Defaults to a 'bricks' folder here.",
+            Description = words[TextKey.HelpOptBricksOutputDir],
         };
 
         var openScad = new Option<FileInfo?>("--openscad")
         {
-            Description = "Where OpenSCAD is, when it is not on the path.",
+            Description = words[TextKey.HelpOptOpenScad],
         };
 
         var machineBlocks = new Option<DirectoryInfo?>("--machineblocks")
         {
-            Description =
-                "Your copy of the MachineBlocks library. Also read from MACHINEBLOCKS_DIR.",
+            Description = words[TextKey.HelpOptMachineBlocks],
         };
 
         var describeOnly = new Option<bool>("--scad-only")
         {
-            Description = "Write the OpenSCAD description and stop, without generating a shape.",
+            Description = words[TextKey.HelpOptScadOnly],
         };
 
-        var command = new Command(
-            "bricks",
-            "Generate a piece by size, using your own OpenSCAD and your own copy of MachineBlocks.")
+        var command = new Command("bricks", words[TextKey.HelpBricks])
         {
             sizes, kind, noKnobs, noStudHoles, outputDirectory, openScad, machineBlocks, describeOnly,
         };

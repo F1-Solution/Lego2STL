@@ -11,27 +11,27 @@ namespace Lego2STL.Cli.Commands;
 /// </summary>
 internal static class ExtractCommand
 {
-    public static Command Create()
+    public static Command Create(Strings words)
     {
         var input = new Argument<FileInfo>("input")
         {
-            Description = "The document to read.",
+            Description = words[TextKey.HelpArgDocument],
         };
 
         var pages = new Argument<string?>("pages")
         {
-            Description = "Which pages hold the catalogue, e.g. 2-5 or 2-5,8,11-13. Omit to search for them.",
+            Description = words[TextKey.HelpArgPages],
             Arity = ArgumentArity.ZeroOrOne,
         };
 
         var listPages = new Option<bool>("--list-pages")
         {
-            Description = "Report what is on each page and stop, without reading anything.",
+            Description = words[TextKey.HelpOptListPages],
         };
 
-        var options = new PipelineOptions();
+        var options = new PipelineOptions(words);
 
-        var command = new Command("extract", "Read a catalogue from a document and take it onward.")
+        var command = new Command("extract", words[TextKey.HelpExtract])
         {
             input,
             pages,
@@ -43,19 +43,21 @@ internal static class ExtractCommand
         command.SetAction(async (parseResult, cancellationToken) =>
         {
             var file = parseResult.GetRequiredValue(input);
-            var language = parseResult.GetValue(CommonOptions.Language);
-            var words = Strings.For(language);
+
+            // Whatever was actually parsed wins over what help was written in: the two agree
+            // unless --lang came after a mistyped value, and then the parsed one is right.
+            var spoken = Strings.For(parseResult.GetValue(CommonOptions.Language));
 
             if (!file.Exists)
             {
                 Console.Error.WriteLine(
-                    $"{words[TextKey.MsgError]}: {words.Format(TextKey.MsgNoSuchFile, file.FullName)}");
+                    $"{spoken[TextKey.MsgError]}: {spoken.Format(TextKey.MsgNoSuchFile, file.FullName)}");
                 return Program.ExitFailure;
             }
 
             if (parseResult.GetValue(listPages))
             {
-                return ListPages(file, words, cancellationToken);
+                return ListPages(file, spoken, cancellationToken);
             }
 
             var settings = options.Read(
