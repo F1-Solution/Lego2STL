@@ -22,6 +22,7 @@ internal static class Program
             ExtractCommand.Create(),
             BuildCommand.Create(),
             CalibrationCommand.Create(),
+            BricksCommand.Create(),
             RefreshColorsCommand.Create(),
         };
 

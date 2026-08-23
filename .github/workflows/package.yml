@@ -49,9 +49,14 @@ jobs:
       - name: Install the installer toolset
         run: dotnet tool install --global wix --version 6.0.1
 
+      # The version reaches the script through the environment rather than being pasted into
+      # the command. A tag name can hold quotes and semicolons, and pasting one straight into
+      # a shell line lets whoever pushed the tag run commands on the builder.
       - name: Build the package
         shell: pwsh
-        run: ./packaging/build-windows.ps1 -Version "${{ inputs.version || github.ref_name }}"
+        env:
+          VERSION: ${{ inputs.version || github.ref_name }}
+        run: ./packaging/build-windows.ps1 -Version "$env:VERSION"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -70,7 +75,9 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build the package
-        run: ./packaging/build-unix.sh linux x64 "${{ inputs.version || github.ref_name }}"
+        env:
+          VERSION: ${{ inputs.version || github.ref_name }}
+        run: ./packaging/build-unix.sh linux x64 "$VERSION"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -94,7 +101,10 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Build the package
-        run: ./packaging/build-unix.sh macos ${{ matrix.arch }} "${{ inputs.version || github.ref_name }}"
+        env:
+          VERSION: ${{ inputs.version || github.ref_name }}
+          ARCH: ${{ matrix.arch }}
+        run: ./packaging/build-unix.sh macos "$ARCH" "$VERSION"
 
       - uses: actions/upload-artifact@v4
         with:
