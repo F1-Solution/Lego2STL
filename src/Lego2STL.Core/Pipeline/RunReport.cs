@@ -270,6 +270,14 @@ public static class RunReport
         sb.AppendLine(words.Format(
             TextKey.ReportPlateSummary, plates.Plates.Count, plates.ColorCount, plates.PieceCount));
 
+        // Said here as well as in the shapes section above, because a plate table on its own
+        // reads as the whole set and this is the page someone prints from.
+        if (outcome.Failed.Count > 0)
+        {
+            sb.AppendLine();
+            sb.AppendLine(words.Format(TextKey.ReportPlateMissingParts, outcome.Failed.Count));
+        }
+
         if (plates.Skipped.Count > 0)
         {
             sb.AppendLine();

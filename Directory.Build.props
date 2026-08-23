@@ -10,6 +10,13 @@
       calibration never do.
     -->
     <TargetFrameworks>net10.0;net10.0-windows10.0.19041.0</TargetFrameworks>
+    <!--
+      Same two targets on Windows, Windows one first. A tool that runs a project without
+      naming a target framework - Visual Studio's run button, 'dotnet run' - takes the first
+      one listed, so leaving the plain target first hands a Windows developer the build with
+      no recogniser and an error telling them to run it on Windows, which they are.
+    -->
+    <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net10.0-windows10.0.19041.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>

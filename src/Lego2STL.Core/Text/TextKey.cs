@@ -73,6 +73,7 @@ public enum TextKey
     ReportPlateColumnPieces,
     ReportPlateColumnFootprint,
     ReportPlateDidNotFit,
+    ReportPlateMissingParts,
 
     // Running.
     MsgPagesInDocument,
@@ -96,7 +97,7 @@ public enum TextKey
     MsgProducedNothing,
     MsgWrotePlates,
     MsgNoPlatesRequested,
-    MsgPlatesSkippedUnverified,
+    MsgPlatesMissingParts,
     MsgCalibrationWritten,
     CalibrationTitle,
     CalibrationHow,
@@ -114,6 +115,7 @@ public enum TextKey
     ErrPartTooSmallForClearance,
     ErrPlateTooSmall,
     ErrOcrUnavailable,
+    ErrOcrWrongBuild,
     ErrOpenScadNotFound,
 
     // The interface.

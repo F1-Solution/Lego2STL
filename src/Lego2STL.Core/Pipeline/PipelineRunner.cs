@@ -128,6 +128,13 @@ public sealed class PipelineRunner
     {
         var words = Strings.For(settings.Language);
 
+        // Asked before the document is opened: a missing recogniser is the whole answer, and
+        // saying it after a page count reads as though the reading had begun.
+        if (!OcrEngines.IsAvailable)
+        {
+            throw new OcrUnavailableException(OcrEngines.DescribeUnavailable(words));
+        }
+
         using var document = PdfPageImageSource.Open(settings.InputPath!);
         _log(words.Format(TextKey.MsgPagesInDocument, Path.GetFileName(settings.InputPath!), document.PageCount));
 
@@ -142,7 +149,7 @@ public sealed class PipelineRunner
 
         _log(words.Format(TextKey.MsgReadingPages, PageRange.Format(pages), settings.ColorScheme));
 
-        var reader = new CatalogueReader(OcrEngines.Create(), null, words);
+        var reader = new CatalogueReader(OcrEngines.Create(null, words), null, words);
         var read = await ReadPagesAsync(reader, document, pages, cancellationToken).ConfigureAwait(false);
 
         notes.AddRange(read.Notes);
@@ -340,11 +347,13 @@ public sealed class PipelineRunner
             return null;
         }
 
+        // A plate missing the parts that failed is still worth having - the pieces that did
+        // come out are printable now - so it gets built. What must not happen is its looking
+        // finished: the count is said here, the report names them, and the run stays
+        // unverified.
         if (failed.Count > 0)
         {
-            // A plate that quietly leaves out the parts that failed looks finished and is not.
-            _log(words[TextKey.MsgPlatesSkippedUnverified]);
-            return null;
+            _log(words.Format(TextKey.MsgPlatesMissingParts, failed.Count));
         }
 
         Report(RunStage.ArrangingPlates);

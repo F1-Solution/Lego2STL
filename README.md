@@ -134,6 +134,11 @@ dotnet test
 `PistolaLego.pdf` is a third party's copyrighted instructions and is not in the repository;
 the tests that need it skip with a clear message when it is absent.
 
+Two target frameworks are built: `net10.0-windows10.0.19041.0`, which carries the recogniser,
+and plain `net10.0`, which is everything else and runs anywhere. On Windows the Windows one is
+listed first, so Visual Studio's run button and `dotnet run` take it without being asked;
+choose the plain one from the framework dropdown to see what the tool does elsewhere.
+
 The window has tests of its own that draw it off-screen and read back what it shows —
 including that every command-line option is reachable from it.
 

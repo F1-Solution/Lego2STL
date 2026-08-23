@@ -82,6 +82,9 @@ public sealed partial class Strings
             [TextKey.ReportPlateColumnPieces] = "pieces",
             [TextKey.ReportPlateColumnFootprint] = "used (mm)",
             [TextKey.ReportPlateDidNotFit] = "Too big for the bed, so left off the plates:",
+            [TextKey.ReportPlateMissingParts] =
+                "{0} part(s) produced no shape and are on no plate. They are listed above; the "
+                + "plates hold everything else.",
 
             // Running.
             [TextKey.MsgPagesInDocument] = "{0}: {1} pages.",
@@ -109,8 +112,9 @@ public sealed partial class Strings
             [TextKey.MsgProducedNothing] = "{0} part(s) produced nothing:",
             [TextKey.MsgWrotePlates] = "Wrote {0} plate file(s) to {1}",
             [TextKey.MsgNoPlatesRequested] = "Plates were not asked for.",
-            [TextKey.MsgPlatesSkippedUnverified] =
-                "Plates were skipped because some parts produced nothing.",
+            [TextKey.MsgPlatesMissingParts] =
+                "{0} part(s) produced nothing, so they are on no plate. The rest were arranged "
+                + "as usual and the report lists what is absent.",
             [TextKey.MsgCalibrationWritten] = "Wrote {0} calibration shape(s) to {1}",
             [TextKey.CalibrationTitle] = "Finding the clearance your printer needs",
             [TextKey.CalibrationHow] =
@@ -152,7 +156,15 @@ public sealed partial class Strings
                 "{0} measures {1} and does not fit a {2} bed, so it is not on any plate. Its shape " +
                 "file is still there to place by hand.",
             [TextKey.ErrOcrUnavailable] =
-                "Reading a document needs text recognition, which is not available here.",
+                "Reading a document needs text recognition, and this system has none: the "
+                + "recogniser the tool uses is part of Windows. Everything after the parts list "
+                + "works here, so run 'extract' on Windows once and bring the parts list over, "
+                + "or start from a set number instead.",
+            [TextKey.ErrOcrWrongBuild] =
+                "Reading a document needs text recognition, which this build does not have, "
+                + "although Windows itself does: this is the plain build. Run the Windows one "
+                + "instead - target framework {0} - which in Visual Studio is the framework "
+                + "chosen next to the run button. Everything else works in this build.",
             [TextKey.ErrOpenScadNotFound] =
                 "OpenSCAD was not found. Install it from openscad.org and either put it on the path " +
                 "or name it with --openscad.",

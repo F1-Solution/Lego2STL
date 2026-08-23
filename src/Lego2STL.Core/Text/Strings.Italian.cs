@@ -84,6 +84,9 @@ public sealed partial class Strings
             [TextKey.ReportPlateColumnPieces] = "pezzi",
             [TextKey.ReportPlateColumnFootprint] = "occupato (mm)",
             [TextKey.ReportPlateDidNotFit] = "Troppo grandi per il piano, quindi lasciati fuori:",
+            [TextKey.ReportPlateMissingParts] =
+                "{0} pezzi non hanno prodotto alcuna forma e non sono su nessun piano. Sono "
+                + "elencati sopra; i piani contengono tutto il resto.",
 
             // Esecuzione.
             [TextKey.MsgPagesInDocument] = "{0}: {1} pagine.",
@@ -112,8 +115,9 @@ public sealed partial class Strings
             [TextKey.MsgProducedNothing] = "{0} pezzi non hanno prodotto nulla:",
             [TextKey.MsgWrotePlates] = "Scritti {0} piani di stampa in {1}",
             [TextKey.MsgNoPlatesRequested] = "I piani di stampa non sono stati richiesti.",
-            [TextKey.MsgPlatesSkippedUnverified] =
-                "I piani di stampa sono stati saltati perché alcuni pezzi non hanno prodotto nulla.",
+            [TextKey.MsgPlatesMissingParts] =
+                "{0} pezzi non hanno prodotto nulla, quindi non sono su nessun piano. Gli altri "
+                + "sono stati sistemati come sempre e il resoconto elenca ciò che manca.",
             [TextKey.MsgCalibrationWritten] = "Scritte {0} forme di taratura in {1}",
             [TextKey.CalibrationTitle] = "Trovare il gioco che serve alla propria stampante",
             [TextKey.CalibrationHow] =
@@ -158,7 +162,17 @@ public sealed partial class Strings
                 "{0} misura {1} e non entra in un piano da {2}, quindi non è su nessun piano. La sua " +
                 "forma resta comunque disponibile da sistemare a mano.",
             [TextKey.ErrOcrUnavailable] =
-                "Leggere un documento richiede il riconoscimento del testo, che qui non è disponibile.",
+                "Leggere un documento richiede il riconoscimento del testo, e questo sistema non "
+                + "ne ha: il riconoscitore usato dal programma fa parte di Windows. Tutto quello "
+                + "che viene dopo la lista dei pezzi funziona qui, quindi eseguire 'extract' una "
+                + "volta su Windows e portare qui la lista dei pezzi, oppure partire da un numero "
+                + "di set.",
+            [TextKey.ErrOcrWrongBuild] =
+                "Leggere un documento richiede il riconoscimento del testo, che questa "
+                + "compilazione non ha, mentre Windows sì: questa è la compilazione semplice. "
+                + "Eseguire quella per Windows - target framework {0} - che in Visual Studio è il "
+                + "framework scelto accanto al pulsante di avvio. Tutto il resto funziona in "
+                + "questa compilazione.",
             [TextKey.ErrOpenScadNotFound] =
                 "OpenSCAD non è stato trovato. Installarlo da openscad.org e metterlo nel percorso " +
                 "oppure indicarlo con --openscad.",
