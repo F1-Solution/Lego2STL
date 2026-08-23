@@ -36,7 +36,7 @@ $publish = Join-Path $root 'artifacts\publish\win-x64'
 $dist = Join-Path $root 'artifacts\dist'
 
 # The Windows target framework, which is what carries the text recogniser.
-$framework = 'net8.0-windows10.0.19041.0'
+$framework = 'net10.0-windows10.0.19041.0'
 
 function Step($message) { Write-Host "==> $message" -ForegroundColor Cyan }
 

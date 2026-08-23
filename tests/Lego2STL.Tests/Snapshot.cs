@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using System.Text;
 using FluentAssertions;
@@ -106,6 +107,80 @@ public static class Snapshot
             UpdateVariable);
 
         actual.Should().Equal(expected, "{0} should match the kept copy byte for byte", name);
+    }
+
+    /// <summary>
+    /// Compares an archive by what is inside it: every entry's name, and its contents once
+    /// unpacked.
+    /// </summary>
+    /// <remarks>
+    /// A 3MF is a zip, and how a zip packs its entries belongs to the runtime rather than to
+    /// this. Compressing the identical bytes under .NET 10 rather than 8 produces a file four
+    /// bytes different, with every entry, checksum and timestamp unchanged. Comparing the
+    /// container byte for byte therefore fails on a runtime upgrade while saying nothing about
+    /// the writer, so what is compared is the payload: the names, in order, and the bytes each
+    /// one unpacks to. That is what the specification pins down and what a reader will see.
+    /// </remarks>
+    public static void ArchiveMatches(string name, byte[] actual)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNull(actual);
+
+        var path = PathFor(name);
+
+        if (Updating || !File.Exists(path))
+        {
+            System.IO.Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllBytes(path, actual);
+
+            if (!Updating)
+            {
+                Assert.Fail(
+                    $"There was no kept copy for {name}, so one was written from this run. " +
+                    "Read it, and commit it if it is right.");
+            }
+
+            return;
+        }
+
+        var expected = Unpack(File.ReadAllBytes(path));
+        var found = Unpack(actual);
+
+        found.Select(e => e.Name).Should().Equal(
+            expected.Select(e => e.Name),
+            "{0} should hold the same entries, in the same order, as the kept copy. " +
+            "If the change is meant, re-run with {1}=1.",
+            name,
+            UpdateVariable);
+
+        foreach (var (entry, bytes) in expected)
+        {
+            found.First(e => e.Name == entry).Bytes.Should().Equal(
+                bytes, "{0} in {1} should match the kept copy byte for byte", entry, name);
+        }
+    }
+
+    /// <summary>
+    /// Every entry of a zip, unpacked, in the order the archive stores them - a list rather
+    /// than a lookup, because the order is part of what is being compared and a lookup does
+    /// not promise to keep it.
+    /// </summary>
+    private static List<(string Name, byte[] Bytes)> Unpack(byte[] archive)
+    {
+        using var stream = new MemoryStream(archive, writable: false);
+        using var zip = new ZipArchive(stream, ZipArchiveMode.Read);
+
+        var entries = new List<(string, byte[])>();
+
+        foreach (var entry in zip.Entries)
+        {
+            using var contents = entry.Open();
+            using var buffer = new MemoryStream();
+            contents.CopyTo(buffer);
+            entries.Add((entry.FullName, buffer.ToArray()));
+        }
+
+        return entries;
     }
 
     private static void Write(string path, string content)

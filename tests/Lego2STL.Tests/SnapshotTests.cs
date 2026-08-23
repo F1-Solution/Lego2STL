@@ -150,7 +150,7 @@ public sealed class SnapshotTests
 
             result.Plates.Should().HaveCount(2, "there are two colours in the list");
 
-            Snapshot.Matches("black.3mf", await File.ReadAllBytesAsync(Path.Combine(into, "black.3mf")));
+            Snapshot.ArchiveMatches("black.3mf", await File.ReadAllBytesAsync(Path.Combine(into, "black.3mf")));
         }
         finally
         {

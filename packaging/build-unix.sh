@@ -47,7 +47,7 @@ rid="linux-$arch"
 [ "$platform" = "macos" ] && rid="osx-$arch"
 
 # The plain target framework: the Windows one exists only for the text recogniser.
-framework="net8.0"
+framework="net10.0"
 
 staging="$root/artifacts/staging/$rid"
 dist="$root/artifacts/dist"
