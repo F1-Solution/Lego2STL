@@ -1,0 +1,12 @@
+* text=auto eol=crlf
+
+*.csv text eol=lf
+*.md  text eol=lf
+
+*.pdf binary
+*.png binary
+*.jpg binary
+*.stl binary
+*.3mf binary
+*.zip binary
+*.dat binary
