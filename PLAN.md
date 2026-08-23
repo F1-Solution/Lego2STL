@@ -1,6 +1,6 @@
 # Lego2STL — Implementation Plan
 
-Status: **approved and part-built** — see section 11 for what is done and what is not.
+Status: **built** — every phase is done. See section 11.
 Date: 2026-08-23
 
 ---
@@ -281,47 +281,73 @@ Per the PROGRESS.md protocol, one line is appended per completed phase, and it i
 
 ## 10. Open items
 
-1. **Rotate the Rebrickable API key** — it was pasted in plaintext. It will not be committed; runtime reads `REBRICKABLE_API_KEY` or `%APPDATA%\Lego2STL\config.json`.
-2. **Which printer** should be the default for plate sizing?
-3. **`--lang` default** — English with `--lang it` available, or Italian by default on an Italian OS?
+1. **Rotate the Rebrickable API key** — it was pasted in plaintext. Still worth doing. It is
+   not committed; a run reads `--api-key`, `REBRICKABLE_API_KEY` or
+   `%APPDATA%\Lego2STL\config.json`, and a key is only needed for `--set` and
+   `refresh-colors`.
+2. ~~Which printer should be the default?~~ **A1**, 256 x 256 mm: the most common of the six
+   and shared by four of them, so a layout packed for it suits most of the list unchanged.
+   Every printer is available through `--printer`, and `--plate-size` takes a bed that is not
+   on the list at all.
+3. ~~`--lang` default?~~ **The machine's own**, falling back to English. An Italian Windows
+   gets Italian without being asked; `--lang` always wins, which is what keeps output
+   reproducible when it matters, and the tests always name one.
 
 ---
 
 ## 11. Status — 2026-08-23
 
-Working end to end. `lego2stl extract` then `lego2stl build` takes the reference
-document to 44 shape files. 201 tests, all passing. 9 commits.
+**Every phase is done.** One command takes the reference document to a parts list, 44 shapes
+and 9 coloured plates. 355 tests pass, of which 20 draw the window off-screen and read back
+what it shows.
 
 | Phase | State | Evidence |
 |---|---|---|
-| 0 Skeleton | done | four projects build on the Windows target framework |
-| 1 Colour cross-reference | done | 275 colours; 214 BrickLink, 200 LEGO, 169 LDraw codes resolve; 6 ambiguities settled by stated rules |
+| 0 Skeleton | done | four projects build |
+| 1 Colour cross-reference | done | 275 colours; 214 BrickLink, 200 LEGO, 169 LDraw codes resolve |
 | 2 Page range and page images | done | all 126 pages decode; catalogue pages come from the embedded image at native size |
-| 3 Locate entries | done | **53/53** on pages 2-5, each two lines, on a parameter plateau |
+| 3 Locate entries | done | **53/53** on pages 2-5, on a parameter plateau |
 | 4 Read entries | done | **53/53** exact against the hand transcription |
 | 5 Parts list | done | 53 entries, 200 pieces, 44 distinct parts; round-trips through the file |
 | 6 Geometry source | done | escalates local → per-file → whole library; 36,896 files cached |
 | 7 Parser and transforms | done | the transpose has its own test, including the wrong answer it guards against |
-| 8 Mesh cleanup | done | 2,519 edges closed by exact seam repair, completing 7 shapes |
-| 9 Shape files | done | 44 files, 3.4 MB, structure verified byte-exact |
-| 15 Packaging | done | one 50 MB `lego2stl.exe`, runs with no runtime installed |
+| 8 Mesh cleanup | done | seam repair, plus gap covering under `--repair`: complete shapes go from 11 of 44 to 33 |
+| 9 Shape files | done | 44 files, structure verified byte-exact |
+| 10 Coloured plates | done | 9 plates for 8 colours, 200 pieces; the file format read back and checked against the specification |
+| 11 Clearance and calibration | done | a 20 mm cube loses exactly twice the clearance per span; a round part loses it from the radius; the calibration set measures right on the axle |
+| 12 Snapshot tests | done | 9 kept copies, with `LEGO2STL_UPDATE_SNAPSHOTS=1` to renew them |
+| 13 Interface | done | four screens, every option reachable, checked by drawing it |
+| 14 Parametric bricks | done | spec, description and both missing-tool paths tested; the OpenSCAD run itself is **unverified** — see below |
+| 15 Packaging | done | an installer for Windows, a tarball and Debian package for Linux, an application bundle for macOS |
 
-### Not built yet
+### Departures from the plan
 
-| Phase | Why it matters |
-|---|---|
-| 10 Coloured plates | groups parts by colour with their quantities into one file per plate; the only place colour reaches the output |
-| 11 Clearance and calibration | the `--clearance` inward offset and the small calibration set; without it printed parts will not clip together |
-| 12 Snapshot tests | golden parts list and shape files, with a switch to regenerate |
-| 13 Interface | the four-screen Avalonia application |
-| 14 Parametric bricks | the separate command driving MachineBlocks through OpenSCAD |
+| # | Decision | What was built instead, and why |
+|---|---|---|
+| 2, 15 | CSV headings fixed in Italian | The headings follow the display language, and the language follows the machine unless `--lang` says otherwise. Every wording is recognised on the way back in, in any language, so a file written on one machine loads on another. Asked for during the build. |
+| 4 | Windows only | Runs on Windows, Linux and macOS. The recogniser is the only Windows dependency and was already behind an interface, so the other two do everything from the parts list onward. Asked for during the build. |
+| — | `extract` then `build` | One command goes the whole way. Both still exist as entry points, but they build the same settings and call one pipeline, which is what makes the window's parity a fact about the code rather than a promise. |
+| 11 | `--repair` fills boundary loops with geometry3Sharp | Hand-written, and not opt-in-only: it turned out to be what a clearance needs before it can be applied at all. No dependency was needed — walking free edges into loops and covering each is about 150 lines. |
+
+### Not verified
+
+**The OpenSCAD run in `lego2stl bricks`.** OpenSCAD is not installed on this machine and was
+not installed to test it. What is covered: reading a size, generating the description, finding
+OpenSCAD and the library, and the message each gives when missing. What is not: that OpenSCAD
+accepts the description and produces a shape. Install OpenSCAD and a copy of MachineBlocks and
+run `lego2stl bricks 2x4` to find out.
+
+**The installers, other than the Windows one.** The `.msi` was built here and its contents
+read back. The Linux tarball was built here; the `.deb` needs Debian's packaging tool and the
+macOS disk image needs macOS, so both are built by the workflow on their own machines and have
+not been run.
 
 ### What the reference set looks like
 
-44 shapes, 11 closed as they stand. Seam repair closed 2,519 edges and completed 7
-more shapes. The rest keep some unshared edges, which a slicer repairs silently;
-the report names them so it is never a surprise.
+44 shapes. 11 are closed as they arrive; seam repair completes 7 more, and covering gaps takes
+it to 33, which is also how many can take a clearance. The rest keep gaps their surface
+branches around, which a slicer repairs silently and the report names.
 
-Sizes come out right: the 4-long axle measures 31.6 x 4.8 x 4.8 mm, and a
-20-unit width lands on exactly 8.000 mm, which is the spacing everything else is
-measured against.
+Sizes come out right: the 4-long axle measures 31.6 x 4.8 x 4.8 mm, a 20-unit width lands on
+exactly 8.000 mm, and at 0.15 mm clearance the axle's cross measures 4.494 mm — twice the
+clearance off, as asked.
