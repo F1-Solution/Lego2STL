@@ -30,6 +30,12 @@ public static class VertexWelder
     /// </summary>
     public const float DefaultTolerance = 1e-3f;
 
+    /// <summary>
+    /// The same figure as a double, for settings and command lines. Widening the float
+    /// instead prints its binary tail, and 0.0010000000474974513 in a help page is noise.
+    /// </summary>
+    public const double DefaultToleranceMillimetres = 1e-3;
+
     public static IndexedMesh Weld(IEnumerable<Triangle> triangles, float tolerance = DefaultTolerance)
     {
         ArgumentNullException.ThrowIfNull(triangles);
