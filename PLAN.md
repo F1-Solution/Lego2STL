@@ -1,6 +1,6 @@
 # Lego2STL — Implementation Plan
 
-Status: **awaiting approval**. Nothing has been built yet.
+Status: **approved and part-built** — see section 11 for what is done and what is not.
 Date: 2026-08-23
 
 ---
