@@ -3,7 +3,7 @@
 Protocol: read this file before each phase; append one line immediately after each phase.
 Format: `PHASE:<id> WAVE:<id> STATUS:<complete|failed> TS:<ISO-8601-UTC>`
 
-Plan: see PLAN.md (16 phases, 0-15). Phase 4 is a hard gate: 53/53 extraction accuracy.
+Plan: see PLAN.md (17 phases, 0-16). Phase 4 is a hard gate: 53/53 extraction accuracy.
 
 ## Log
 PHASE:0 WAVE:0 STATUS:complete TS:2026-08-23T00:58:32Z
@@ -21,3 +21,5 @@ PHASE:11 WAVE:0 STATUS:complete TS:2026-08-23T09:20:00Z
 PHASE:13 WAVE:0 STATUS:complete TS:2026-08-23T11:05:00Z
 PHASE:14 WAVE:0 STATUS:complete TS:2026-08-23T11:35:00Z
 PHASE:12 WAVE:0 STATUS:complete TS:2026-08-23T11:40:00Z
+PHASE:15 WAVE:0 STATUS:complete TS:2026-08-23T15:26:29Z
+PHASE:16 WAVE:0 STATUS:complete TS:2026-08-23T15:26:29Z

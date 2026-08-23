@@ -103,7 +103,8 @@ Also measured: naive round-to-N-decimals welding is **unstable** (2 decimals sco
 | `System.CommandLine` **2.0.11** is stable (the long beta is over) | NuGet |
 | CommunityToolkit.Mvvm 8.4.2 | NuGet |
 | Windows OCR available, `en-GB` engine, `MaxImageDimension` 10000 | ran it |
-| **No** slicer, **no** OpenSCAD, **no** LDraw install, no Tesseract | filesystem checks |
+| **No** slicer, **no** LDraw install, no Tesseract | filesystem checks |
+| OpenSCAD 2025.09.07 (nightly), installed later to verify the `bricks` command | `winget install OpenSCAD.OpenSCAD.Nightly`; the stable package is still 2021.01 |
 
 ---
 
@@ -138,10 +139,10 @@ Also measured: naive round-to-N-decimals welding is **unstable** (2 decimals sco
 
 ```
 Lego2STL.sln
-  Lego2STL.Core        net8.0-windows10.0.19041.0   all logic, no UI
-  Lego2STL.Cli         net8.0-windows10.0.19041.0   console, System.CommandLine 2.0.11
-  Lego2STL.Gui         net8.0-windows10.0.19041.0   Avalonia 12.1.1 + CommunityToolkit.Mvvm
-  Lego2STL.Tests       net8.0-windows10.0.19041.0   xUnit: unit + snapshot
+  Lego2STL.Core        net10.0-windows10.0.19041.0   all logic, no UI
+  Lego2STL.Cli         net10.0-windows10.0.19041.0   console, System.CommandLine 2.0.11
+  Lego2STL.Gui         net10.0-windows10.0.19041.0   Avalonia 12.1.1 + CommunityToolkit.Mvvm
+  Lego2STL.Tests       net10.0-windows10.0.19041.0   xUnit: unit + snapshot
 ```
 
 The Windows TFM is forced by the OCR engine. Everything OCR-related sits behind `IOcrEngine`, so a cross-platform engine can be added later without touching the pipeline.
@@ -272,6 +273,7 @@ Expect roughly 70 MB for the CLI and 90 MB for the GUI. **No trimming on the GUI
 | 13 | Avalonia GUI, four screens | every CLI capability reachable |
 | 14 | MachineBlocks `bricks` command | generates a liftarm via a local OpenSCAD |
 | 15 | Self-contained publish, README | runs on a machine with no .NET installed |
+| 16 | Retarget to .NET 10 | suite green, and the reference document produces the same parts list and shapes |
 
 Phase 4's gate is the real one: **53/53, or the extraction is not done.**
 
@@ -298,8 +300,8 @@ Per the PROGRESS.md protocol, one line is appended per completed phase, and it i
 ## 11. Status — 2026-08-23
 
 **Every phase is done.** One command takes the reference document to a parts list, 44 shapes
-and 9 coloured plates. 355 tests pass, of which 20 draw the window off-screen and read back
-what it shows.
+and 9 coloured plates. 362 tests pass, of which 26 draw the window off-screen and read back
+what it shows. It builds and runs on .NET 10.
 
 | Phase | State | Evidence |
 |---|---|---|
@@ -317,8 +319,9 @@ what it shows.
 | 11 Clearance and calibration | done | a 20 mm cube loses exactly twice the clearance per span; a round part loses it from the radius; the calibration set measures right on the axle |
 | 12 Snapshot tests | done | 9 kept copies, with `LEGO2STL_UPDATE_SNAPSHOTS=1` to renew them |
 | 13 Interface | done | four screens, every option reachable, checked by drawing it |
-| 14 Parametric bricks | done | spec, description and both missing-tool paths tested; the OpenSCAD run itself is **unverified** — see below |
+| 14 Parametric bricks | done | a real OpenSCAD renders the description: a 2x4 brick measures **15.8 x 31.8 x 11.2 mm**, a plate 4.8 mm tall, a tile 3.2 mm with no studs |
 | 15 Packaging | done | an installer for Windows, a tarball and Debian package for Linux, an application bundle for macOS |
+| 16 .NET 10 | done | every project retargeted; the whole suite passes and the reference document gives the same 53 entries, 200 pieces and 44 shapes |
 
 ### Departures from the plan
 
@@ -328,6 +331,8 @@ what it shows.
 | 4 | Windows only | Runs on Windows, Linux and macOS. The recogniser is the only Windows dependency and was already behind an interface, so the other two do everything from the parts list onward. Asked for during the build. |
 | — | `extract` then `build` | One command goes the whole way. Both still exist as entry points, but they build the same settings and call one pipeline, which is what makes the window's parity a fact about the code rather than a promise. |
 | 11 | `--repair` fills boundary loops with geometry3Sharp | Hand-written, and not opt-in-only: it turned out to be what a clearance needs before it can be applied at all. No dependency was needed — walking free edges into loops and covering each is about 150 lines. |
+| 17 | The brick library's calls were written from memory | They were wrong in every particular, and nothing caught it because the run was never made. The module is `machineblock`, not `block`; width, depth and height are one `size` vector with the height in plates, not a `grid` pair and a separate count; the knobs are `studs` and the tubes underneath are `pillars`. The address given for the library was a repository that does not exist. All corrected against the library's own source, and now checked by rendering. |
+| 16 | The plate snapshot compared the file byte for byte | A 3MF is a zip, and .NET 10 packs the identical bytes four bytes differently. The comparison now unpacks both and matches entry names and contents, which is what the specification pins down; everything else is still compared byte for byte, and still matches exactly. |
 
 ### One thing the framework keeps in English
 
@@ -338,12 +343,6 @@ arguments for `--lang`. The three lines the command-line framework writes itself
 because they belong to the framework and not to this.
 
 ### Not verified
-
-**The OpenSCAD run in `lego2stl bricks`.** OpenSCAD is not installed on this machine and was
-not installed to test it. What is covered: reading a size, generating the description, finding
-OpenSCAD and the library, and the message each gives when missing. What is not: that OpenSCAD
-accepts the description and produces a shape. Install OpenSCAD and a copy of MachineBlocks and
-run `lego2stl bricks 2x4` to find out.
 
 **The installers, other than the Windows one.** The `.msi` was built here and its contents
 read back. The Linux tarball was built here; the `.deb` needs Debian's packaging tool and the

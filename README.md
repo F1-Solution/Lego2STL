@@ -130,7 +130,7 @@ dotnet build
 dotnet test
 ```
 
-.NET 8 or later. Four projects: the logic, a console program, a window, and the tests.
+.NET 10 or later. Four projects: the logic, a console program, a window, and the tests.
 `PistolaLego.pdf` is a third party's copyrighted instructions and is not in the repository;
 the tests that need it skip with a clear message when it is absent.
 
@@ -146,7 +146,7 @@ kept. Colour and set information is [Rebrickable](https://rebrickable.com); a ke
 needed for `--set` and `refresh-colors`, and is read from `--api-key`, `REBRICKABLE_API_KEY`,
 or `%APPDATA%\Lego2STL\config.json`.
 
-`lego2stl bricks` drives [MachineBlocks](https://github.com/geoffkraft/machineblocks), which
+`lego2stl bricks` drives [MachineBlocks](https://github.com/pks5/machineblocks), which
 is published under CC BY-NC-SA. It is neither included nor downloaded: it needs your own copy
 and your own OpenSCAD, and what it produces carries that licence.
 
