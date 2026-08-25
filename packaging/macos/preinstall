@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# Runs before the application is put in place, as root, and installs .NET 10 if this Mac has
+# not got it. Nothing happens when it has.
+#
+# /usr/local/share/dotnet specifically: that is where .NET expects to be on a Mac, so the
+# programs find it without being told. An application opened from the Finder inherits no shell
+# environment, so anywhere else would need something the programs cannot rely on.
+set -eu
+
+RUNTIME_VERSION="@RUNTIME_VERSION@"
+RUNTIME_URL_X64="@RUNTIME_URL_X64@"
+RUNTIME_SHA512_X64="@RUNTIME_SHA512_X64@"
+RUNTIME_URL_ARM64="@RUNTIME_URL_ARM64@"
+RUNTIME_SHA512_ARM64="@RUNTIME_SHA512_ARM64@"
+
+# ---- the runtime probe, inserted here when this package was built ----------------------
+@RUNTIME_PROBE@
+# ---------------------------------------------------------------------------------------
+
+if runtime_find >/dev/null; then
+    echo "Lego2STL: .NET 10 is already installed; leaving it alone."
+    exit 0
+fi
+
+case "$(uname -m)" in
+    arm64) url="$RUNTIME_URL_ARM64"; sha="$RUNTIME_SHA512_ARM64" ;;
+    x86_64) url="$RUNTIME_URL_X64"; sha="$RUNTIME_SHA512_X64" ;;
+    *) echo "Lego2STL: unknown processor $(uname -m); cannot fetch .NET." >&2; exit 1 ;;
+esac
+
+echo "Lego2STL: installing .NET $RUNTIME_VERSION from $url"
+
+tarball="$(mktemp)"
+curl -fSL "$url" -o "$tarball"
+runtime_verify "$tarball" "$sha" || exit 1
+
+mkdir -p /usr/local/share/dotnet
+tar -xzf "$tarball" -C /usr/local/share/dotnet
+rm -f "$tarball"
+
+echo "Lego2STL: .NET $RUNTIME_VERSION installed."

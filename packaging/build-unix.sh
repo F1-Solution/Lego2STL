@@ -54,19 +54,20 @@ dist="$root/artifacts/dist"
 
 step() { printf '\033[36m==> %s\033[0m\n' "$1"; }
 
-step "Publishing for $rid"
 rm -rf "$staging"
 mkdir -p "$staging" "$dist"
 
-# Both programs into one folder, over one copy of the assemblies they share.
-payload="$staging/payload"
-"$here/lib/payload.sh" "$rid" "$version" "$payload"
-
-cli="$payload/lego2stl"
-gui="$payload/Lego2STL.Gui"
+# Publishing belongs inside each branch rather than above them: macOS needs two payloads and
+# fuses them, and it refuses outright when this is not a Mac - which is worth saying before
+# spending minutes on a build that cannot finish.
 
 if [ "$platform" = "linux" ]; then
   # ---- Linux: a self-extracting installer, and a tarball anyone can unpack -------------
+
+  step "Publishing for $rid"
+  # Both programs into one folder, over one copy of the assemblies they share.
+  payload="$staging/payload"
+  "$here/lib/payload.sh" "$rid" "$version" "$payload"
 
   step "Gathering the tarball"
   tree="$staging/tree"
@@ -147,36 +148,36 @@ if [ "$platform" = "linux" ]; then
   fi
 
 else
-  # ---- macOS: an application bundle, zipped, and a disk image when on macOS ---------------
+  # ---- macOS: one package, for either kind of Mac --------------------------------------
 
-  # The programs themselves cross-build from anywhere - dotnet emits a real Mach-O binary on
-  # Windows or Linux quite happily. What cannot be done elsewhere is turn them into something
-  # a Mac will open: the signature, the archive that keeps the permission bits, and the disk
-  # image all come from tools that ship only with macOS. Said here rather than discovered
-  # three notices later, because the folder left behind otherwise looks like a package.
   if [ "$(uname -s)" != "Darwin" ]; then
     echo
-    echo "    Note: this is not macOS, so what follows will not be a package anyone can open."
-    echo "    The binaries are real and the bundle's layout is right, but codesign, ditto and"
-    echo "    hdiutil are macOS-only, and the executable bit does not survive most other"
-    echo "    filesystems. Build on a Mac, or let the workflow's macos job do it."
+    echo "    This is not macOS. lipo, codesign, pkgbuild and productbuild all ship only with"
+    echo "    macOS, so no package can be built here. The programs themselves cross-build"
+    echo "    fine; it is turning them into something a Mac will open that cannot be done."
+    echo "    Build on a Mac, or let the workflow's macos job do it."
     echo
+    exit 1
   fi
+
+  step "Publishing for both kinds of Mac"
+  "$here/lib/payload.sh" osx-x64   "$version" "$staging/x64"
+  "$here/lib/payload.sh" osx-arm64 "$version" "$staging/arm64"
+
+  step "Fusing them into one"
+  fused="$staging/universal"
+  "$here/macos/fuse-universal.sh" "$staging/x64" "$staging/arm64" "$fused"
 
   step "Building the application bundle"
   app="$staging/Lego2STL.app"
   rm -rf "$app"
   mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
-
   sed -e "s/@VERSION@/$version/g" "$here/macos/Info.plist" > "$app/Contents/Info.plist"
+  cp -R "$fused/." "$app/Contents/MacOS/"
 
   # The two keep the names they were built with. A bundle whose window program were called
   # "Lego2STL" could not also hold "lego2stl": a Mac disk is case-insensitive by default, so
   # the two would be one file and the bundle would quietly ship the same program twice.
-  cp "$gui" "$app/Contents/MacOS/Lego2STL.Gui"
-  cp "$cli" "$app/Contents/MacOS/lego2stl"
-  chmod +x "$app/Contents/MacOS/Lego2STL.Gui" "$app/Contents/MacOS/lego2stl"
-
   for program in Lego2STL.Gui lego2stl; do
     [ -f "$app/Contents/MacOS/$program" ] || { echo "missing from the bundle: $program" >&2; exit 1; }
   done
@@ -184,49 +185,77 @@ else
   # macOS refuses to open a bundle whose signature it cannot make sense of. An ad-hoc
   # signature is not a developer identity and does not avoid the warning on first open, but
   # it does stop the copied bundle being rejected outright on Apple silicon.
-  if command -v codesign >/dev/null 2>&1; then
-    codesign --force --deep --sign - "$app" || echo "    could not sign; the bundle is unsigned"
-  fi
+  codesign --force --deep --sign - "$app" || echo "    could not sign; the bundle is unsigned"
 
-  zipfile="$dist/Lego2STL-$version-osx-$arch.zip"
+  step "Archiving the bundle"
+  zipfile="$dist/Lego2STL-$version-osx-universal.zip"
   rm -f "$zipfile"
-  if command -v ditto >/dev/null 2>&1; then
-    # ditto rather than zip, because it is the one that keeps the permission bits and the
-    # signature intact. A bundle zipped any other way can arrive unrunnable.
-    ditto -c -k --keepParent "$app" "$zipfile"
-    echo "    $zipfile"
-  elif command -v zip >/dev/null 2>&1; then
-    (cd "$staging" && zip -qry "$zipfile" "Lego2STL.app")
-    echo "    $zipfile"
-  else
-    echo "    neither ditto nor zip was found, so the bundle was not archived."
-    echo "    It is at $app"
-  fi
+  # ditto rather than zip, because it is the one that keeps the permission bits and the
+  # signature intact. A bundle zipped any other way can arrive unrunnable.
+  ditto -c -k --keepParent "$app" "$zipfile"
+  echo "    $zipfile"
 
-  if command -v hdiutil >/dev/null 2>&1; then
-    step "Building the disk image"
+  step "Building the installer"
 
-    image="$staging/dmg"
-    rm -rf "$image"
-    mkdir -p "$image"
-    cp -R "$app" "$image/"
-    ln -s /Applications "$image/Applications"
+  pin="$here/runtime.json"
+  python="python3"; command -v python3 >/dev/null 2>&1 || python="python"
+  read_pin() { "$python" -c "import json;p=json.load(open('$pin'));print($1)"; }
+  runtime_version="$(read_pin "p['version']")"
+  runtime_base="$(read_pin "p['urlBase']")"
+  x64_file="$(read_pin "p['platforms']['osx-x64']['file']")"
+  x64_sha="$(read_pin "p['platforms']['osx-x64']['sha512']")"
+  arm_file="$(read_pin "p['platforms']['osx-arm64']['file']")"
+  arm_sha="$(read_pin "p['platforms']['osx-arm64']['sha512']")"
 
-    dmg="$dist/Lego2STL-$version-osx-$arch.dmg"
-    rm -f "$dmg"
-    hdiutil create -volname "Lego2STL" -srcfolder "$image" -ov -format UDZO "$dmg" >/dev/null
-    echo "    $dmg"
-  else
-    echo "    hdiutil was not found, so no disk image was built. Build on macOS for one."
-  fi
+  scripts="$staging/scripts"
+  rm -rf "$scripts"
+  mkdir -p "$scripts"
+  awk -v probe="$here/lib/runtime-probe.sh" '
+    /^@RUNTIME_PROBE@$/ { while ((getline line < probe) > 0) print line; next }
+    { print }
+  ' "$here/macos/preinstall" > "$scripts/preinstall.stage1"
+  sed -e "s|@RUNTIME_VERSION@|$runtime_version|g" \
+      -e "s|@RUNTIME_URL_X64@|$runtime_base/$runtime_version/$x64_file|g" \
+      -e "s|@RUNTIME_SHA512_X64@|$x64_sha|g" \
+      -e "s|@RUNTIME_URL_ARM64@|$runtime_base/$runtime_version/$arm_file|g" \
+      -e "s|@RUNTIME_SHA512_ARM64@|$arm_sha|g" \
+      "$scripts/preinstall.stage1" > "$scripts/preinstall"
+  rm -f "$scripts/preinstall.stage1"
+  chmod +x "$scripts/preinstall"
 
-  # Nothing to hand anyone means the run did not do what it was asked, whatever the notices
-  # above said individually. Saying so with an exit code stops a build script upstream from
-  # treating a loose folder as a released package.
-  if ! ls "$dist"/Lego2STL-"$version"-osx-"$arch".* >/dev/null 2>&1; then
-    echo >&2
-    echo "no macOS package was produced: the bundle is at $app, but nothing archived it." >&2
-    echo "Run this on macOS, or use the workflow's macos job." >&2
+  packageroot="$staging/pkgroot"
+  rm -rf "$packageroot"
+  mkdir -p "$packageroot/Applications" "$packageroot/usr/local/bin"
+  cp -R "$app" "$packageroot/Applications/"
+  # So 'lego2stl' works in a terminal without anyone adding a folder to their path.
+  ln -s "/Applications/Lego2STL.app/Contents/MacOS/lego2stl" "$packageroot/usr/local/bin/lego2stl"
+
+  component="$staging/app.pkg"
+  rm -f "$component"
+  pkgbuild --root "$packageroot" \
+           --scripts "$scripts" \
+           --identifier org.lego2stl.app \
+           --version "$version" \
+           --install-location / \
+           "$component"
+
+  pkg="$dist/Lego2STL-$version-osx-universal.pkg"
+  rm -f "$pkg"
+  productbuild --distribution "$here/macos/distribution.xml" \
+               --package-path "$staging" \
+               --resources "$here/macos" \
+               "$pkg"
+
+  # stat -f%z is the macOS form; the Linux branch above uses -c%s. Nothing shared between
+  # them, because there is no spelling that works on both.
+  pkg_mb=$(($(stat -f%z "$pkg") / 1048576))
+  printf '    %s  (%s MB)\n' "$pkg" "$pkg_mb"
+  printf '    .NET %s, fetched only when missing\n' "$runtime_version"
+
+  # A package that grew past this is carrying the runtime again. Higher than the other two
+  # because a universal build doubles every native binary.
+  if [ "$pkg_mb" -gt 70 ]; then
+    echo "the package is ${pkg_mb} MB, over the 70 MB ceiling. Is it carrying the runtime?" >&2
     exit 1
   fi
 fi

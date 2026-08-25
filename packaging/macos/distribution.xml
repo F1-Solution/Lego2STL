@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What the installer window shows, and where the application goes. -->
+<installer-gui-script minSpecVersion="2">
+  <title>Lego2STL</title>
+  <options customize="never" require-scripts="true" hostArchitectures="x86_64,arm64" />
+  <domains enable_localSystem="true" enable_anywhere="false" enable_currentUserHome="false" />
+  <choices-outline>
+    <line choice="default" />
+  </choices-outline>
+  <choice id="default" visible="false">
+    <pkg-ref id="org.lego2stl.app" />
+  </choice>
+  <pkg-ref id="org.lego2stl.app">app.pkg</pkg-ref>
+</installer-gui-script>
