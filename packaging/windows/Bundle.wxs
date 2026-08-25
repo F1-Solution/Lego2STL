@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+  The Windows installer.
+
+  Two things happen, in this order: .NET 10 is installed if the machine has not got it, and
+  then Lego2STL is. The runtime is fetched at that moment rather than carried, which is what
+  keeps this file around 25 MB instead of 152 MB.
+
+  Nothing here elevates when the runtime is already present, which is the common case for
+  everybody after their first install: the application installs for one user, under their own
+  profile, and needs no administrator. When the runtime is missing, Microsoft's own installer
+  asks for administrator itself, at the moment it runs.
+-->
+
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal"
+     xmlns:netfx="http://wixtoolset.org/schemas/v4/wxs/netfx">
+
+  <?ifndef Version?><?define Version="1.0.0"?><?endif?>
+
+  <Bundle Name="Lego2STL"
+          Version="$(Version)"
+          Manufacturer="Lego2STL"
+          UpgradeCode="A7E1D9C4-3B62-4F08-9A15-6E2D8C7B4013"
+          Compressed="yes">
+
+    <!--
+      No icon of its own. Burn wants a real .ico and the only one here belongs to the toolkit
+      the window is built with; stamping another project's logo on this installer would say
+      something untrue about who made it. The default icon stands until there is one to use.
+    -->
+
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication
+          Theme="rtfLicense"
+          LicenseFile="$(LicenseRtf)"
+          SuppressOptionsUI="yes" />
+    </BootstrapperApplication>
+
+    <!--
+      Asks the host resolver what runtimes are installed, which is the only thing on the
+      machine that reliably knows. The registry keys an installer would normally search are
+      not usable: one reads a version older than what is installed, and the other no longer
+      exists.
+    -->
+    <netfx:DotNetCoreSearch Id="SearchRuntime10"
+                            RuntimeType="core"
+                            Platform="x64"
+                            MajorVersion="10"
+                            Variable="DotNetRuntime10" />
+
+    <Chain>
+
+      <!--
+        PerMachine="no" is deliberate and is not a description of what the runtime installer
+        does. It keeps this bundle's own bookkeeping under the current user, which is what
+        stops Burn asking for administrator before it has established that anything needs it.
+        Microsoft's installer carries its own request for administrator and raises it when it
+        actually runs - so a machine that already has .NET 10 sees no prompt at all.
+
+        Permanent, because other programs use the runtime: removing Lego2STL must not take it
+        away from them.
+      -->
+      <ExePackage Id="DotNetRuntime"
+                  DisplayName="Microsoft .NET $(RuntimeVersion) Runtime"
+                  PerMachine="no"
+                  Permanent="yes"
+                  Vital="yes"
+                  DetectCondition="DotNetRuntime10 &gt;= v10.0.0"
+                  InstallArguments="/install /quiet /norestart">
+        <!--
+          Compressed="no" on the payload rather than the package: it is what keeps the
+          runtime out of this file and fetched from the address below only when it is needed.
+        -->
+        <ExePackagePayload
+            Compressed="no"
+            Name="dotnet-runtime-$(RuntimeVersion)-win-x64.exe"
+            DownloadUrl="$(RuntimeUrl)"
+            ProductName="Microsoft .NET $(RuntimeVersion) Runtime"
+            Description="Microsoft .NET $(RuntimeVersion) Runtime"
+            Version="$(RuntimeVersion).0"
+            Hash="$(RuntimeSha512)"
+            Size="$(RuntimeSize)" />
+        <!-- 3010 is "installed, restart to finish", which is a success and not a failure. -->
+        <ExitCode Value="3010" Behavior="success" />
+      </ExePackage>
+
+      <MsiPackage Id="Lego2STL"
+                  SourceFile="$(MsiPath)"
+                  Vital="yes" />
+
+    </Chain>
+
+  </Bundle>
+
+</Wix>

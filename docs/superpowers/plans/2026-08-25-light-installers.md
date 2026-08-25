@@ -6,7 +6,7 @@
 
 **Architecture:** Both programs publish framework-dependent into one shared payload folder (67.4 MB, 24.4 MB compressed — measured). One pinned runtime version with an immutable URL and SHA512 lives in `packaging/runtime.json`, read only by build scripts, which substitute the values into the installers they produce. Windows gets a WiX Burn bundle that chains Microsoft's runtime installer as a remote payload; Linux gets a self-extracting `.run`; macOS gets one universal `.pkg`.
 
-**Tech Stack:** .NET 10 SDK, WiX 6.0.1 (`UI`, `Netfx`, `Bal` extensions), POSIX sh, PowerShell 7, GitHub Actions, act ≥ 0.2.86, `lipo`/`pkgbuild`/`productbuild` on macOS.
+**Tech Stack:** .NET 10 SDK, WiX 6.0.1 (`UI`, `Netfx`, `BootstrapperApplications` extensions — WiX 6 renamed the old `Bal` package, and adding it under the old id installs a copy the toolset reports as damaged), POSIX sh, PowerShell 7, GitHub Actions, act ≥ 0.2.86, `lipo`/`pkgbuild`/`productbuild` on macOS.
 
 **Spec:** `docs/superpowers/specs/2026-08-25-light-installers-design.md` — read it first. It records which assumptions were checked and which three turned out to be wrong; the plan does not repeat that evidence.
 
@@ -747,7 +747,7 @@ answer is no, **stop and report** — do not quietly accept a UAC prompt on ever
 dotnet tool install --global wix --version 6.0.1
 wix extension add --global WixToolset.UI.wixext/6.0.1
 wix extension add --global WixToolset.Netfx.wixext/6.0.1
-wix extension add --global WixToolset.Bal.wixext/6.0.1
+wix extension add --global WixToolset.BootstrapperApplications.wixext/6.0.1
 wix extension list --global
 ```
 
@@ -860,7 +860,7 @@ only asks whether the bundle compiles and chains.
 $pin = Get-Content packaging/runtime.json | ConvertFrom-Json
 $p = $pin.platforms.'win-x64'
 wix build packaging/windows/Bundle.wxs `
-  -ext WixToolset.Bal.wixext -ext WixToolset.Netfx.wixext `
+  -ext WixToolset.BootstrapperApplications.wixext -ext WixToolset.Netfx.wixext `
   -d "Version=0.0.0" `
   -d "RuntimeVersion=$($pin.version)" `
   -d "RuntimeUrl=$($pin.urlBase)/$($pin.version)/$($p.file)" `
@@ -871,7 +871,18 @@ wix build packaging/windows/Bundle.wxs `
   -o artifacts/dist/gate.exe
 ```
 
-Expected: `gate.exe` is produced. Two failures are worth distinguishing:
+Four things were wrong on the first attempt and are already fixed in the file above; if you
+are re-deriving it, these are the traps:
+
+- `Compressed="no"` belongs on `ExePackagePayload`, not on `ExePackage` — WiX 6 rejects the
+  pair with `WIX0372`.
+- `Theme="hyperlinkLicense"` demands a `LicenseUrl`; with an RTF licence the theme is
+  `rtfLicense`.
+- `IconSourceFile` needs a real `.ico`. The only one here belongs to Avalonia, so the bundle
+  carries no icon of its own rather than another project's logo.
+- The bootstrapper extension is `WixToolset.BootstrapperApplications.wixext` in WiX 6.
+
+Expected: `gate.exe` is produced. Two further failures are worth distinguishing:
 - **`netfx:DotNetCoreSearch` unrecognised** → the extension is not really there. Stop.
 - **The `Hash` is rejected** → Burn wants a different digest length. Fall back to
   `wix burn remotepayload <url>`, which downloads the file and emits the whole
@@ -1010,7 +1021,7 @@ Replace `packaging/build-windows.ps1` with:
       dotnet tool install --global wix --version 6.0.1
       wix extension add --global WixToolset.UI.wixext/6.0.1
       wix extension add --global WixToolset.Netfx.wixext/6.0.1
-      wix extension add --global WixToolset.Bal.wixext/6.0.1
+      wix extension add --global WixToolset.BootstrapperApplications.wixext/6.0.1
   Run on Windows. The Windows build is the only one that can read a document, because the
   text recogniser it uses is part of Windows.
 #>
@@ -1099,7 +1110,7 @@ $msi = Join-Path $staging "Lego2STL-$Version-win-x64.msi"
 
 # Pinned to the toolset's own version: the extension and the tool are released together, and
 # an unpinned add resolves to a newer one the tool refuses.
-foreach ($extension in 'WixToolset.UI.wixext/6.0.1', 'WixToolset.Netfx.wixext/6.0.1', 'WixToolset.Bal.wixext/6.0.1') {
+foreach ($extension in 'WixToolset.UI.wixext/6.0.1', 'WixToolset.Netfx.wixext/6.0.1', 'WixToolset.BootstrapperApplications.wixext/6.0.1') {
     wix extension add --global $extension
     if ($LASTEXITCODE -ne 0) { throw "could not add $extension" }
 }
@@ -1129,7 +1140,7 @@ $exe = Join-Path $dist "Lego2STL-$Version-win-x64.exe"
 Remove-Item -LiteralPath $exe -Force -ErrorAction SilentlyContinue
 
 wix build (Join-Path $PSScriptRoot 'windows\Bundle.wxs') `
-    -ext WixToolset.Bal.wixext `
+    -ext WixToolset.BootstrapperApplications.wixext `
     -ext WixToolset.Netfx.wixext `
     -d "Version=$Version" `
     -d "RuntimeVersion=$($pin.version)" `
@@ -1995,7 +2006,7 @@ Replace the `windows` job's toolset step with all three extensions:
           dotnet tool install --global wix --version 6.0.1
           wix extension add --global WixToolset.UI.wixext/6.0.1
           wix extension add --global WixToolset.Netfx.wixext/6.0.1
-          wix extension add --global WixToolset.Bal.wixext/6.0.1
+          wix extension add --global WixToolset.BootstrapperApplications.wixext/6.0.1
 ```
 
 Replace the whole `macos` job with a single one — no matrix:
