@@ -13,8 +13,9 @@ something works.
 ./packaging/act/run.sh
 ```
 
-That builds the Linux tarball and the `.deb`, prints what is inside each, and leaves them
-under `.act-artifacts`.
+That builds the Linux `.run` installer and the tarball, installs what it built both as a
+machine that has .NET and as one that has none, runs the packaging tests, and leaves the
+packages under `.act-artifacts`.
 
 ---
 
@@ -49,29 +50,54 @@ If act is not installed at all: `winget install nektos.act`.
 
 ## What runs, and what cannot
 
-act runs Linux containers. Windows and macOS runners are not containers at all, so four of
-the six jobs are out of reach locally no matter what — this is a limit of the approach, not
-something left undone.
+act runs Linux containers, and Windows and macOS runners are not containers at all — a limit
+of the approach, not something left undone. The Windows job has a way round it; the macOS one
+does not.
 
 | Job | Locally | Why |
 |---|---|---|
 | `version` | **yes** | plain shell |
-| `linux` | **yes** | the image is Ubuntu and carries `dpkg-deb`, so the `.deb` is built too |
+| `linux` | **yes** | the container is Ubuntu; it builds the `.run` and the tarball, installs both, and runs the packaging tests |
+| `windows` | **yes, but not through act** | `./packaging/local-windows.ps1` — see below |
 | `test` | no | runs on Windows, because reading a document needs the recogniser that is part of Windows |
-| `windows` | no | needs the Windows installer toolset |
-| `macos` | no | needs macOS to make a disk image |
+| `macos` | no | needs macOS for `lipo`, `codesign`, `pkgbuild` and `productbuild` |
 | `release` | no | publishes to GitHub, which is not a thing to do from a laptop by accident |
 
-For the one that matters most, run it directly instead — it is the same suite the workflow
-runs:
+For the test job, run the suite directly instead — it is the same one the workflow runs:
 
 ```powershell
 dotnet test -c Release
 ```
 
-There is no local route to a macOS package. `codesign`, `ditto` and `hdiutil` ship only with
-macOS, and no container provides them; see the macOS section of
-[packaging/README.md](packaging/README.md).
+There is no local route to a macOS package at all. `lipo`, `codesign`, `ditto`, `pkgbuild`
+and `productbuild` ship only with macOS, and no container provides them; see the macOS section
+of [packaging/README.md](packaging/README.md).
+
+## Windows, without act
+
+Since there is nothing for act to run the `windows` job in, one script does it directly:
+
+```powershell
+./packaging/local-windows.ps1 -Version 1.2.3
+```
+
+That does what the `windows` job does, step for step, against the same scripts: the tests, the
+build, and then a look inside the installer to confirm the .NET runtime is fetched when needed
+rather than carried, and that its fingerprint is the one pinned in `runtime.json`. Pass
+`-SkipTests` to skip the suite, which the workflow runs in a job of its own anyway.
+
+It needs the WiX toolset and its three extensions — see
+[packaging/README.md](packaging/README.md) — and Git for Windows, whose `bash` is what runs
+the version rule the workflow shares.
+
+## What the Linux run now proves
+
+More than it used to. The container has .NET installed, so simply installing the `.run` there
+says nothing about the case that matters. The job therefore installs it twice: once normally,
+and once with `dotnet` taken out of the environment and the runtime search pointed at an empty
+directory, so the installer genuinely finds nothing, downloads the pinned runtime, checks its
+fingerprint, unpacks it, and runs the program against it. That path does not exist on any
+GitHub runner, because every runner already has .NET.
 
 ---
 
@@ -103,11 +129,15 @@ hyphen marks a pre-release.
 The scripts are a convenience, not a wrapper you are stuck with. The equivalent by hand:
 
 ```bash
+echo '{ "inputs": { "version": "1.2.0" } }' > /tmp/event.json
 act workflow_dispatch \
   -W packaging/act/local-package.yml \
-  -e packaging/act/event.json \
-  --input version=1.2.0
+  -e /tmp/event.json
 ```
+
+The version goes in the event file, not in `--input`. act reads the event last, so a version
+passed the other way is silently ignored and the packages come out numbered `0.0.0-local` —
+which is what `packaging/act/event.json` carries as its default.
 
 `.actrc` supplies the image mappings, the artifact path and `--rm`, so those need not be
 repeated. `act -l -W packaging/act/local-package.yml` lists the jobs without starting
@@ -143,8 +173,11 @@ compare them and say so.
 | `packaging/act/event.json` | the `workflow_dispatch` payload, carrying the default version |
 | `packaging/act/run.ps1` | the runner, for PowerShell |
 | `packaging/act/run.sh` | the runner, for a shell |
+| `packaging/local-windows.ps1` | the Windows job, run directly, because act cannot host it |
+| `packaging/lib/find-git-bash.ps1` | finds a `bash` that can read a Windows path, for the two PowerShell scripts |
 | `packaging/version.sh` | shared with the real workflow: turns a tag into a version |
 | `packaging/build-unix.sh` | shared with the real workflow: builds the actual package |
+| `packaging/tests/*.test.sh` | the pin, the runtime probe, and the built installer |
 
 ---
 
@@ -161,15 +194,15 @@ By default act copies the repository into the container, so a run cannot disturb
 tree. Adding `--bind` mounts it instead, and the packages then appear in `artifacts/dist` on
 this machine as well — convenient, at the cost of letting the container write here.
 
-Expect, at version `0.0.0-local`:
+Expect, at version `0.0.0-local`, about 15 MB each:
 
 ```
+Lego2STL-0.0.0-local-linux-x64.run
 Lego2STL-0.0.0-local-linux-x64.tar.gz
-lego2stl_0.0.0-local_amd64.deb
 ```
 
-The linux job also prints `dpkg-deb --info` and `--contents` for the `.deb`, and the tarball's
-file list, so a run says what it built rather than only that it built.
+The linux job also installs both, prints the tarball's file list, and runs the three packaging
+test scripts, so a run says what it built and that it works rather than only that it built.
 
 ---
 
@@ -184,8 +217,18 @@ download timing out. Run it again before reading anything into it.
 **`unable to get git repo`** — act wants a git repository. Run it from the repository root;
 both scripts change there themselves.
 
-**The `.deb` is missing and a warning says `dpkg-deb` was not found** — the image was
-overridden with one that is not Debian-derived. The mapping in `.actrc` is what to check.
+**`Permission denied` running one of the packaging scripts** — act copies the working tree in
+with `docker cp`, and a Windows filesystem has no executable bit to copy. The local workflow
+has a step that restores it; a hand-run `act` needs `chmod +x` first. A real runner clones
+from git, which does carry the bit, so this never happens there.
+
+**The packages come out numbered `0.0.0-local` however the run was called** — act reads its
+event file last, so a version passed with `--input` alone is ignored. Both runner scripts
+write the version into the event they pass; a hand-run `act` needs the same.
+
+**A step fails with exit code 141 having printed everything it was going to** — that is
+`SIGPIPE`, from something piped into a reader that stops early, turned into a failure by
+`set -o pipefail`. The step did its work; the pipe is what failed.
 
 **`actions/upload-artifact` fails** — it needs somewhere to write. `.actrc` passes
 `--artifact-server-path`; if act is being run by hand without it, that is the reason.
