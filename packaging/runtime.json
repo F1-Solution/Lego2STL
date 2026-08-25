@@ -1,0 +1,26 @@
+{
+  "version": "10.0.11",
+  "urlBase": "https://builds.dotnet.microsoft.com/dotnet/Runtime",
+  "platforms": {
+    "win-x64": {
+      "file": "dotnet-runtime-10.0.11-win-x64.exe",
+      "sha512": "694e0e0af26b2b8949b8eda8a3831ab31aeac79797d43d6ff8c8798eae642c0904852e641c47329d7d893408f25feab1530ca2b7a0c6ed0d991e0113466a4bf9",
+      "size": 30604768
+    },
+    "linux-x64": {
+      "file": "dotnet-runtime-10.0.11-linux-x64.tar.gz",
+      "sha512": "64c77a5f98d6dfc63393ed5d2fed47c2855c7cdd4322008b3b13e1d0b710aefc1fba7e56612f25f7e8a2b1b6cef5cf77cb3a834ff3685e723ad286703c3396d8",
+      "size": 36639275
+    },
+    "osx-x64": {
+      "file": "dotnet-runtime-10.0.11-osx-x64.tar.gz",
+      "sha512": "caca2db100ff81dd0f11f2d04ba1da891daab9a015dad4aa7dd0cf617e2a05cfb2ee4394da4f455bc62748d8a0f74f0087b97fcea05f08691ab75672dd79bc57",
+      "size": 35589205
+    },
+    "osx-arm64": {
+      "file": "dotnet-runtime-10.0.11-osx-arm64.tar.gz",
+      "sha512": "e96a8a8108d5a3b70e827567b2493ede540f3705c1209e7f34736ba6aa398dd4d0d15f31eb667c9cca3dbcd30ad83b315a86d5e9a13fd2c370e2fc0cece72436",
+      "size": 33246120
+    }
+  }
+}
