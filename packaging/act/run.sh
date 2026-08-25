@@ -7,8 +7,12 @@
 #   ./packaging/act/run.sh 1.2.0 linux     only the linux job
 #   ./packaging/act/run.sh 1.2.0 "" --dryrun
 #
+# Builds the Linux installer and tarball, installs what it built both as a machine that has
+# .NET and as one that has none, and runs the packaging tests.
+#
 # Only the version and linux jobs run: act cannot run Windows or macOS containers, so test,
-# windows, macos and release are out of reach locally. See README-act.md.
+# windows, macos and release are out of reach locally. For the Windows one use
+# packaging/local-windows.ps1 instead. See README-act.md.
 #
 # Needs Docker running with the Linux engine, and act on the path. The first run pulls about
 # 1.1 GB of image and then downloads the .NET SDK inside it, so allow ten to fifteen minutes.
@@ -88,10 +92,17 @@ fi
 
 # ---- Run ------------------------------------------------------------------------------------
 
+# The version goes in the event, not in --input: act reads the event file last and a version
+# passed the other way is silently ignored, so the packages come out numbered 0.0.0-local
+# however the script was called. The file on disk keeps the default; this is a copy of it.
+event="$(mktemp)"
+trap 'rm -f "$event"' EXIT
+printf '{ "inputs": { "version": "%s" } }\n' "$version" > "$event"
+
 arguments=(
   workflow_dispatch
   -W "$workflow"
-  -e "$here/event.json"
+  -e "$event"
   --input "version=$version"
 )
 
