@@ -4,6 +4,7 @@ using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Geometry;
 using Lego2STL.Core.Plates;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Tests.Plates;
 
@@ -77,6 +78,31 @@ public sealed class PlateBuilderTests : IDisposable
 
         result.Plates.Should().BeEmpty();
         result.PieceCount.Should().Be(0);
+    }
+
+    /// <summary>
+    /// The plate is named after its colour, so the name has to be the one the run is speaking.
+    /// A folder of English file names beside an Italian parts list is the same file twice as
+    /// far as anyone reading it is concerned.
+    /// </summary>
+    [Fact]
+    public async Task A_plate_is_named_after_its_colour_in_the_chosen_language()
+    {
+        var list = ListOf(("3005", 1));
+        var shapes = new Dictionary<string, IndexedMesh>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["3005"] = Tetrahedron(),
+        };
+
+        var result = await PlateBuilder.WriteAsync(
+            list, shapes, _directory, language: DisplayLanguage.Italian);
+
+        var plate = result.Plates.Should().ContainSingle().Subject;
+
+        plate.FileName.Should().Be("nero.3mf");
+        plate.ColorName.Should().Be("Nero");
+        plate.BrickLinkColorCode.Should().Be(11);
+        File.Exists(Path.Combine(_directory, "nero.3mf")).Should().BeTrue();
     }
 
     [Fact]

@@ -6,7 +6,9 @@ using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Lego2STL.Core.Catalogue;
+using Lego2STL.Core.Colors;
 using Lego2STL.Core.Geometry;
+using Lego2STL.Core.Text;
 using Lego2STL.Gui.Services;
 
 namespace Lego2STL.Gui.ViewModels;
@@ -29,12 +31,22 @@ public sealed partial class CataloguePartViewModel : ViewModelBase
     /// </summary>
     private const double NozzleWidth = 0.4;
 
-    public CataloguePartViewModel(PartEntry entry, PreparedMesh? shape, string? shapePath, string? platePath)
+    public CataloguePartViewModel(
+        PartEntry entry,
+        PreparedMesh? shape,
+        string? shapePath,
+        string? platePath,
+        DisplayLanguage language = DisplayLanguages.Fallback)
     {
         Entry = entry;
         Shape = shape;
         ShapePath = shapePath;
         PlatePath = platePath;
+
+        // Named once, in the run's language, because the filter list and the search both
+        // compare against this and a card saying one thing while the filter says another is
+        // a card that cannot be found.
+        ColorName = ColorNames.For(language, entry.ColorName);
 
         Swatch = new SolidColorBrush(Color.FromRgb(entry.Rgb.R, entry.Rgb.G, entry.Rgb.B));
     }
@@ -49,7 +61,7 @@ public sealed partial class CataloguePartViewModel : ViewModelBase
 
     public string PartNumber => Entry.PartNumber;
 
-    public string ColorName => Entry.ColorName;
+    public string ColorName { get; }
 
     public int Quantity => Entry.Quantity;
 

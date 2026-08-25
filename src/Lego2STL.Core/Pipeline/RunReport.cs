@@ -253,17 +253,25 @@ public static class RunReport
             return;
         }
 
+        // Measured rather than fixed: a colour's name and the file named after it are as long
+        // as the language makes them, and a column too narrow for either runs the table
+        // together in exactly the place someone is comparing plates.
+        var fileColumn = Widest(words[TextKey.ReportPlateColumnPlate], plates.Plates.Select(p => p.FileName));
+        var colourColumn = Widest(words[TextKey.ReportPlateColumnColour], plates.Plates.Select(p => p.ColorName));
+
         sb.AppendLine(words[TextKey.ReportPlateTitle]);
         sb.AppendLine(
-            $"{words[TextKey.ReportPlateColumnPlate],-22}" +
-            $"{words[TextKey.ReportPlateColumnColour],-24}" +
+            words[TextKey.ReportPlateColumnPlate].PadRight(fileColumn) +
+            words[TextKey.ReportPlateColumnColour].PadRight(colourColumn) +
             $"{words[TextKey.ReportPlateColumnPieces],7}  " +
             words[TextKey.ReportPlateColumnFootprint]);
 
         foreach (var plate in plates.Plates)
         {
             sb.AppendLine(
-                $"{plate.FileName,-22}{plate.ColorName,-24}{plate.PieceCount,7}  {plate.Footprint}");
+                plate.FileName.PadRight(fileColumn) +
+                plate.ColorName.PadRight(colourColumn) +
+                $"{plate.PieceCount,7}  {plate.Footprint}");
         }
 
         sb.AppendLine();
@@ -319,6 +327,10 @@ public static class RunReport
     private const int LabelWidth = 26;
 
     private static string Line(string label, string value) => $"{label.PadRight(LabelWidth)}: {value}";
+
+    /// <summary>A column wide enough for its heading and everything under it, plus a gap.</summary>
+    private static int Widest(string heading, IEnumerable<string> values) =>
+        Math.Max(heading.Length, values.Max(v => v.Length)) + 2;
 
     /// <summary>Breaks a paragraph into lines that fit, so the report reads in any terminal.</summary>
     private static IEnumerable<string> Wrap(string text, int width)

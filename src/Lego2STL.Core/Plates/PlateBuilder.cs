@@ -3,13 +3,20 @@ using System.Numerics;
 using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Geometry;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Core.Plates;
 
 /// <summary>A plate that was written, and what went on it.</summary>
+/// <param name="ColorName">
+/// The colour as the run's language says it, because this is what the file is named after and
+/// what the report prints. The BrickLink number beside it is what to match a plate to a parts
+/// list entry on, since that does not change with the language.
+/// </param>
 public sealed record BuiltPlate(
     string FileName,
     string ColorName,
+    int BrickLinkColorCode,
     Rgb24 Rgb,
     int Number,
     int PieceCount,
@@ -52,6 +59,7 @@ public static class PlateBuilder
         IReadOnlyDictionary<string, IndexedMesh> shapesByPart,
         string directory,
         PackingOptions? options = null,
+        DisplayLanguage language = DisplayLanguages.Fallback,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(list);
@@ -59,6 +67,7 @@ public static class PlateBuilder
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
 
         var o = options ?? new PackingOptions();
+        var words = Strings.For(language);
 
         Directory.CreateDirectory(directory);
 
@@ -101,15 +110,19 @@ public static class PlateBuilder
 
             foreach (var over in packed.Oversized.DistinctBy(x => x.Item.PartNumber))
             {
-                skipped.Add(Describe(over, o.Bed));
+                skipped.Add(Describe(words, over, o.Bed));
             }
+
+            // The colour is named in the run's language here and nowhere earlier: the file
+            // name, the plate's own title and the report all come from this one wording.
+            var colorName = ColorNames.For(language, colorGroup.ColorName);
 
             foreach (var plate in packed.Plates)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var name = FileNameFor(colorGroup.ColorName, plate.Number, packed.Plates.Count);
-                var contents = Contents(name, colorGroup, plate, shapesByPart);
+                var name = FileNameFor(colorName, plate.Number, packed.Plates.Count);
+                var contents = Contents(name, colorName, colorGroup, plate, shapesByPart);
 
                 await ThreeMfWriter
                     .WriteFileAsync(Path.Combine(directory, name), contents, cancellationToken)
@@ -117,7 +130,8 @@ public static class PlateBuilder
 
                 written.Add(new BuiltPlate(
                     name,
-                    colorGroup.ColorName,
+                    colorName,
+                    colorGroup.BrickLinkColorCode,
                     colorGroup.Rgb,
                     plate.Number,
                     plate.PieceCount,
@@ -128,17 +142,24 @@ public static class PlateBuilder
         return new PlateBuildResult(written, skipped);
     }
 
-    private sealed record ColorGroup(string ColorName, Rgb24 Rgb, IReadOnlyList<PartEntry> Entries);
+    private sealed record ColorGroup(
+        string ColorName,
+        int BrickLinkColorCode,
+        Rgb24 Rgb,
+        IReadOnlyList<PartEntry> Entries);
 
     /// <summary>
     /// The list by colour, biggest first, so that the plate numbering starts with the colour
-    /// there is most of. Entries within a colour keep the order they were read in.
+    /// there is most of. Entries within a colour keep the order they were read in. The tie is
+    /// broken on the stored name rather than the translated one, so the same list produces the
+    /// plates in the same order whatever language it is run in.
     /// </summary>
     private static IEnumerable<ColorGroup> GroupByColor(PartsList list) =>
         list.Entries
             .GroupBy(e => e.BrickLinkColorCode)
             .Select(g => new ColorGroup(
                 g.First().ColorName,
+                g.Key,
                 g.First().Rgb,
                 [.. g.OrderBy(e => e.Id)]))
             .OrderByDescending(g => g.Entries.Sum(e => e.Quantity))
@@ -150,6 +171,7 @@ public static class PlateBuilder
     /// </summary>
     private static PlateContents Contents(
         string name,
+        string colorName,
         ColorGroup group,
         PackedPlate plate,
         IReadOnlyDictionary<string, IndexedMesh> shapesByPart)
@@ -170,7 +192,7 @@ public static class PlateBuilder
             objects.Add(new PlateObject(byPart.Key, mesh, positions));
         }
 
-        return new PlateContents(name, group.ColorName, group.Rgb, objects);
+        return new PlateContents(name, colorName, group.Rgb, objects);
     }
 
     private static string FileNameFor(string colorName, int number, int total)
@@ -197,14 +219,18 @@ public static class PlateBuilder
         return slug.Length == 0 ? "colour" : slug;
     }
 
-    private static string Describe(OversizedItem over, PrintBed bed) =>
+    private static string Describe(Strings words, OversizedItem over, PrintBed bed) =>
         over.TooTall
-            ? string.Create(
-                CultureInfo.InvariantCulture,
-                $"{over.Item.PartNumber} stands {over.Item.Height:0.#} mm tall, more than the " +
-                $"{bed.Height:0.#} mm this printer has.")
-            : string.Create(
-                CultureInfo.InvariantCulture,
-                $"{over.Item.PartNumber} measures {over.Item.Footprint.X:0.#} x " +
-                $"{over.Item.Footprint.Y:0.#} mm and does not fit a {bed.Name} bed.");
+            ? words.Format(
+                TextKey.ErrPartTooTallForBed,
+                over.Item.PartNumber,
+                over.Item.Height.ToString("0.#", CultureInfo.InvariantCulture),
+                bed.Height.ToString("0.#", CultureInfo.InvariantCulture))
+            : words.Format(
+                TextKey.ErrPlateTooSmall,
+                over.Item.PartNumber,
+                string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"{over.Item.Footprint.X:0.#} x {over.Item.Footprint.Y:0.#} mm"),
+                bed.Name);
 }

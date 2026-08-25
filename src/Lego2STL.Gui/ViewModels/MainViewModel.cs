@@ -325,7 +325,12 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         }
 
         var shapes = outcome.Shapes.ToDictionary(s => s.PartNumber, StringComparer.OrdinalIgnoreCase);
-        var plates = outcome.Plates?.Plates.ToDictionary(p => p.ColorName, p => p.FileName, StringComparer.Ordinal)
+
+        // Matched on the colour number, not its name: the name is translated for display and
+        // an entry and its plate would then stop finding each other in any language but one.
+        var plates = outcome.Plates?.Plates
+                         .GroupBy(p => p.BrickLinkColorCode)
+                         .ToDictionary(g => g.Key, g => g.First().FileName)
                      ?? [];
 
         foreach (var entry in list.Entries)
@@ -336,11 +341,12 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
                 ? null
                 : Path.Combine(layout.StlDirectory, entry.PartNumber + ".stl");
 
-            var platePath = plates.TryGetValue(entry.ColorName, out var plateName)
+            var platePath = plates.TryGetValue(entry.BrickLinkColorCode, out var plateName)
                 ? Path.Combine(layout.PlateDirectory, plateName)
                 : null;
 
-            Parts.Add(new CataloguePartViewModel(entry, shape, shapePath, platePath));
+            Parts.Add(new CataloguePartViewModel(
+                entry, shape, shapePath, platePath, outcome.Settings.Language));
         }
 
         foreach (var colour in Parts.Select(p => p.ColorName).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal))

@@ -207,7 +207,7 @@ public sealed class SnapshotTests
                 Kind = InputKind.PartsList,
                 InputPath = "parts.csv",
                 Clearance = 0.15,
-                FillGaps = true,
+                FillGaps = false,
                 Printer = "A1mini",
                 PlateSpacing = 5,
                 Language = DisplayLanguage.Italian,

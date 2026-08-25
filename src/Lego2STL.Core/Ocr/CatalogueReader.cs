@@ -185,7 +185,7 @@ public sealed class CatalogueReader
                     quantity,
                     sample.PartNumber,
                     sample.ColorCode,
-                    Describe(quantity, sample)));
+                    Describe(_words, quantity, sample)));
                 continue;
             }
 
@@ -221,20 +221,21 @@ public sealed class CatalogueReader
         return text is not null && int.TryParse(text, out var value) && value > 0 ? value : null;
     }
 
-    private static string Describe(int? quantity, LabelSample sample)
+    /// <summary>
+    /// Why a label could not be turned into an entry. Written as three whole sentences rather
+    /// than joined from fragments, because which words join and in what order is exactly the
+    /// part that does not survive translation.
+    /// </summary>
+    private static string Describe(Strings words, int? quantity, LabelSample sample)
     {
-        var missing = new List<string>(2);
+        var noQuantity = quantity is null;
+        var noPart = sample.PartNumber is null || sample.ColorCode is null;
 
-        if (quantity is null)
+        return (noQuantity, noPart) switch
         {
-            missing.Add("quantity");
-        }
-
-        if (sample.PartNumber is null || sample.ColorCode is null)
-        {
-            missing.Add("part number and colour");
-        }
-
-        return $"could not read the {string.Join(" or ", missing)}";
+            (true, true) => words[TextKey.ReasonCouldNotReadEither],
+            (true, false) => words[TextKey.ReasonCouldNotReadQuantity],
+            _ => words[TextKey.ReasonCouldNotReadPartAndColour],
+        };
     }
 }

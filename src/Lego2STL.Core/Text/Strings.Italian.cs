@@ -88,6 +88,25 @@ public sealed partial class Strings
                 "{0} pezzi non hanno prodotto alcuna forma e non sono su nessun piano. Sono "
                 + "elencati sopra; i piani contengono tutto il resto.",
 
+            // La libreria delle forme.
+            [TextKey.LibraryFolder] = "cartella {0}",
+            [TextKey.LibraryArchive] = "archivio {0}",
+            [TextKey.LibraryWebsite] = "il sito della libreria LDraw, un file alla volta",
+            [TextKey.LibraryNone] = "nessuna sorgente LDraw",
+            [TextKey.MsgLDrawUsingFolder] = "Uso la libreria LDraw già presente sul disco: {0}.",
+            [TextKey.MsgLDrawNotALibrary] =
+                "'{0}' non sembra una libreria LDraw (manca la cartella 'parts' o 'p'); ignorata.",
+            [TextKey.MsgLDrawUsingDownloaded] =
+                "Uso la libreria LDraw scaricata in precedenza ({0} file).",
+            [TextKey.MsgLDrawFetchingPerFile] =
+                "Scarico i file LDraw dal sito della libreria man mano che servono.",
+            [TextKey.MsgLDrawRefused] =
+                "Il sito della libreria ha rifiutato {0} richieste; scarico invece la libreria "
+                + "intera, che da qui in avanti è più veloce.",
+            [TextKey.MsgLDrawDownloading] =
+                "Scarico la libreria LDraw da {0} (circa 145 MB, una volta sola).",
+            [TextKey.MsgLDrawReady] = "Libreria LDraw pronta: {0} file, in cache in {1}.",
+
             // Esecuzione.
             [TextKey.MsgPagesInDocument] = "{0}: {1} pagine.",
             [TextKey.MsgReadingPages] = "Lettura delle pagine {0} con la numerazione colori {1}.",
@@ -99,12 +118,26 @@ public sealed partial class Strings
             [TextKey.MsgPageIsCatalogueOne] = "pagina {0}  catalogo, {1} voce",
             [TextKey.MsgPageIsCatalogueMany] = "pagina {0}  catalogo, {1} voci",
             [TextKey.MsgNoCataloguePages] = "Nessuna pagina di catalogo trovata.",
+            [TextKey.MsgCataloguePagesFound] = "Pagine del catalogo: {0}",
+            [TextKey.MsgShapeClosed] = "chiusa",
+            [TextKey.MsgShapeOpenEdges] = "{0} spigoli aperti",
+            [TextKey.MsgLookingUpSet] = "Cerco il set {0}.",
+            [TextKey.MsgSetSummary] = "Set {0}: {1} voci, {2} pezzi.",
             [TextKey.MsgSuggestedRange] = "Intervallo suggerito: {0}",
             [TextKey.MsgEntriesSummary] = "{0} voci, {1} pezzi, {2} codici pezzo distinti.",
             [TextKey.MsgPartsListWritten] = "Elenco pezzi: {0}",
             [TextKey.MsgReportWritten] = "Resoconto:    {0}",
             [TextKey.MsgCouldNotReadEntriesOne] = "Non è stato possibile leggere {0} voce:",
             [TextKey.MsgCouldNotReadEntriesMany] = "Non è stato possibile leggere {0} voci:",
+            [TextKey.MsgUnreadEntryAt] = "pagina {0} in {1}: {2}",
+            [TextKey.ReasonCouldNotReadQuantity] =
+                "non è stato possibile leggere la quantità",
+            [TextKey.ReasonCouldNotReadPartAndColour] =
+                "non è stato possibile leggere il codice pezzo e il colore",
+            [TextKey.ReasonCouldNotReadEither] =
+                "non è stato possibile leggere né la quantità né il codice pezzo e il colore",
+            [TextKey.ReasonShapeHasNoSurfaces] = "il file della forma non contiene superfici",
+            [TextKey.ReasonNoShapeFile] = "nessun file di forma per questo codice pezzo",
             [TextKey.MsgWrittenWithoutThem] =
                 "L'elenco pezzi è stato scritto senza di esse. Le fasi successive restano bloccate " +
                 "finché non sono risolte.",
@@ -130,15 +163,14 @@ public sealed partial class Strings
             [TextKey.CalibrationThen] =
                 "Poi provarli. Salire dal più piccolo finché i pezzi si uniscono senza forzare "
                 + "e restano uniti se si scuotono. Quel gioco è il proprio: passarlo al comando "
-                + "build come --clearance, insieme a --repair perché possa essere applicato "
-                + "anche ai pezzi con buchi nella superficie. Ricontrollarlo se si cambia "
-                + "materiale, ugello o stampante.",
+                + "build come --clearance. Ricontrollarlo se si cambia materiale, ugello o "
+                + "stampante.",
             [TextKey.MsgClearanceApplied] =
                 "Ogni faccia rientrata di {2} mm su {0} forme di {1}.",
             [TextKey.MsgClearanceRefusedOpen] =
                 "{0} lasciate a grandezza reale: la loro superficie ha ancora dei buchi, e " +
-                "rientrare le facce trascinerebbe anche i bordi di quei buchi. Aggiungere " +
-                "--repair per coprirli prima.",
+                "rientrare le facce trascinerebbe anche i bordi di quei buchi. Togliere " +
+                "--no-repair perché vengano coperti prima.",
             [TextKey.MsgClearanceRefusedStillOpen] =
                 "{0} lasciate a grandezza reale: la loro superficie ha buchi che non è stato "
                 + "possibile coprire, perché al bordo del buco la superficie si dirama invece "
@@ -161,6 +193,8 @@ public sealed partial class Strings
             [TextKey.ErrPlateTooSmall] =
                 "{0} misura {1} e non entra in un piano da {2}, quindi non è su nessun piano. La sua " +
                 "forma resta comunque disponibile da sistemare a mano.",
+            [TextKey.ErrPartTooTallForBed] =
+                "{0} è alto {1} mm, più dei {2} mm che questa stampante ha.",
             [TextKey.ErrOcrUnavailable] =
                 "Leggere un documento richiede il riconoscimento del testo, e questo sistema non "
                 + "ne ha: il riconoscitore usato dal programma fa parte di Windows. Tutto quello "
@@ -176,6 +210,27 @@ public sealed partial class Strings
             [TextKey.ErrOpenScadNotFound] =
                 "OpenSCAD non è stato trovato. Installarlo da openscad.org e metterlo nel percorso " +
                 "oppure indicarlo con --openscad.",
+            [TextKey.ErrUnknownColourCode] =
+                "Pagina {0}: il pezzo {1} ha il colore {2}, che non è un colore {3} conosciuto.",
+            [TextKey.ErrColourSchemeHintBrickLink] =
+                "Se il documento usa un'altra numerazione, indicarla con --color-scheme.",
+            [TextKey.ErrColourSchemeHintOther] =
+                "--color-scheme {0} è quella giusta per questo documento?",
+            [TextKey.ErrColourHasNoBrickLinkCode] =
+                "Pagina {0}: il pezzo {1} è '{2}', che non ha un numero di colore BrickLink, quindi "
+                + "non può essere scritto in quella colonna.",
+            [TextKey.ErrSetCameBackEmpty] =
+                "Il set {0} non ha restituito nulla di utilizzabile. Controllare il numero: "
+                + "Rebrickable vuole il suffisso della variante, quindi 42100 si scrive 42100-1.",
+            [TextKey.ErrChooseDocument] = "Scegliere un documento da leggere.",
+            [TextKey.ErrChoosePartsList] = "Scegliere un elenco pezzi da cui partire.",
+            [TextKey.ErrTypeSetNumber] = "Scrivere un numero di set, ad esempio 42100-1.",
+            [TextKey.ErrNoFileAt] = "Non c'è nessun file in {0}.",
+            [TextKey.ErrScaleNotPositive] = "La scala deve essere maggiore di zero.",
+            [TextKey.ErrPlateSpacingNegative] =
+                "Lo spazio fra un pezzo e l'altro non può essere negativo.",
+            [TextKey.ErrNotABedSize] =
+                "'{0}' non è una dimensione del piano. Una si scrive 220x220 oppure 300x300x400.",
 
             // L'interfaccia.
             [TextKey.UiTitle] = "Lego2STL",
@@ -258,7 +313,7 @@ public sealed partial class Strings
                 "Misure da creare, ad esempio 2x4, oppure 2x4x6 per indicare l'altezza in piastre.",
             [TextKey.HelpArgSteps] = "I giochi da provare, in millimetri, separati da virgole.",
             [TextKey.HelpOptLang] =
-                "Lingua dei messaggi, della guida, del resoconto e dei nomi di colonna dell'elenco pezzi: en oppure it. Per impostazione predefinita quella della macchina.",
+                "Lingua dei messaggi, della guida, del resoconto e dei nomi dei colori nell'elenco pezzi e nei nomi dei file dei piani: en oppure it. Per impostazione predefinita quella della macchina.",
             [TextKey.HelpOptOutputDir] =
                 "Dove creare la cartella dei risultati. Per impostazione predefinita accanto al file di partenza.",
             [TextKey.HelpOptAscii] = "Scrive la forma leggibile di STL invece di quella compatta.",
@@ -285,12 +340,12 @@ public sealed partial class Strings
             [TextKey.HelpOptScale] = "Scala in percentuale. 100 è la grandezza reale.",
             [TextKey.HelpOptClearance] =
                 "Rientra ogni faccia di tanti millimetri, perché i pezzi stampati si incastrino. Il comando calibration serve a trovare il valore giusto per la propria stampante.",
-            [TextKey.HelpOptRepair] =
-                "Copre i buchi con cui arriva la superficie di una forma, rendendola un solido. Necessario prima di poter applicare un gioco a un pezzo che ne ha.",
+            [TextKey.HelpOptNoRepair] =
+                "Lascia i buchi con cui arriva la superficie di una forma, invece di coprirli. La copertura è attiva di default, perché una forma con buchi non è un solido e non può ricevere nessun gioco.",
             [TextKey.HelpOptNoSeamRepair] =
                 "Non chiude le giunzioni dove un vertice cade a metà dello spigolo di un altro.",
             [TextKey.HelpOptWeldTolerance] =
-                "Quanto devono essere vicini due vertici per contare come lo stesso punto.",
+                "Quanto devono essere vicini due vertici per contare come lo stesso punto, in unità sorgente dove un'unità vale 0,4 mm. Non millimetri: i vertici vengono fusi prima che la forma sia convertita.",
             [TextKey.HelpOptLDrawCache] =
                 "Dove conservare fra un'esecuzione e l'altra le forme scaricate.",
             [TextKey.HelpOptNoUnofficial] =
@@ -337,6 +392,16 @@ public sealed partial class Strings
             [TextKey.NoteNoHeadingRow] =
                 "Il file non ha la riga dei nomi di colonna; letto come dati.",
             [TextKey.NoteRead] = "Lette {0} voci, separate da '{1}'.",
+            [TextKey.NoteSetColourUnknown] =
+                "{0} è indicato nel colore {1} ({2}), che non è nella tabella dei colori; il pezzo "
+                + "è stato lasciato fuori. Rigenerarla con 'lego2stl refresh-colors'.",
+            [TextKey.NoteSetColourHasNoBrickLinkCode] =
+                "{0} è '{1}', che non ha un numero di colore BrickLink, quindi non ha un valore per "
+                + "quella colonna; il pezzo è stato lasciato fuori.",
+            [TextKey.NoteSetSparesLeftOut] =
+                "{0} pezzi di scorta lasciati fuori. Chiedere --include-spares per tenerli.",
+            [TextKey.NoteSetLinesWithoutColour] =
+                "{0} righe non hanno potuto ricevere un colore BrickLink e sono state lasciate fuori.",
             [TextKey.ReportPrinter] = "Stampante",
         };
     }

@@ -135,7 +135,8 @@ internal static class CalibrationCommand
                 LocalDirectory = ldrawDirectory?.FullName,
                 Offline = offline,
             },
-            message => Console.WriteLine("  " + message));
+            message => Console.WriteLine("  " + message),
+            words);
 
         var builder = new LDrawMeshBuilder(library);
         var written = 0;

@@ -49,18 +49,25 @@ public static class PartsListBuilder
             if (!colors.TryGet(sourceScheme, reading.ColorCode, out var color))
             {
                 throw new InvalidOperationException(
-                    $"Page {reading.Page}: part {reading.PartNumber} has colour {reading.ColorCode}, " +
-                    $"which is not a known {sourceScheme} colour. " +
-                    (sourceScheme == ColorScheme.BrickLink
-                        ? "If the document uses a different numbering, say so with --color-scheme."
-                        : $"Is --color-scheme {sourceScheme} right for this document?"));
+                    words.Format(
+                        TextKey.ErrUnknownColourCode,
+                        reading.Page,
+                        reading.PartNumber,
+                        reading.ColorCode,
+                        sourceScheme)
+                    + " "
+                    + (sourceScheme == ColorScheme.BrickLink
+                        ? words[TextKey.ErrColourSchemeHintBrickLink]
+                        : words.Format(TextKey.ErrColourSchemeHintOther, sourceScheme)));
             }
 
             if (color.BrickLinkId is not { } brickLinkId)
             {
-                throw new InvalidOperationException(
-                    $"Page {reading.Page}: part {reading.PartNumber} is '{color.Name}', which has no " +
-                    "BrickLink colour number, so it cannot be written to that column.");
+                throw new InvalidOperationException(words.Format(
+                    TextKey.ErrColourHasNoBrickLinkCode,
+                    reading.Page,
+                    reading.PartNumber,
+                    ColorNames.For(words.Language, color.Name)));
             }
 
             var key = (reading.PartNumber.ToLowerInvariant(), brickLinkId);
@@ -73,7 +80,7 @@ public static class PartsListBuilder
                 notes.Add(words.Format(
                     TextKey.NoteDuplicateEntry,
                     reading.PartNumber,
-                    color.Name,
+                    ColorNames.For(words.Language, color.Name),
                     merged[existingIndex].Quantity));
                 continue;
             }

@@ -103,7 +103,8 @@ internal static class ConsoleRun
 
             foreach (var entry in outcome.Unread)
             {
-                Console.Error.WriteLine($"  page {entry.Page} at {entry.Bounds}: {entry.Reason}");
+                Console.Error.WriteLine("  " + words.Format(
+                    TextKey.MsgUnreadEntryAt, entry.Page, entry.Bounds, entry.Reason));
             }
 
             Console.Error.WriteLine(words[TextKey.MsgWrittenWithoutThem]);

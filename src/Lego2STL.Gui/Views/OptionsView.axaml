@@ -89,11 +89,11 @@
                        Minimum="0" Maximum="5" Increment="0.05" FormatString="0.###" />
       </StackPanel>
       <StackPanel Classes="row">
-        <CheckBox MinWidth="180" IsChecked="{Binding Options.FillGaps}"
-                  Content="--repair" />
+        <CheckBox MinWidth="180" IsChecked="{Binding Options.NoRepair}"
+                  Content="--no-repair" />
         <TextBlock Classes="hint" VerticalAlignment="Center"
                    TextWrapping="Wrap" MaxWidth="580"
-                   Text="{Binding [HelpOptRepair], Source={x:Static loc:Loc.Current}}" />
+                   Text="{Binding [HelpOptNoRepair], Source={x:Static loc:Loc.Current}}" />
       </StackPanel>
       <StackPanel Classes="row">
         <CheckBox MinWidth="180" IsChecked="{Binding Options.KeepOrigin}"
@@ -110,7 +110,7 @@
                    Text="{Binding [HelpOptNoSeamRepair], Source={x:Static loc:Loc.Current}}" />
       </StackPanel>
       <StackPanel Classes="row">
-        <TextBlock Classes="opt" Text="--weld-tolerance  (mm)"
+        <TextBlock Classes="opt" Text="--weld-tolerance  (LDU)"
                    ToolTip.Tip="{Binding [HelpOptWeldTolerance], Source={x:Static loc:Loc.Current}}" />
         <NumericUpDown Value="{Binding Options.WeldTolerance}"
                        Minimum="0" Maximum="1" Increment="0.001" FormatString="0.####" />

@@ -139,7 +139,7 @@ public sealed class PipelineRunner
         _log(words.Format(TextKey.MsgPagesInDocument, Path.GetFileName(settings.InputPath!), document.PageCount));
 
         var pages = string.IsNullOrWhiteSpace(settings.Pages)
-            ? DetectCataloguePages(document, cancellationToken)
+            ? DetectCataloguePages(document, words, cancellationToken)
             : PageRange.Parse(settings.Pages, document.PageCount);
 
         if (pages.Count == 0)
@@ -211,6 +211,7 @@ public sealed class PipelineRunner
                 settings.IncludeSpares,
                 settings.ApiKey,
                 _log,
+                Strings.For(settings.Language),
                 cancellationToken)
             .ConfigureAwait(false);
 
@@ -252,7 +253,8 @@ public sealed class PipelineRunner
 
         Report(RunStage.GatheringShapes);
 
-        using var library = new EscalatingLDrawLibrary(settings.LDrawOptions, message => _log("  " + message));
+        using var library = new EscalatingLDrawLibrary(
+            settings.LDrawOptions, message => _log("  " + message), words);
         var builder = new LDrawMeshBuilder(library);
 
         var options = settings.MeshOptions;
@@ -275,7 +277,7 @@ public sealed class PipelineRunner
 
                 if (source.IsEmpty)
                 {
-                    failed.Add(new FailedPart(partNumber, "the shape file contains no surfaces"));
+                    failed.Add(new FailedPart(partNumber, words[TextKey.ReasonShapeHasNoSurfaces]));
                     continue;
                 }
 
@@ -293,12 +295,12 @@ public sealed class PipelineRunner
 
                 _log($"  {partNumber,-9}{ready.Mesh.TriangleCount,7} {ready.DescribeSize(),-26} " +
                      (ready.Quality.IsClosed
-                         ? "closed"
-                         : $"{ready.Quality.OpenEdgeCount} open edge(s)"));
+                         ? words[TextKey.MsgShapeClosed]
+                         : words.Format(TextKey.MsgShapeOpenEdges, ready.Quality.OpenEdgeCount)));
             }
             catch (LDrawPartNotFoundException)
             {
-                failed.Add(new FailedPart(partNumber, "no shape file for this part number"));
+                failed.Add(new FailedPart(partNumber, words[TextKey.ReasonNoShapeFile]));
             }
         }
 
@@ -359,7 +361,12 @@ public sealed class PipelineRunner
         Report(RunStage.ArrangingPlates);
 
         var plates = await PlateBuilder.WriteAsync(
-                list, shapes, layout.PlateDirectory, settings.PackingOptions, cancellationToken)
+                list,
+                shapes,
+                layout.PlateDirectory,
+                settings.PackingOptions,
+                settings.Language,
+                cancellationToken)
             .ConfigureAwait(false);
 
         foreach (var note in plates.Skipped)
@@ -374,7 +381,10 @@ public sealed class PipelineRunner
     /// <summary>
     /// Which pages hold a catalogue, when no range was given: the ones with entries on them.
     /// </summary>
-    private List<int> DetectCataloguePages(PdfPageImageSource document, CancellationToken cancellationToken)
+    private List<int> DetectCataloguePages(
+        PdfPageImageSource document,
+        Strings words,
+        CancellationToken cancellationToken)
     {
         var locator = new Extraction.LabelLocator();
         var found = new List<int>();
@@ -394,7 +404,7 @@ public sealed class PipelineRunner
 
         if (found.Count > 0)
         {
-            _log($"Catalogue pages: {PageRange.Format(found)}");
+            _log(words.Format(TextKey.MsgCataloguePagesFound, PageRange.Format(found)));
         }
 
         return found;

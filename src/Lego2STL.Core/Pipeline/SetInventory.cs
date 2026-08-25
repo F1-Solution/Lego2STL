@@ -1,6 +1,7 @@
 using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Rebrickable;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Core.Pipeline;
 
@@ -27,17 +28,19 @@ public static class SetInventory
         bool includeSpares = false,
         string? apiKey = null,
         Action<string>? log = null,
+        Strings? language = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(setNumber);
         ArgumentNullException.ThrowIfNull(colors);
 
         var say = log ?? (_ => { });
+        var words = language ?? Strings.English;
         var normalised = RebrickableClient.NormaliseSetNumber(setNumber);
 
         using var client = new RebrickableClient(RebrickableApiKey.Require(apiKey));
 
-        say($"Looking up set {normalised}.");
+        say(words.Format(TextKey.MsgLookingUpSet, normalised));
         var inventory = await client.GetSetPartsAsync(normalised, cancellationToken).ConfigureAwait(false);
 
         var notes = new List<string>();
@@ -64,19 +67,18 @@ public static class SetInventory
             if (!colors.TryGetByRebrickableId(colour.Id, out var known))
             {
                 unmapped++;
-                notes.Add(
-                    $"{part.PartNum} is listed in colour {colour.Id} ({colour.Name}), which is not " +
-                    "in the colour cross-reference; the piece was left out. Regenerate it with " +
-                    "'lego2stl refresh-colors'.");
+                notes.Add(words.Format(
+                    TextKey.NoteSetColourUnknown, part.PartNum, colour.Id, colour.Name));
                 continue;
             }
 
             if (known.BrickLinkId is not { } brickLinkId)
             {
                 unmapped++;
-                notes.Add(
-                    $"{part.PartNum} is '{known.Name}', which has no BrickLink colour number, so " +
-                    "it has no value for that column; the piece was left out.");
+                notes.Add(words.Format(
+                    TextKey.NoteSetColourHasNoBrickLinkCode,
+                    part.PartNum,
+                    ColorNames.For(words.Language, known.Name)));
                 continue;
             }
 
@@ -101,21 +103,21 @@ public static class SetInventory
         if (entries.Count == 0)
         {
             throw new InvalidOperationException(
-                $"Set {normalised} came back with nothing usable. Check the number: Rebrickable " +
-                "wants the variant suffix, so 42100 means 42100-1.");
+                words.Format(TextKey.ErrSetCameBackEmpty, normalised));
         }
 
         if (spares > 0)
         {
-            notes.Add($"{spares} spare piece(s) left out. Ask for --include-spares to keep them.");
+            notes.Add(words.Format(TextKey.NoteSetSparesLeftOut, spares));
         }
 
         if (unmapped > 0)
         {
-            notes.Add($"{unmapped} line(s) could not be given a BrickLink colour and were left out.");
+            notes.Add(words.Format(TextKey.NoteSetLinesWithoutColour, unmapped));
         }
 
-        say($"Set {normalised}: {entries.Count} entries, {entries.Sum(e => e.Quantity)} pieces.");
+        say(words.Format(
+            TextKey.MsgSetSummary, normalised, entries.Count, entries.Sum(e => e.Quantity)));
 
         var numbered = entries.Select((entry, index) => entry with { Id = index + 1 }).ToList();
         return new PartsList(numbered, notes);

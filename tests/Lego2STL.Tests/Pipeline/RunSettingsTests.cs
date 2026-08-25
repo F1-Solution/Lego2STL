@@ -67,7 +67,7 @@ public sealed class RunSettingsTests
             Kind = InputKind.PartsList,
             InputPath = "parts.csv",
             Clearance = 0.15,
-            FillGaps = true,
+            FillGaps = false,
             ScalePercent = 105,
             KeepOrigin = true,
             AsciiStl = true,
@@ -81,7 +81,7 @@ public sealed class RunSettingsTests
         }.ToCommandLine();
 
         command.Should().Contain("--clearance 0.15");
-        command.Should().Contain("--repair");
+        command.Should().Contain("--no-repair");
         command.Should().Contain("--scale 105");
         command.Should().Contain("--keep-origin");
         command.Should().Contain("--ascii");
@@ -210,7 +210,7 @@ public sealed class RunSettingsTests
         var settings = new RunSettings
         {
             Clearance = 0.2,
-            FillGaps = true,
+            FillGaps = false,
             KeepOrigin = true,
             NoSeamRepair = true,
             ScalePercent = 90,
@@ -219,7 +219,7 @@ public sealed class RunSettingsTests
         };
 
         settings.MeshOptions.ClearanceMillimetres.Should().BeApproximately(0.2f, 1e-6f);
-        settings.MeshOptions.FillGaps.Should().BeTrue();
+        settings.MeshOptions.FillGaps.Should().BeFalse();
         settings.MeshOptions.PlaceOnBed.Should().BeFalse();
         settings.MeshOptions.RepairSeams.Should().BeFalse();
         settings.MeshOptions.ScalePercent.Should().Be(90f);

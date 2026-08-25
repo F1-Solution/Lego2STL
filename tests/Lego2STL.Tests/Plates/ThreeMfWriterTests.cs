@@ -16,6 +16,8 @@ public sealed class ThreeMfWriterTests
 {
     private const string Core = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02";
 
+    private const string Material = "http://schemas.microsoft.com/3dmanufacturing/material/2015/02";
+
     /// <summary>A tetrahedron: the smallest closed shape, so a valid mesh to write.</summary>
     private static IndexedMesh Tetrahedron() =>
         new(
@@ -74,8 +76,44 @@ public sealed class ThreeMfWriterTests
             .Attribute("unit")!.Value.Should().Be("millimeter");
     }
 
+    /// <summary>
+    /// What the object points at is the colour group, because that is the one the slicers
+    /// read. Pointing it at the base material instead is what left plates arriving grey.
+    /// </summary>
     [Fact]
-    public void The_plates_colour_is_carried_as_a_material_the_object_points_at()
+    public void The_plates_colour_is_carried_as_a_colour_group_the_object_points_at()
+    {
+        var model = ModelIn(ThreeMfWriter.Write(Plate()));
+
+        var group = model.Descendants(XName.Get("colorgroup", Material)).Single();
+        var colour = group.Elements(XName.Get("color", Material)).Single();
+
+        colour.Attribute("color")!.Value.Should().Be("#05131DFF");
+
+        var shape = model.Descendants(XName.Get("object", Core)).Single();
+        shape.Attribute("pid")!.Value.Should().Be(group.Attribute("id")!.Value);
+        shape.Attribute("pindex")!.Value.Should().Be("0");
+    }
+
+    /// <summary>
+    /// Readers match the element as it is written rather than resolving the namespace, so the
+    /// prefix is part of what has to be right.
+    /// </summary>
+    [Fact]
+    public void The_colour_group_is_written_under_the_prefix_readers_look_for()
+    {
+        var model = ModelIn(ThreeMfWriter.Write(Plate()));
+        var group = model.Descendants(XName.Get("colorgroup", Material)).Single();
+
+        group.GetPrefixOfNamespace(Material).Should().Be("m");
+    }
+
+    /// <summary>
+    /// The same colour is also stated in the core format's own terms, for a viewer that knows
+    /// nothing of the materials extension.
+    /// </summary>
+    [Fact]
+    public void The_plates_colour_is_also_stated_as_a_base_material()
     {
         var model = ModelIn(ThreeMfWriter.Write(Plate()));
 
@@ -84,10 +122,20 @@ public sealed class ThreeMfWriterTests
 
         material.Attribute("name")!.Value.Should().Be("Black");
         material.Attribute("displaycolor")!.Value.Should().Be("#05131DFF");
+    }
 
-        var shape = model.Descendants(XName.Get("object", Core)).Single();
-        shape.Attribute("pid")!.Value.Should().Be(materials.Attribute("id")!.Value);
-        shape.Attribute("pindex")!.Value.Should().Be("0");
+    /// <summary>Every resource in a model needs an id of its own, objects included.</summary>
+    [Fact]
+    public void No_two_resources_share_an_id()
+    {
+        var model = ModelIn(ThreeMfWriter.Write(Plate()));
+
+        var ids = model.Descendants(XName.Get("resources", Core)).Single()
+            .Elements()
+            .Select(r => r.Attribute("id")!.Value)
+            .ToList();
+
+        ids.Should().OnlyHaveUniqueItems();
     }
 
     [Fact]

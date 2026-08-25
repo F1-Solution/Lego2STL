@@ -5,7 +5,7 @@ using Lego2STL.Gui.ViewModels;
 namespace Lego2STL.UiTests;
 
 /// <summary>
-/// The three settings the window states the other way round from how they are stored.
+/// The four settings the window states the other way round from how they are stored.
 /// </summary>
 /// <remarks>
 /// A control bound through an inversion can look right and do nothing, because the negation
@@ -48,6 +48,17 @@ public sealed class OptionRoundTripTests
         options.CommandLine.Should().Contain("--no-unofficial");
     }
 
+    [Fact]
+    public void Turning_the_gap_covering_off_reaches_the_settings()
+    {
+        var options = new RunOptionsViewModel { Kind = InputKind.SetNumber, SetNumber = "42100-1" };
+
+        options.NoRepair = true;
+
+        options.ToSettings().FillGaps.Should().BeFalse();
+        options.CommandLine.Should().Contain("--no-repair");
+    }
+
     /// <summary>Unticking has to put it back, or the box only works once.</summary>
     [Fact]
     public void Unticking_puts_each_one_back()
@@ -57,13 +68,16 @@ public sealed class OptionRoundTripTests
         options.CsvOnly = true;
         options.NoPlates = true;
         options.NoUnofficial = true;
+        options.NoRepair = true;
 
         options.CsvOnly = false;
         options.NoPlates = false;
         options.NoUnofficial = false;
+        options.NoRepair = false;
 
         options.ToSettings().Stages.Should().Be(RunStages.ShapesAndPlates);
         options.ToSettings().IncludeUnofficial.Should().BeTrue();
+        options.ToSettings().FillGaps.Should().BeTrue();
         options.CommandLine.Should().Be("lego2stl build --set 42100-1");
     }
 }

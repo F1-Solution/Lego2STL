@@ -83,13 +83,13 @@ public sealed partial class RunOptionsViewModel : ViewModelBase
     public partial double Clearance { get; set; }
 
     [ObservableProperty]
-    public partial bool FillGaps { get; set; }
+    public partial bool FillGaps { get; set; } = true;
 
     [ObservableProperty]
     public partial bool NoSeamRepair { get; set; }
 
     [ObservableProperty]
-    public partial double WeldTolerance { get; set; } = VertexWelder.DefaultToleranceMillimetres;
+    public partial double WeldTolerance { get; set; } = VertexWelder.DefaultToleranceUnits;
 
     // ---- Shape library -----------------------------------------------------------------
 
@@ -136,7 +136,7 @@ public sealed partial class RunOptionsViewModel : ViewModelBase
     public static IReadOnlyList<string> Delimiters { get; } = [";", ",", "tab"];
 
     /// <summary>
-    /// The three settings the window states the other way round, because the flag is named
+    /// The four settings the window states the other way round, because the flag is named
     /// for turning something off.
     /// </summary>
     /// <remarks>
@@ -162,11 +162,19 @@ public sealed partial class RunOptionsViewModel : ViewModelBase
         set => IncludeUnofficial = !value;
     }
 
+    public bool NoRepair
+    {
+        get => !FillGaps;
+        set => FillGaps = !value;
+    }
+
     partial void OnMakeShapesChanged(bool value) => OnPropertyChanged(nameof(CsvOnly));
 
     partial void OnMakePlatesChanged(bool value) => OnPropertyChanged(nameof(NoPlates));
 
     partial void OnIncludeUnofficialChanged(bool value) => OnPropertyChanged(nameof(NoUnofficial));
+
+    partial void OnFillGapsChanged(bool value) => OnPropertyChanged(nameof(NoRepair));
 
     /// <summary>The input path for whichever kind of start was chosen.</summary>
     public string? EffectiveInputPath => Kind switch

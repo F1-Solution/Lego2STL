@@ -1,3 +1,5 @@
+using Lego2STL.Core.Text;
+
 namespace Lego2STL.Core.LDraw;
 
 /// <summary>How the library should be obtained.</summary>
@@ -51,6 +53,7 @@ public sealed class EscalatingLDrawLibrary : ILDrawLibrary, IDisposable
 {
     private readonly LDrawSourceOptions _options;
     private readonly Action<string> _log;
+    private readonly Strings _words;
     private readonly List<ILDrawLibrary> _owned = [];
 
     private DirectoryLDrawLibrary? _local;
@@ -58,33 +61,38 @@ public sealed class EscalatingLDrawLibrary : ILDrawLibrary, IDisposable
     private ZipLDrawLibrary? _complete;
     private bool _perFileAbandoned;
 
-    public EscalatingLDrawLibrary(LDrawSourceOptions? options = null, Action<string>? log = null)
+    public EscalatingLDrawLibrary(
+        LDrawSourceOptions? options = null,
+        Action<string>? log = null,
+        Strings? words = null)
     {
         _options = options ?? new LDrawSourceOptions();
         _log = log ?? (_ => { });
+        _words = words ?? Strings.English;
 
-        _local = DirectoryLDrawLibrary.TryOpen(_options.LocalDirectory);
+        _local = DirectoryLDrawLibrary.TryOpen(_options.LocalDirectory, _words);
         if (_local is not null)
         {
-            _log($"Using the LDraw library already on disk: {_local.Description}.");
+            _log(_words.Format(TextKey.MsgLDrawUsingFolder, _local.Description));
         }
         else if (_options.LocalDirectory is not null)
         {
-            _log($"'{_options.LocalDirectory}' does not look like an LDraw library (no 'parts' or 'p' folder); ignoring it.");
+            _log(_words.Format(TextKey.MsgLDrawNotALibrary, _options.LocalDirectory));
         }
 
         // A previously downloaded archive counts as local: no reason to fetch anything.
         var archivePath = CompleteArchivePath();
         if (_local is null && File.Exists(archivePath))
         {
-            _complete = ZipLDrawLibrary.Open(archivePath);
+            _complete = ZipLDrawLibrary.Open(archivePath, _words);
             _owned.Add(_complete);
-            _log($"Using the LDraw library downloaded earlier ({_complete.EntryCount} files).");
+            _log(_words.Format(TextKey.MsgLDrawUsingDownloaded, _complete.EntryCount));
         }
     }
 
     public string Description =>
-        _complete?.Description ?? _local?.Description ?? _perFile?.Description ?? "no LDraw source";
+        _complete?.Description ?? _local?.Description ?? _perFile?.Description
+        ?? _words[TextKey.LibraryNone];
 
     /// <summary>Files that no source could supply.</summary>
     public IReadOnlyCollection<string> Missing => _missing;
@@ -128,8 +136,7 @@ public sealed class EscalatingLDrawLibrary : ILDrawLibrary, IDisposable
 
             if (_perFile.RefusalCount >= _options.RefusalsBeforeFullDownload)
             {
-                _log($"The library website refused {_perFile.RefusalCount} requests; " +
-                     "downloading the whole library instead, which is faster from here on.");
+                _log(_words.Format(TextKey.MsgLDrawRefused, _perFile.RefusalCount));
                 _perFileAbandoned = true;
                 await DownloadCompleteAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -170,10 +177,11 @@ public sealed class EscalatingLDrawLibrary : ILDrawLibrary, IDisposable
     {
         var library = new HttpLDrawLibrary(
             Path.Combine(_options.ResolvedCacheDirectory, "files"),
-            _options.IncludeUnofficial);
+            _options.IncludeUnofficial,
+            words: _words);
 
         _owned.Add(library);
-        _log("Fetching LDraw files from the library website as they are needed.");
+        _log(_words[TextKey.MsgLDrawFetchingPerFile]);
         return library;
     }
 
@@ -192,7 +200,7 @@ public sealed class EscalatingLDrawLibrary : ILDrawLibrary, IDisposable
 
         if (!File.Exists(path))
         {
-            _log($"Downloading the LDraw library from {_options.CompleteArchiveUrl} (about 145 MB, once).");
+            _log(_words.Format(TextKey.MsgLDrawDownloading, _options.CompleteArchiveUrl));
 
             using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
             http.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; Lego2STL/1.0)");
@@ -212,9 +220,9 @@ public sealed class EscalatingLDrawLibrary : ILDrawLibrary, IDisposable
             File.Move(temporary, path, overwrite: true);
         }
 
-        _complete = ZipLDrawLibrary.Open(path);
+        _complete = ZipLDrawLibrary.Open(path, _words);
         _owned.Add(_complete);
-        _log($"LDraw library ready: {_complete.EntryCount} files, cached at {path}.");
+        _log(_words.Format(TextKey.MsgLDrawReady, _complete.EntryCount, path));
     }
 
     public void Dispose()

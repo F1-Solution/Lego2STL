@@ -75,7 +75,7 @@ internal sealed class PipelineOptions
             DefaultValueFactory = _ => 0.0,
         };
 
-        Repair = new Option<bool>("--repair") { Description = words[TextKey.HelpOptRepair] };
+        NoRepair = new Option<bool>("--no-repair") { Description = words[TextKey.HelpOptNoRepair] };
 
         NoSeamRepair = new Option<bool>("--no-seam-repair")
         {
@@ -85,7 +85,7 @@ internal sealed class PipelineOptions
         WeldTolerance = new Option<double>("--weld-tolerance")
         {
             Description = words[TextKey.HelpOptWeldTolerance],
-            DefaultValueFactory = _ => VertexWelder.DefaultToleranceMillimetres,
+            DefaultValueFactory = _ => VertexWelder.DefaultToleranceUnits,
         };
 
         // ---- Shape library -------------------------------------------------------------
@@ -155,7 +155,7 @@ internal sealed class PipelineOptions
 
     public Option<double> Clearance { get; }
 
-    public Option<bool> Repair { get; }
+    public Option<bool> NoRepair { get; }
 
     public Option<bool> NoSeamRepair { get; }
 
@@ -194,7 +194,7 @@ internal sealed class PipelineOptions
         foreach (var option in new Option[]
         {
             IncludeSpares, CsvOnly, NoPlates, OutputDirectory, Delimiter, Ascii,
-            KeepOrigin, Scale, Clearance, Repair, NoSeamRepair, WeldTolerance,
+            KeepOrigin, Scale, Clearance, NoRepair, NoSeamRepair, WeldTolerance,
             LDrawDirectory, LDrawCache, Offline, NoUnofficial,
             Printer, PlateSize, PlateSpacing,
             ApiKey, Quiet, LogFile,
@@ -234,7 +234,7 @@ internal sealed class PipelineOptions
             KeepOrigin = parseResult.GetValue(KeepOrigin),
             ScalePercent = parseResult.GetValue(Scale),
             Clearance = parseResult.GetValue(Clearance),
-            FillGaps = parseResult.GetValue(Repair),
+            FillGaps = !parseResult.GetValue(NoRepair),
             NoSeamRepair = parseResult.GetValue(NoSeamRepair),
             WeldTolerance = parseResult.GetValue(WeldTolerance),
 

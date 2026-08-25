@@ -41,17 +41,32 @@ public sealed class PartsListCsvTests
             .Should().Be("ID;Codice Lego;Codice BrickLink;Nome colore;Codice RGB;Quantita");
     }
 
+    [Fact]
+    public void The_colour_names_follow_the_chosen_language()
+    {
+        var italian = PartsListCsv.Write(Sample(), language: DisplayLanguage.Italian)
+            .Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+
+        italian[1].Should().Be("1;6628;11;Nero;#05131D;1");
+        italian[2].Should().Be("2;4265c;9;Grigio Chiaro;#9BA19D;10");
+        italian[3].Should().Be("3;32556;5;Rosso;#C91A09;38");
+    }
+
     /// <summary>
-    /// The rows themselves are data, not prose: a part number, a colour code and a count read
-    /// the same in any language, so only the heading row moves.
+    /// The words follow the language; the numbers do not. A part number, a colour code, an RGB
+    /// value and a count are data rather than prose, and a file whose figures moved with the
+    /// language would not be comparable with one written anywhere else.
     /// </summary>
     [Fact]
-    public void Only_the_heading_row_changes_with_the_language()
+    public void Only_the_words_change_with_the_language()
     {
         var english = PartsListCsv.Write(Sample(), language: DisplayLanguage.English).Split("\r\n");
         var italian = PartsListCsv.Write(Sample(), language: DisplayLanguage.Italian).Split("\r\n");
 
-        italian.Skip(1).Should().Equal(english.Skip(1));
+        static IEnumerable<string> WithoutTheColourName(IEnumerable<string> lines) =>
+            lines.Select(l => string.Join(';', l.Split(';').Where((_, i) => i != 3)));
+
+        WithoutTheColourName(italian.Skip(1)).Should().Equal(WithoutTheColourName(english.Skip(1)));
     }
 
     [Theory]

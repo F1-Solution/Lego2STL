@@ -86,6 +86,25 @@ public sealed partial class Strings
                 "{0} part(s) produced no shape and are on no plate. They are listed above; the "
                 + "plates hold everything else.",
 
+            // The shape library.
+            [TextKey.LibraryFolder] = "folder {0}",
+            [TextKey.LibraryArchive] = "archive {0}",
+            [TextKey.LibraryWebsite] = "the LDraw library website, one file at a time",
+            [TextKey.LibraryNone] = "no LDraw source",
+            [TextKey.MsgLDrawUsingFolder] = "Using the LDraw library already on disk: {0}.",
+            [TextKey.MsgLDrawNotALibrary] =
+                "'{0}' does not look like an LDraw library (no 'parts' or 'p' folder); ignoring it.",
+            [TextKey.MsgLDrawUsingDownloaded] =
+                "Using the LDraw library downloaded earlier ({0} files).",
+            [TextKey.MsgLDrawFetchingPerFile] =
+                "Fetching LDraw files from the library website as they are needed.",
+            [TextKey.MsgLDrawRefused] =
+                "The library website refused {0} requests; downloading the whole library instead, "
+                + "which is faster from here on.",
+            [TextKey.MsgLDrawDownloading] =
+                "Downloading the LDraw library from {0} (about 145 MB, once).",
+            [TextKey.MsgLDrawReady] = "LDraw library ready: {0} files, cached at {1}.",
+
             // Running.
             [TextKey.MsgPagesInDocument] = "{0}: {1} pages.",
             [TextKey.MsgReadingPages] = "Reading pages {0} using {1} colour numbering.",
@@ -97,12 +116,25 @@ public sealed partial class Strings
             [TextKey.MsgPageIsCatalogueOne] = "page {0}  catalogue, {1} entry",
             [TextKey.MsgPageIsCatalogueMany] = "page {0}  catalogue, {1} entries",
             [TextKey.MsgNoCataloguePages] = "No catalogue pages found.",
+            [TextKey.MsgCataloguePagesFound] = "Catalogue pages: {0}",
+            [TextKey.MsgShapeClosed] = "closed",
+            [TextKey.MsgShapeOpenEdges] = "{0} open edge(s)",
+            [TextKey.MsgLookingUpSet] = "Looking up set {0}.",
+            [TextKey.MsgSetSummary] = "Set {0}: {1} entries, {2} pieces.",
             [TextKey.MsgSuggestedRange] = "Suggested range: {0}",
             [TextKey.MsgEntriesSummary] = "{0} entries, {1} pieces, {2} distinct parts.",
             [TextKey.MsgPartsListWritten] = "Parts list: {0}",
             [TextKey.MsgReportWritten] = "Report:     {0}",
             [TextKey.MsgCouldNotReadEntriesOne] = "Could not read {0} entry:",
             [TextKey.MsgCouldNotReadEntriesMany] = "Could not read {0} entries:",
+            [TextKey.MsgUnreadEntryAt] = "page {0} at {1}: {2}",
+            [TextKey.ReasonCouldNotReadQuantity] = "could not read the quantity",
+            [TextKey.ReasonCouldNotReadPartAndColour] =
+                "could not read the part number and colour",
+            [TextKey.ReasonCouldNotReadEither] =
+                "could not read the quantity or the part number and colour",
+            [TextKey.ReasonShapeHasNoSurfaces] = "the shape file contains no surfaces",
+            [TextKey.ReasonNoShapeFile] = "no shape file for this part number",
             [TextKey.MsgWrittenWithoutThem] =
                 "The parts list was written without them. Later stages are refused until they are settled.",
             [TextKey.MsgEntriesAndParts] = "{0} entries, {1} distinct parts.",
@@ -126,14 +158,13 @@ public sealed partial class Strings
             [TextKey.CalibrationThen] =
                 "Then try them. Work up from the smallest until parts go together without "
                 + "forcing and stay together when shaken. That clearance is yours: pass it to "
-                + "the build command as --clearance, together with --repair so it can be "
-                + "applied to parts whose surfaces have gaps. Check it again if you change "
-                + "material, nozzle or printer.",
+                + "the build command as --clearance. Check it again if you change material, "
+                + "nozzle or printer.",
             [TextKey.MsgClearanceApplied] =
                 "Took every face in by {2} mm on {0} of {1} shape(s).",
             [TextKey.MsgClearanceRefusedOpen] =
                 "{0} left at true size: their surfaces still have gaps, and pulling the faces in " +
-                "would drag the edges of those gaps too. Add --repair to cover them over first.",
+                "would drag the edges of those gaps too. Drop --no-repair so the gaps are covered first.",
             [TextKey.MsgClearanceRefusedStillOpen] =
                 "{0} left at true size: their surfaces have gaps that could not be covered, "
                 + "because the surface branches at the edge of the gap rather than closing "
@@ -155,6 +186,8 @@ public sealed partial class Strings
             [TextKey.ErrPlateTooSmall] =
                 "{0} measures {1} and does not fit a {2} bed, so it is not on any plate. Its shape " +
                 "file is still there to place by hand.",
+            [TextKey.ErrPartTooTallForBed] =
+                "{0} stands {1} mm tall, more than the {2} mm this printer has.",
             [TextKey.ErrOcrUnavailable] =
                 "Reading a document needs text recognition, and this system has none: the "
                 + "recogniser the tool uses is part of Windows. Everything after the parts list "
@@ -168,6 +201,25 @@ public sealed partial class Strings
             [TextKey.ErrOpenScadNotFound] =
                 "OpenSCAD was not found. Install it from openscad.org and either put it on the path " +
                 "or name it with --openscad.",
+            [TextKey.ErrUnknownColourCode] =
+                "Page {0}: part {1} has colour {2}, which is not a known {3} colour.",
+            [TextKey.ErrColourSchemeHintBrickLink] =
+                "If the document uses a different numbering, say so with --color-scheme.",
+            [TextKey.ErrColourSchemeHintOther] = "Is --color-scheme {0} right for this document?",
+            [TextKey.ErrColourHasNoBrickLinkCode] =
+                "Page {0}: part {1} is '{2}', which has no BrickLink colour number, so it cannot be "
+                + "written to that column.",
+            [TextKey.ErrSetCameBackEmpty] =
+                "Set {0} came back with nothing usable. Check the number: Rebrickable wants the "
+                + "variant suffix, so 42100 means 42100-1.",
+            [TextKey.ErrChooseDocument] = "Choose a document to read.",
+            [TextKey.ErrChoosePartsList] = "Choose a parts list to build from.",
+            [TextKey.ErrTypeSetNumber] = "Type a set number, for example 42100-1.",
+            [TextKey.ErrNoFileAt] = "There is no file at {0}.",
+            [TextKey.ErrScaleNotPositive] = "A scale has to be greater than zero.",
+            [TextKey.ErrPlateSpacingNegative] = "The gap between parts cannot be negative.",
+            [TextKey.ErrNotABedSize] =
+                "'{0}' is not a bed size. One looks like 220x220 or 300x300x400.",
 
             // The interface.
             [TextKey.UiTitle] = "Lego2STL",
@@ -248,7 +300,7 @@ public sealed partial class Strings
                 "Sizes to make, e.g. 2x4, or 2x4x6 to say how many plates tall.",
             [TextKey.HelpArgSteps] = "The clearances to try, in millimetres, separated by commas.",
             [TextKey.HelpOptLang] =
-                "Language for messages, the help, the report and the parts list's column names: en or it. Defaults to the machine's own.",
+                "Language for messages, the help, the report, and the colour names in the parts list and the plate file names: en or it. Defaults to the machine's own.",
             [TextKey.HelpOptOutputDir] =
                 "Where to put the run folder. Defaults to beside the input.",
             [TextKey.HelpOptAscii] = "Write the readable form of STL instead of the compact one.",
@@ -274,12 +326,12 @@ public sealed partial class Strings
             [TextKey.HelpOptScale] = "Scale as a percentage. 100 is true size.",
             [TextKey.HelpOptClearance] =
                 "Take every face in by this many millimetres, so printed parts clip together. Use the calibration command to find the right figure for your printer.",
-            [TextKey.HelpOptRepair] =
-                "Cover over the gaps a shape's surface arrives with, making it a solid. Needed before a clearance can be applied to a part that has any.",
+            [TextKey.HelpOptNoRepair] =
+                "Leave the gaps a shape's surface arrives with, instead of covering them over. Covering is on by default, because a shape with gaps is not a solid and no clearance can be applied to it.",
             [TextKey.HelpOptNoSeamRepair] =
                 "Skip closing seams where a corner lies part-way along another edge.",
             [TextKey.HelpOptWeldTolerance] =
-                "How close two corners have to be to count as the same point.",
+                "How close two corners have to be to count as the same point, in source units where one unit is 0.4 mm. Not millimetres: corners are merged before the shape is converted.",
             [TextKey.HelpOptLDrawCache] = "Where to keep fetched shape files between runs.",
             [TextKey.HelpOptNoUnofficial] =
                 "Use only the official shape library, not the unofficial collection.",
@@ -320,6 +372,16 @@ public sealed partial class Strings
                 "{0} in {1} appears more than once; quantities added to give {2}.",
             [TextKey.NoteNoHeadingRow] = "The file has no heading row; reading it as data.",
             [TextKey.NoteRead] = "Read {0} entries, separated by '{1}'.",
+            [TextKey.NoteSetColourUnknown] =
+                "{0} is listed in colour {1} ({2}), which is not in the colour cross-reference; the "
+                + "piece was left out. Regenerate it with 'lego2stl refresh-colors'.",
+            [TextKey.NoteSetColourHasNoBrickLinkCode] =
+                "{0} is '{1}', which has no BrickLink colour number, so it has no value for that "
+                + "column; the piece was left out.",
+            [TextKey.NoteSetSparesLeftOut] =
+                "{0} spare piece(s) left out. Ask for --include-spares to keep them.",
+            [TextKey.NoteSetLinesWithoutColour] =
+                "{0} line(s) could not be given a BrickLink colour and were left out.",
             [TextKey.ReportPrinter] = "Printer",
         };
     }

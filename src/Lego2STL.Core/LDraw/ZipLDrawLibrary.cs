@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Text;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Core.LDraw;
 
@@ -43,7 +44,7 @@ public sealed class ZipLDrawLibrary : ILDrawLibrary, IDisposable
 
     public int EntryCount => _byPath.Count;
 
-    public static ZipLDrawLibrary Open(string archivePath)
+    public static ZipLDrawLibrary Open(string archivePath, Strings? words = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(archivePath);
 
@@ -52,7 +53,9 @@ public sealed class ZipLDrawLibrary : ILDrawLibrary, IDisposable
             throw new FileNotFoundException($"No such archive: {archivePath}", archivePath);
         }
 
-        return Open(File.ReadAllBytes(archivePath), $"archive {Path.GetFileName(archivePath)}");
+        return Open(
+            File.ReadAllBytes(archivePath),
+            (words ?? Strings.English).Format(TextKey.LibraryArchive, Path.GetFileName(archivePath)));
     }
 
     public static ZipLDrawLibrary Open(byte[] archiveBytes, string description)

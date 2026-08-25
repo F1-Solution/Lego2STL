@@ -1,3 +1,5 @@
+using Lego2STL.Core.Text;
+
 namespace Lego2STL.Core.LDraw;
 
 /// <summary>
@@ -8,9 +10,13 @@ public sealed class DirectoryLDrawLibrary : ILDrawLibrary
     private readonly string _root;
     private readonly Dictionary<string, string?> _cache = new(StringComparer.Ordinal);
 
-    private DirectoryLDrawLibrary(string root) => _root = root;
+    private DirectoryLDrawLibrary(string root, Strings words)
+    {
+        _root = root;
+        Description = words.Format(TextKey.LibraryFolder, root);
+    }
 
-    public string Description => $"folder {_root}";
+    public string Description { get; }
 
     /// <summary>
     /// Opens a folder as a library, or returns null when it does not look like one.
@@ -20,7 +26,7 @@ public sealed class DirectoryLDrawLibrary : ILDrawLibrary
     /// resolve anything and silently returning nothing for every lookup would be worse than
     /// saying so up front.
     /// </remarks>
-    public static DirectoryLDrawLibrary? TryOpen(string? directory)
+    public static DirectoryLDrawLibrary? TryOpen(string? directory, Strings? words = null)
     {
         if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
         {
@@ -35,7 +41,7 @@ public sealed class DirectoryLDrawLibrary : ILDrawLibrary
             if (Directory.Exists(Path.Combine(candidate, "parts")) ||
                 Directory.Exists(Path.Combine(candidate, "p")))
             {
-                return new DirectoryLDrawLibrary(candidate);
+                return new DirectoryLDrawLibrary(candidate, words ?? Strings.English);
             }
         }
 

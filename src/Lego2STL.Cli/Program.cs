@@ -38,14 +38,14 @@ internal static class Program
         }
         catch (OperationCanceledException)
         {
-            Console.Error.WriteLine("Cancelled.");
+            Console.Error.WriteLine(words[TextKey.MsgCancelled]);
             return ExitFailure;
         }
         catch (Exception ex)
         {
             // Everything the tool throws deliberately carries a message meant for the
             // user, so show that rather than a stack trace.
-            Console.Error.WriteLine("Error: " + ex.Message);
+            Console.Error.WriteLine($"{words[TextKey.MsgError]}: {ex.Message}");
             if (Environment.GetEnvironmentVariable("LEGO2STL_DEBUG") == "1")
             {
                 Console.Error.WriteLine(ex);

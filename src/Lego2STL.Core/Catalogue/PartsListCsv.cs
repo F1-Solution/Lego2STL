@@ -16,10 +16,10 @@ namespace Lego2STL.Core.Catalogue;
 /// a file edited and re-saved by a spreadsheet still loads whichever separator it chose.
 /// </para>
 /// <para>
-/// Column headings follow the display language, so the file reads naturally to whoever opens
-/// it. Reading does not depend on that: every wording the tool has ever written is recognised,
-/// in any language, and the columns are positional anyway, so a file written in one language
-/// loads perfectly well in another.
+/// Column headings and colour names follow the display language, so the file reads naturally
+/// to whoever opens it. Reading does not depend on that: every wording the tool has ever
+/// written is recognised, in any language, and the columns are positional anyway, so a file
+/// written in one language loads perfectly well in another.
 /// </para>
 /// </remarks>
 public static class PartsListCsv
@@ -83,7 +83,7 @@ public static class PartsListCsv
                 e.Id.ToString(CultureInfo.InvariantCulture),
                 e.PartNumber,
                 e.BrickLinkColorCode.ToString(CultureInfo.InvariantCulture),
-                e.ColorName,
+                ColorNames.For(language, e.ColorName),
                 e.Rgb.ToString(),
                 e.Quantity.ToString(CultureInfo.InvariantCulture),
             };
@@ -235,7 +235,8 @@ public static class PartsListCsv
             Id: ParseInt(f[0], lineNumber, "ID"),
             PartNumber: RequireText(f[1], lineNumber, Strings.English[TextKey.CsvLegoCode]),
             BrickLinkColorCode: ParseInt(f[2], lineNumber, Strings.English[TextKey.CsvBrickLinkCode]),
-            ColorName: f[3],
+            // Back to the name the tool stores, whichever language the file was written in.
+            ColorName: ColorNames.ToCanonical(f[3]),
             Rgb: ParseRgb(f[4], lineNumber),
             Quantity: ParseQuantity(f[5], lineNumber));
     }

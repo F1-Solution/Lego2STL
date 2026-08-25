@@ -135,10 +135,10 @@ public sealed class WindowTests
         model.Options.Kind = InputKind.PartsList;
         model.Options.PartsListPath = "parts.csv";
         model.Options.Clearance = 0.15;
-        model.Options.FillGaps = true;
+        model.Options.NoRepair = true;
         window.CaptureRenderedFrame();
 
-        model.Options.CommandLine.Should().Contain("--clearance 0.15").And.Contain("--repair");
+        model.Options.CommandLine.Should().Contain("--clearance 0.15").And.Contain("--no-repair");
         Texts(window).Should().Contain(t => t.Contains("--clearance 0.15"));
     }
 
@@ -169,7 +169,7 @@ public sealed class WindowTests
         string[] options =
         [
             "--csv-only", "--no-plates", "--output-dir", "--delimiter", "--ascii",
-            "--scale", "--clearance", "--repair", "--keep-origin", "--no-seam-repair",
+            "--scale", "--clearance", "--no-repair", "--keep-origin", "--no-seam-repair",
             "--weld-tolerance", "--ldraw-dir", "--ldraw-cache", "--offline", "--no-unofficial",
             "--printer", "--plate-size", "--plate-spacing", "--lang", "--api-key", "--log",
         ];

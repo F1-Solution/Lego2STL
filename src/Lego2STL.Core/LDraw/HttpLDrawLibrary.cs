@@ -1,4 +1,5 @@
 using System.Net;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Core.LDraw;
 
@@ -38,9 +39,12 @@ public sealed class HttpLDrawLibrary : ILDrawLibrary, IDisposable
     public HttpLDrawLibrary(
         string cacheDirectory,
         bool includeUnofficial = true,
-        HttpClient? http = null)
+        HttpClient? http = null,
+        Strings? words = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(cacheDirectory);
+
+        Description = (words ?? Strings.English)[TextKey.LibraryWebsite];
 
         _cacheDirectory = Path.GetFullPath(cacheDirectory);
         _includeUnofficial = includeUnofficial;
@@ -56,7 +60,7 @@ public sealed class HttpLDrawLibrary : ILDrawLibrary, IDisposable
         Directory.CreateDirectory(_cacheDirectory);
     }
 
-    public string Description => "the LDraw library website, one file at a time";
+    public string Description { get; }
 
     /// <summary>How many requests the server refused for rate reasons.</summary>
     public int RefusalCount { get; private set; }

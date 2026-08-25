@@ -57,7 +57,7 @@ lego2stl refresh-colors                 rebuild the colour cross-reference
 The whole thing, in one command:
 
 ```
-lego2stl extract instructions.pdf 2-5 --repair --clearance 0.15
+lego2stl extract instructions.pdf 2-5 --clearance 0.15
 ```
 
 `lego2stl --help`, or `lego2stl build --help`, lists every option. `--lang it` switches
@@ -79,7 +79,11 @@ PistolaLego/
 
 The parts list has six columns — id, part number, BrickLink colour, colour name, RGB and
 quantity — separated by semicolons, so it opens straight into a spreadsheet. It is also an
-input: correct it and feed it back in.
+input: correct it and feed it back in, in any language: the colour names follow `--lang`, and
+a list written in one is read in another.
+
+Each plate is named after its colour, in the same language, and carries that colour so a
+slicer opens it already looking like the finished model.
 
 **Read the report.** It names every shape that is not closed, every retired part number whose
 shape came from a replacement, and every part too big for the plate. None of that should be
@@ -99,12 +103,16 @@ looked for is smaller than the difference between two machines of the same model
 walls at or below the width of a 0.4 mm nozzle. Beams come out well; the small connecting
 pieces are marginal to failing. The catalogue screen marks them.
 
-**Most shapes arrive with gaps in their surface.** `--repair` covers them over, which is also
-what a clearance needs before it can be applied. On the reference set that takes the shapes
-that are complete from 11 of 44 to 33. A slicer silently repairs the rest; the report says
-which.
+**Most shapes arrive with gaps in their surface.** They are covered over by default, which is
+also what a clearance needs before it can be applied. On the reference set that takes the
+shapes that are complete from 11 of 44 to 33. `--no-repair` leaves the surfaces exactly as
+they arrived, and a slicer then repairs them silently instead; either way the report says
+which shapes had gaps and how many.
 
 **No gcode.** Nothing here talks to a slicer. Open the plates in yours.
+
+What open edges, clearance and calibration actually are, at length and in Italian:
+[docs/geometria-3d.md](docs/geometria-3d.md).
 
 ---
 

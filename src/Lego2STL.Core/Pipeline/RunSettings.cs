@@ -92,12 +92,19 @@ public sealed record RunSettings
 
     public double Clearance { get; init; }
 
-    /// <summary>Cover over the gaps in a shape's surface, turning it into a solid.</summary>
-    public bool FillGaps { get; init; }
+    /// <summary>
+    /// Cover over the gaps in a shape's surface, turning it into a solid. On unless asked
+    /// otherwise: these shapes exist to be printed, and a slicer covers the gaps anyway.
+    /// </summary>
+    public bool FillGaps { get; init; } = true;
 
     public bool NoSeamRepair { get; init; }
 
-    public double WeldTolerance { get; init; } = VertexWelder.DefaultToleranceMillimetres;
+    /// <summary>
+    /// How close two corners have to be to count as one, in source units where a unit is
+    /// 0.4 mm. Not millimetres: the merge runs before the conversion.
+    /// </summary>
+    public double WeldTolerance { get; init; } = VertexWelder.DefaultToleranceUnits;
 
     // ---- Shape library -----------------------------------------------------------------
 
@@ -169,49 +176,51 @@ public sealed record RunSettings
     /// </summary>
     public IReadOnlyList<string> Problems()
     {
+        var words = Strings.For(Language);
         var problems = new List<string>();
 
         switch (Kind)
         {
             case InputKind.Document when string.IsNullOrWhiteSpace(InputPath):
-                problems.Add("Choose a document to read.");
+                problems.Add(words[TextKey.ErrChooseDocument]);
                 break;
 
             case InputKind.Document when !File.Exists(InputPath):
-                problems.Add($"There is no file at {InputPath}.");
+                problems.Add(words.Format(TextKey.ErrNoFileAt, InputPath));
                 break;
 
             case InputKind.PartsList when string.IsNullOrWhiteSpace(InputPath):
-                problems.Add("Choose a parts list to build from.");
+                problems.Add(words[TextKey.ErrChoosePartsList]);
                 break;
 
             case InputKind.PartsList when !File.Exists(InputPath):
-                problems.Add($"There is no file at {InputPath}.");
+                problems.Add(words.Format(TextKey.ErrNoFileAt, InputPath));
                 break;
 
             case InputKind.SetNumber when string.IsNullOrWhiteSpace(SetNumber):
-                problems.Add("Type a set number, for example 42100-1.");
+                problems.Add(words[TextKey.ErrTypeSetNumber]);
                 break;
         }
 
         if (Clearance < 0)
         {
-            problems.Add("A clearance cannot be negative.");
+            problems.Add(words.Format(
+                TextKey.ErrClearanceNegative, Format(Clearance)));
         }
 
         if (ScalePercent <= 0)
         {
-            problems.Add("A scale has to be greater than zero.");
+            problems.Add(words[TextKey.ErrScaleNotPositive]);
         }
 
         if (PlateSpacing < 0)
         {
-            problems.Add("The gap between parts cannot be negative.");
+            problems.Add(words[TextKey.ErrPlateSpacingNegative]);
         }
 
         if (PlateSize is { Length: > 0 } && !PrintBeds.TryParseSize(PlateSize, out _))
         {
-            problems.Add($"'{PlateSize}' is not a bed size. One looks like 220x220 or 300x300x400.");
+            problems.Add(words.Format(TextKey.ErrNotABedSize, PlateSize));
         }
 
         return problems;
@@ -317,9 +326,9 @@ public sealed record RunSettings
             parts.Add(Format(Clearance));
         }
 
-        if (FillGaps)
+        if (!FillGaps)
         {
-            parts.Add("--repair");
+            parts.Add("--no-repair");
         }
 
         if (NoSeamRepair)

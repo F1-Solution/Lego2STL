@@ -36,6 +36,13 @@ public sealed record PlateContents(
 /// a slicer opening one shows the plate already looking like the finished model.
 /// </para>
 /// <para>
+/// The colour is written twice, in the two places readers look for it. The materials and
+/// properties extension's colour group is what the slicers do read - Bambu Studio and Orca
+/// among them - and it is what the parts point at, so a plate arrives in a slicer already
+/// carrying its colour and offering to map it onto a filament. The base material beside it
+/// says the same thing in the core format's own terms, for viewers that only know that one.
+/// </para>
+/// <para>
 /// A shape appears once however many copies are on the plate, with one build item per copy.
 /// A colour with a dozen identical pins is then a dozen placements of one mesh rather than a
 /// dozen meshes, which is the difference between a small file and a large one.
@@ -44,6 +51,20 @@ public sealed record PlateContents(
 public static class ThreeMfWriter
 {
     private const string CoreNamespace = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02";
+
+    /// <summary>
+    /// The materials and properties extension. Optional, so it is not declared as required:
+    /// a reader that does not know it still gets the whole plate, without the colour.
+    /// </summary>
+    private const string MaterialNamespace =
+        "http://schemas.microsoft.com/3dmanufacturing/material/2015/02";
+
+    /// <summary>
+    /// The prefix the colour group is written under. Spelled out because readers match the
+    /// element name as written rather than resolving the namespace, so "m" is part of the
+    /// contract and not a detail of how this file happens to be produced.
+    /// </summary>
+    private const string MaterialPrefix = "m";
 
     private const string ContentTypesNamespace =
         "http://schemas.openxmlformats.org/package/2006/content-types";
@@ -56,8 +77,11 @@ public static class ThreeMfWriter
 
     private const string ModelPath = "3D/3dmodel.model";
 
-    /// <summary>The single material's id. Object ids start after it.</summary>
+    /// <summary>The base material's id. Every resource in the file needs a distinct one.</summary>
     private const int MaterialResourceId = 1;
+
+    /// <summary>The colour group's id: what the parts point at, and what slicers read.</summary>
+    private const int ColorResourceId = 2;
 
     /// <summary>
     /// A fixed timestamp on every entry, so that writing the same plate twice produces the
@@ -144,6 +168,7 @@ public static class ThreeMfWriter
             w.WriteStartElement("model", CoreNamespace);
             w.WriteAttributeString("unit", "millimeter");
             w.WriteAttributeString("xml", "lang", null, "en-US");
+            w.WriteAttributeString("xmlns", MaterialPrefix, null, MaterialNamespace);
 
             WriteMetadata(w, "Title", plate.Name);
             WriteMetadata(w, "Designer", "Lego2STL");
@@ -151,7 +176,7 @@ public static class ThreeMfWriter
 
             w.WriteStartElement("resources", CoreNamespace);
 
-            // One material for the whole plate: everything on it is the same colour, which is
+            // One colour for the whole plate: everything on it is the same colour, which is
             // the point of grouping plates by colour in the first place.
             w.WriteStartElement("basematerials", CoreNamespace);
             w.WriteAttributeString("id", Number(MaterialResourceId));
@@ -161,7 +186,14 @@ public static class ThreeMfWriter
             w.WriteEndElement();
             w.WriteEndElement();
 
-            var objectId = MaterialResourceId;
+            w.WriteStartElement(MaterialPrefix, "colorgroup", MaterialNamespace);
+            w.WriteAttributeString("id", Number(ColorResourceId));
+            w.WriteStartElement(MaterialPrefix, "color", MaterialNamespace);
+            w.WriteAttributeString("color", DisplayColor(plate.Rgb));
+            w.WriteEndElement();
+            w.WriteEndElement();
+
+            var objectId = ColorResourceId;
             var ids = new List<int>(plate.Objects.Count);
 
             foreach (var part in plate.Objects)
@@ -204,7 +236,7 @@ public static class ThreeMfWriter
         w.WriteAttributeString("id", Number(id));
         w.WriteAttributeString("name", part.PartNumber);
         w.WriteAttributeString("type", "model");
-        w.WriteAttributeString("pid", Number(MaterialResourceId));
+        w.WriteAttributeString("pid", Number(ColorResourceId));
         w.WriteAttributeString("pindex", "0");
 
         w.WriteStartElement("mesh", CoreNamespace);

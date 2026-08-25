@@ -6,17 +6,22 @@ namespace Lego2STL.Core.Geometry;
 /// <summary>How the geometry should be prepared.</summary>
 public sealed record MeshPipelineOptions
 {
-    /// <summary>Distance within which two corners are treated as the same point.</summary>
+    /// <summary>
+    /// Distance within which two corners are treated as the same point, in source units where
+    /// one unit is 0.4 mm. Not millimetres: the merge runs before the conversion.
+    /// </summary>
     public float WeldTolerance { get; init; } = VertexWelder.DefaultTolerance;
 
     /// <summary>Close seams where a corner lies part-way along another triangle's edge.</summary>
     public bool RepairSeams { get; init; } = true;
 
     /// <summary>
-    /// Also cover over whatever gaps are left, so the shape becomes a solid. Asked for rather
-    /// than assumed, because unlike closing seams this invents surface.
+    /// Also cover over whatever gaps are left, so the shape becomes a solid. On by default,
+    /// because a shape is prepared here in order to be printed and a slicer would cover the
+    /// gaps anyway, silently; done here, the result says which shapes had them and how many.
+    /// Turn it off to keep the source's surfaces exactly as they arrived.
     /// </summary>
-    public bool FillGaps { get; init; }
+    public bool FillGaps { get; init; } = true;
 
     /// <summary>
     /// Millimetres per source unit. The source measures in units of 0.4 mm, so a standard
