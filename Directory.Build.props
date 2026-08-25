@@ -26,14 +26,24 @@
 
   <!--
     Publish settings apply only once a runtime has been named, so that a plain build stays a
-    plain build and 'dotnet publish -r <rid>' is what produces the one-file application.
+    plain build and 'dotnet publish -r <rid>' is what produces something installable.
     Naming a runtime here instead would fix every build to Windows.
   -->
-  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''" Label="One self-contained file per platform">
-    <SelfContained>true</SelfContained>
-    <PublishSingleFile>true</PublishSingleFile>
-    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''" Label="Framework-dependent: .NET is installed, not carried">
+    <!--
+      The runtime is a dependency the installers put in place, not a passenger in every
+      program. Carrying it made the Windows installer 152 MB, and carried it twice because
+      there are two programs.
+    -->
+    <SelfContained>false</SelfContained>
+    <!--
+      Not one file per program, deliberately. A framework-dependent single file cannot be
+      compressed - the SDK refuses it, NETSDK1176 - and came out at 66.9 MB against 57 MB for
+      the compressed self-contained one it replaced, while duplicating some 60 MB of shared
+      assemblies across the two programs. One shared folder is 67.4 MB for both, 24.4 MB
+      packed.
+    -->
+    <PublishSingleFile>false</PublishSingleFile>
     <!-- Avalonia loads XAML by reflection; trimming breaks it. Not trimmed anywhere. -->
     <PublishTrimmed>false</PublishTrimmed>
   </PropertyGroup>

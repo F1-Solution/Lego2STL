@@ -41,16 +41,16 @@ Two consequences follow directly and are not negotiable within this design:
 |---|---|---|---|
 | Windows | `Lego2STL-<v>-win-x64.exe` | ~26 MB, measured | `.msi` (152 MB) |
 | Windows | `Lego2STL-<v>-win-x64.zip` | 24.4 MB, measured | `.zip` (96 MB) |
-| Linux | `Lego2STL-<v>-linux-x64.run` | ~20 MB, estimated | `.deb` (dropped) |
-| Linux | `Lego2STL-<v>-linux-x64.tar.gz` | ~20 MB, estimated | `.tar.gz` (82 MB) |
+| Linux | `Lego2STL-<v>-linux-x64.run` | ~16 MB, measured | `.deb` (dropped) |
+| Linux | `Lego2STL-<v>-linux-x64.tar.gz` | 16 MB, measured | `.tar.gz` (82 MB) |
 | macOS | `Lego2STL-<v>-osx-universal.pkg` | ~35 MB, estimated | `.dmg`, per-arch (dropped) |
 | macOS | `Lego2STL-<v>-osx-universal.zip` | ~35 MB, estimated | per-arch `.zip` |
 
-Only the Windows figures were measured; the others are estimates and the plan records the
-real numbers once each is built. The two Unix payloads should come out *smaller* than the
-Windows one despite carrying the same programs, because `Microsoft.Windows.SDK.NET.dll` — 23.7
-MB, a third of the Windows payload — exists only on the Windows target. macOS then gives some
-of that back: a universal build carries two copies of every native binary, though the managed
+Only macOS is still an estimate; the plan records the real number once a runner has built one.
+The Linux payload came out *smaller* than the Windows one despite carrying the same programs —
+39 MB against 67.4 MB, 62 files against 65 — because `Microsoft.Windows.SDK.NET.dll`, 23.7 MB
+and a third of the Windows payload, exists only on the Windows target. macOS will give some of
+that back: a universal build carries two copies of every native binary, though the managed
 assemblies, which are the bulk, are carried once.
 
 The installer is what changes per system. The archive beside it is the same payload with

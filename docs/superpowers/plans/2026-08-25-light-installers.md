@@ -20,7 +20,7 @@
 - **No trimming, no single-file, no self-contained.** `PublishTrimmed=false` stays (Avalonia loads XAML by reflection).
 - **Size ceilings, asserted by the build:** Windows bundle ≤ 40 MB, Linux `.run` ≤ 40 MB, macOS `.pkg` ≤ 70 MB.
 - **The two program names must differ by more than capitalisation** — `lego2stl` and `Lego2STL.Gui`. Windows and default macOS filesystems are case-insensitive, so `Lego2STL.exe` beside `lego2stl.exe` is one file. Every build asserts both are present.
-- **Tests stay green:** 354 in `Lego2STL.Tests` + 27 in `Lego2STL.UiTests` = 381. `dotnet test --configuration Release --nologo`.
+- **Tests stay green:** on this branch, 336 in `Lego2STL.Tests` + 26 in `Lego2STL.UiTests` = **362**. `dotnet test --configuration Release --nologo`. (381 is the count on `fix/windows-recogniser-and-plates`, which carries mesh-repair tests this branch does not; measured at 362 here before any packaging change, so 362 is the baseline to hold.)
 - **Comments and CHANGELOG entries: one sentence each.** Test comments are exempt.
 - **Commit messages** follow `<type>: <description>`, describe only behaviour a user can observe or the public interface, and **never name internal classes, methods, members, or files**. End every commit with:
   ```
