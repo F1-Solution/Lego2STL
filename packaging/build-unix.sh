@@ -7,17 +7,20 @@
 #
 # Produces, into artifacts/dist:
 #
-#   linux   Lego2STL-<version>-linux-<arch>.tar.gz   the programs, a menu entry and an
-#                                                    install script that puts them in place
-#           lego2stl_<version>_<arch>.deb            for anything Debian-derived, when the
-#                                                    packaging tool is available
+#   linux   Lego2STL-<version>-linux-<arch>.run      one file that installs everything: the
+#                                                    programs, a menu entry, and .NET 10 when
+#                                                    the machine has not got it
+#           Lego2STL-<version>-linux-<arch>.tar.gz   the same contents for anyone who would
+#                                                    rather unpack it themselves
 #
 #   macos   Lego2STL-<version>-osx-<arch>.dmg        a disk image to drag into Applications,
 #                                                    when built on macOS
 #           Lego2STL-<version>-osx-<arch>.zip        the same application, always produced
 #
-# What is inside is the same either way: one windowed program and one console program, each
-# self-contained, so nothing has to be installed alongside them.
+# What is inside is the same either way: one windowed program and one console program over one
+# shared set of assemblies. They need .NET 10, which the installer fetches from a fixed address
+# and checks against a fingerprint - but only when the machine has none, so most people
+# download nothing.
 #
 # Reading a document is Windows-only, because the text recogniser it uses is part of Windows.
 # Everything after the parts list - shapes, plates, clearance, calibration - works here, and
@@ -46,9 +49,6 @@ root="$(dirname "$here")"
 rid="linux-$arch"
 [ "$platform" = "macos" ] && rid="osx-$arch"
 
-# The plain target framework: the Windows one exists only for the text recogniser.
-framework="net10.0"
-
 staging="$root/artifacts/staging/$rid"
 dist="$root/artifacts/dist"
 
@@ -56,79 +56,94 @@ step() { printf '\033[36m==> %s\033[0m\n' "$1"; }
 
 step "Publishing for $rid"
 rm -rf "$staging"
-mkdir -p "$staging/cli" "$staging/gui" "$dist"
+mkdir -p "$staging" "$dist"
 
-# One folder per program. Publishing two into the same folder does not work: the second run
-# clears what the first put there.
-dotnet publish "$root/src/Lego2STL.Cli/Lego2STL.Cli.csproj" \
-  -c Release -f "$framework" -r "$rid" -p:Version="$version" -o "$staging/cli" --nologo
-dotnet publish "$root/src/Lego2STL.Gui/Lego2STL.Gui.csproj" \
-  -c Release -f "$framework" -r "$rid" -p:Version="$version" -o "$staging/gui" --nologo
+# Both programs into one folder, over one copy of the assemblies they share.
+payload="$staging/payload"
+"$here/lib/payload.sh" "$rid" "$version" "$payload"
 
-cli="$staging/cli/lego2stl"
-gui="$staging/gui/Lego2STL.Gui"
-
-for program in "$cli" "$gui"; do
-  [ -f "$program" ] || { echo "missing: $program" >&2; exit 1; }
-  chmod +x "$program"
-done
+cli="$payload/lego2stl"
+gui="$payload/Lego2STL.Gui"
 
 if [ "$platform" = "linux" ]; then
-  # ---- Linux: a tarball anyone can unpack, and a .deb when the tool is here --------------
+  # ---- Linux: a self-extracting installer, and a tarball anyone can unpack -------------
 
-  step "Building the tarball"
+  step "Gathering the tarball"
   tree="$staging/tree"
   rm -rf "$tree"
-  mkdir -p "$tree/bin" "$tree/share/applications" "$tree/share/doc/lego2stl"
-
-  cp "$cli" "$tree/bin/lego2stl"
-  cp "$gui" "$tree/bin/lego2stl-gui"
-  cp "$here/linux/lego2stl.desktop" "$tree/share/applications/"
+  mkdir -p "$tree"
+  cp -R "$payload/." "$tree/"
+  cp "$here/linux/lego2stl.desktop" "$tree/"
   cp "$here/linux/install.sh" "$tree/install.sh"
-  cp "$root/README.md" "$tree/share/doc/lego2stl/" 2>/dev/null || true
+  cp "$here/lib/runtime-probe.sh" "$tree/runtime-probe.sh"
+  cp "$root/README.md" "$tree/" 2>/dev/null || true
   chmod +x "$tree/install.sh"
 
   tarball="$dist/Lego2STL-$version-linux-$arch.tar.gz"
   rm -f "$tarball"
   tar -czf "$tarball" -C "$tree" .
-  echo "    $tarball"
+  printf '    %s  (%s MB)\n' "$tarball" "$(($(stat -c%s "$tarball") / 1048576))"
 
-  if command -v dpkg-deb >/dev/null 2>&1; then
-    step "Building the .deb"
+  step "Building the installer"
 
-    debarch="amd64"
-    [ "$arch" = "arm64" ] && debarch="arm64"
+  # The pin is read here, on a machine with python, and written into the installer. The
+  # installer itself must run on any Linux, so it reads no JSON and trusts no tool it cannot
+  # count on: the address and the fingerprint are simply part of the file.
+  pin="$here/runtime.json"
+  python="python3"; command -v python3 >/dev/null 2>&1 || python="python"
 
-    debroot="$staging/deb"
-    rm -rf "$debroot"
-    mkdir -p "$debroot/DEBIAN" "$debroot/usr/bin" "$debroot/usr/share/applications"
+  # Said here rather than as a stack trace out of python, because the answer is to pin that
+  # platform in runtime.json and there is no way to guess it.
+  if ! "$python" -c "import json,sys;sys.exit(0 if 'linux-$arch' in json.load(open('$pin'))['platforms'] else 1)"; then
+    echo "runtime.json has no pin for linux-$arch. Add one with packaging/refresh-runtime.sh." >&2
+    exit 1
+  fi
 
-    cp "$cli" "$debroot/usr/bin/lego2stl"
-    cp "$gui" "$debroot/usr/bin/lego2stl-gui"
-    cp "$here/linux/lego2stl.desktop" "$debroot/usr/share/applications/"
+  runtime_version="$("$python" -c "import json;print(json.load(open('$pin'))['version'])")"
+  runtime_file="$("$python" -c "import json;print(json.load(open('$pin'))['platforms']['linux-$arch']['file'])")"
+  runtime_sha="$("$python" -c "import json;print(json.load(open('$pin'))['platforms']['linux-$arch']['sha512'])")"
+  runtime_base="$("$python" -c "import json;print(json.load(open('$pin'))['urlBase'])")"
+  runtime_url="$runtime_base/$runtime_version/$runtime_file"
 
-    installed_kb=$(du -sk "$debroot" | cut -f1)
+  header="$staging/header.sh"
 
-    cat > "$debroot/DEBIAN/control" <<EOF
-Package: lego2stl
-Version: $version
-Section: graphics
-Priority: optional
-Architecture: $debarch
-Installed-Size: $installed_kb
-Maintainer: Lego2STL
-Description: Turn a LEGO parts catalogue into printable shapes
- Reads a parts list, or a set number, and produces one shape file per part plus
- printing plates grouped by colour. Reading a parts catalogue out of a document
- needs Windows; everything after the parts list works here.
-EOF
+  # The probe goes in bodily rather than being fetched or sourced: there is nowhere to source
+  # it from on the machine this ends up on.
+  awk -v probe="$here/lib/runtime-probe.sh" '
+    /^@RUNTIME_PROBE@$/ { while ((getline line < probe) > 0) print line; next }
+    { print }
+  ' "$here/linux/installer-header.sh" > "$header.stage1"
 
-    deb="$dist/lego2stl_${version}_${debarch}.deb"
-    rm -f "$deb"
-    dpkg-deb --build --root-owner-group "$debroot" "$deb"
-    echo "    $deb"
-  else
-    echo "    dpkg-deb was not found, so no .deb was built. The tarball has everything."
+  sed -e "s|@VERSION@|$version|g" \
+      -e "s|@RUNTIME_VERSION@|$runtime_version|g" \
+      -e "s|@RUNTIME_URL@|$runtime_url|g" \
+      -e "s|@RUNTIME_SHA512@|$runtime_sha|g" \
+      "$header.stage1" > "$header"
+  rm -f "$header.stage1"
+
+  # The payload begins on the line after the marker. Substituting a number for the
+  # placeholder cannot change how many lines the header has, which is what makes counting
+  # first and substituting second safe.
+  marker="$(grep -n '^__PAYLOAD_BELOW__$' "$header" | cut -d: -f1)"
+  [ -n "$marker" ] || { echo "the header has lost its payload marker" >&2; exit 1; }
+  sed -i.bak "s|@PAYLOAD_LINE@|$((marker + 1))|" "$header"
+  rm -f "$header.bak"
+
+  installer="$dist/Lego2STL-$version-linux-$arch.run"
+  rm -f "$installer"
+  cat "$header" > "$installer"
+  tar -czf - -C "$tree" . >> "$installer"
+  chmod +x "$installer"
+
+  installer_mb=$(($(stat -c%s "$installer") / 1048576))
+  printf '    %s  (%s MB)\n' "$installer" "$installer_mb"
+  printf '    .NET %s, fetched only when missing\n' "$runtime_version"
+
+  # An installer that grew past this is carrying the runtime again, which is the one thing
+  # this packaging exists to stop.
+  if [ "$installer_mb" -gt 40 ]; then
+    echo "the installer is ${installer_mb} MB, over the 40 MB ceiling. Is it carrying the runtime?" >&2
+    exit 1
   fi
 
 else
