@@ -1,8 +1,9 @@
 # Builds the packages for all three systems, each on its own, and publishes them as a release.
 #
-# Cross-building the programs themselves works from anywhere, but the packages do not: an
-# installer needs the Windows toolset, a .deb needs Debian's, and a disk image needs macOS.
-# So each one is built where it belongs and the results are collected together.
+# Cross-building the programs themselves works from anywhere, but the installers do not: the
+# Windows one needs the WiX toolset, and the macOS one needs lipo, pkgbuild and productbuild,
+# which ship only with macOS. So each is built where it belongs and the results are collected
+# together. None of the three carries .NET 10; each fetches it when the machine has none.
 #
 # Pushing a tag of the form v1.2.0 builds everything and publishes a release. Running it by
 # hand builds the same packages and leaves them as artifacts, without publishing anything.
@@ -70,7 +71,11 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Install the installer toolset
-        run: dotnet tool install --global wix --version 6.0.1
+        run: |
+          dotnet tool install --global wix --version 6.0.1
+          wix extension add --global WixToolset.UI.wixext/6.0.1
+          wix extension add --global WixToolset.Netfx.wixext/6.0.1
+          wix extension add --global WixToolset.BootstrapperApplications.wixext/6.0.1
 
       # The version reaches the script through the environment rather than being pasted into
       # the command. A tag name can hold quotes and semicolons, and pasting one straight into
@@ -112,12 +117,10 @@ jobs:
   macos:
     name: macos
     needs: [test, version]
+    # One job, not two. The package is universal: the programs are published for both kinds of
+    # Mac and fused, so one file serves every machine and only one runner is billed. macOS
+    # minutes cost ten times Linux ones.
     runs-on: macos-latest
-    strategy:
-      matrix:
-        # Both, because a Mac binary is built for one processor family or the other and an
-        # Intel machine cannot run an Apple silicon build.
-        arch: [x64, arm64]
     steps:
       - uses: actions/checkout@v4
 
@@ -128,12 +131,11 @@ jobs:
       - name: Build the package
         env:
           VERSION: ${{ needs.version.outputs.number }}
-          ARCH: ${{ matrix.arch }}
-        run: ./packaging/build-unix.sh macos "$ARCH" "$VERSION"
+        run: ./packaging/build-unix.sh macos universal "$VERSION"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-${{ matrix.arch }}
+          name: macos
           path: artifacts/dist/*
           if-no-files-found: error
 
@@ -178,7 +180,20 @@ jobs:
         run: |
           set -euo pipefail
 
-          flags=(--generate-notes --title "Lego2STL $VERSION")
+          notes=$(mktemp)
+          {
+            echo "Needs **.NET 10**. Each installer puts it in place when the machine has not"
+            echo "got it, and leaves it alone when it has. The zip and tarball expect it to be"
+            echo "there already."
+            echo
+            echo "| System | Install with | Or unpack |"
+            echo "|---|---|---|"
+            echo "| Windows | \`.exe\` | \`.zip\` |"
+            echo "| Linux | \`.run\` | \`.tar.gz\` |"
+            echo "| macOS | \`.pkg\` (any Mac) | \`.zip\` |"
+          } > "$notes"
+
+          flags=(--generate-notes --notes-file "$notes" --title "Lego2STL $VERSION")
           if [ "$PRERELEASE" = "true" ]; then
             flags+=(--prerelease)
           fi

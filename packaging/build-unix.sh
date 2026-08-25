@@ -40,7 +40,14 @@ esac
 
 case "$arch" in
   x64|arm64) ;;
-  *) echo "architecture must be x64 or arm64" >&2; exit 2 ;;
+  # The macOS package serves every Mac from one file, so the architecture is not a choice
+  # there and the workflow says so. It is a choice on Linux, where there is no such thing.
+  universal)
+    if [ "$platform" != "macos" ]; then
+      echo "universal is a macOS package; on Linux say x64 or arm64" >&2
+      exit 2
+    fi ;;
+  *) echo "architecture must be x64, arm64, or universal on macOS" >&2; exit 2 ;;
 esac
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
