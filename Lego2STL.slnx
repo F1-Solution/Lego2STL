@@ -1,16 +1,4 @@
 <Solution>
-  <Folder Name="/.github/" />
-  <Folder Name="/.github/workflows/">
-    <File Path=".github/workflows/package.yml" />
-  </Folder>
-  <Folder Name="/packaging/">
-    <File Path="packaging/build-unix.sh" />
-    <File Path="packaging/build-windows.ps1" />
-    <File Path="packaging/README.md" />
-    <File Path="packaging/refresh-runtime.sh" />
-    <File Path="packaging/runtime.json" />
-    <File Path="packaging/version.sh" />
-  </Folder>
   <Folder Name="/src/">
     <Project Path="src/Lego2STL.Cli/Lego2STL.Cli.csproj" />
     <Project Path="src/Lego2STL.Core/Lego2STL.Core.csproj" />
