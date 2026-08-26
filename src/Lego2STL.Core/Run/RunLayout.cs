@@ -1,3 +1,6 @@
+using Lego2STL.Core.Pipeline;
+using Lego2STL.Core.Rebrickable;
+
 namespace Lego2STL.Core.Run;
 
 /// <summary>
@@ -27,6 +30,12 @@ public sealed class RunLayout
     public string PartsListPath => Path.Combine(Root, Name + ".csv");
 
     public string ReportPath => Path.Combine(Root, "report.txt");
+
+    /// <summary>What the run recorded about itself, written from the moment it starts.</summary>
+    public string ManifestPath => Path.Combine(Root, "run.json");
+
+    /// <summary>Everything the run said, kept beside what it produced.</summary>
+    public string LogPath => Path.Combine(Root, "run.log");
 
     /// <summary>Crops of anything that could not be read, for checking by eye.</summary>
     public string ReviewDirectory => Path.Combine(Root, "review");
@@ -70,6 +79,62 @@ public sealed class RunLayout
 
         return new RunLayout(Path.Combine(directory, name), name);
     }
+
+    /// <summary>The layout of a folder that already exists, named after itself.</summary>
+    public static RunLayout At(string folder)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(folder);
+
+        var full = Path.GetFullPath(folder);
+        var name = Path.GetFileName(full);
+
+        return string.IsNullOrEmpty(name)
+            ? throw new ArgumentException($"Cannot work out a name from '{folder}'.", nameof(folder))
+            : new RunLayout(full, name);
+    }
+
+    /// <summary>
+    /// The folder a run will use, worked out before it starts.
+    /// </summary>
+    /// <remarks>
+    /// The same function the pipeline itself calls, which is what makes the folder the window
+    /// names - and the log file it offers inside it - the folder the run really writes to.
+    /// Null when the input is not yet enough to name one, which is the normal state of a window
+    /// being filled in.
+    /// </remarks>
+    public static RunLayout? Plan(RunSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+
+        try
+        {
+            if (settings.Kind == InputKind.SetNumber)
+            {
+                if (string.IsNullOrWhiteSpace(settings.SetNumber))
+                {
+                    return null;
+                }
+
+                var name = SetFolderName(settings.SetNumber);
+                var root = settings.OutputDirectory ?? Environment.CurrentDirectory;
+                return For(Path.Combine(root, name + ".csv"), null);
+            }
+
+            return string.IsNullOrWhiteSpace(settings.InputPath)
+                ? null
+                : For(settings.InputPath, settings.OutputDirectory);
+        }
+        catch (Exception ex) when (ex is ArgumentException
+                                       or NotSupportedException
+                                       or PathTooLongException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>Where a set's run folder goes, given its number.</summary>
+    public static string SetFolderName(string setNumber) =>
+        "set-" + RebrickableClient.NormaliseSetNumber(setNumber);
 
     public void CreateDirectories()
     {

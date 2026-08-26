@@ -155,7 +155,7 @@ public sealed class PipelineRunner
             read.Entries, ColorReference.Table, settings.ColorScheme, words);
         notes.AddRange(list.Notes);
 
-        var layout = RunLayout.For(settings.InputPath!, settings.OutputDirectory);
+        var layout = RunLayout.Plan(settings)!;
         layout.CreateDirectories();
 
         return (list, layout, read.Unresolved);
@@ -209,9 +209,7 @@ public sealed class PipelineRunner
 
         notes.AddRange(list.Notes);
 
-        var name = RebrickableSetFolderName(settings.SetNumber!);
-        var root = settings.OutputDirectory ?? Environment.CurrentDirectory;
-        var layout = RunLayout.For(Path.Combine(root, name + ".csv"), null);
+        var layout = RunLayout.Plan(settings)!;
         layout.CreateDirectories();
 
         return (list, layout, []);
@@ -228,7 +226,7 @@ public sealed class PipelineRunner
 
         notes.AddRange(list.Notes);
 
-        var layout = RunLayout.For(settings.InputPath!, settings.OutputDirectory);
+        var layout = RunLayout.Plan(settings)!;
         layout.CreateDirectories();
 
         return (list, layout, []);
@@ -393,7 +391,7 @@ public sealed class PipelineRunner
 
     /// <summary>Where a set's run folder goes, given its number.</summary>
     public static string RebrickableSetFolderName(string setNumber) =>
-        "set-" + Rebrickable.RebrickableClient.NormaliseSetNumber(setNumber);
+        RunLayout.SetFolderName(setNumber);
 
     private void Report(RunStage stage, int completed = 0, int total = 0, string? detail = null) =>
         _progress?.Report(new RunProgress(stage, completed, total, detail));
