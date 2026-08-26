@@ -145,6 +145,14 @@ public sealed partial class Strings
             [TextKey.MsgError] = "Errore",
 
             // Quando qualcosa non va.
+            [TextKey.ErrChooseDocument] = "Scegliere un documento da leggere.",
+            [TextKey.ErrChoosePartsList] = "Scegliere un elenco pezzi da cui partire.",
+            [TextKey.ErrTypeSetNumber] = "Digitare un numero di set, per esempio 42100-1.",
+            [TextKey.ErrNoFileAt] = "Non c'è nessun file in {0}.",
+            [TextKey.ErrScaleNotPositive] = "La scala deve essere maggiore di zero.",
+            [TextKey.ErrSpacingNegative] = "La distanza tra i pezzi non può essere negativa.",
+            [TextKey.ErrNotABedSize] =
+                "'{0}' non è una misura di piano. Una misura è per esempio 220x220 oppure 300x300x400.",
             [TextKey.ErrClearanceNeedsClosedShape] =
                 "{0} ha ancora {1} spigoli aperti: rientrare ogni faccia di una quantità fissa " +
                 "sposterebbe anche i bordi dei buchi e deformerebbe la forma. È stata scritta a " +

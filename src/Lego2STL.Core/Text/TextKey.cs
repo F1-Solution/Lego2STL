@@ -109,6 +109,13 @@ public enum TextKey
     MsgError,
 
     // Things that go wrong, said in a way that says what to do next.
+    ErrChooseDocument,
+    ErrChoosePartsList,
+    ErrTypeSetNumber,
+    ErrNoFileAt,
+    ErrScaleNotPositive,
+    ErrSpacingNegative,
+    ErrNotABedSize,
     ErrClearanceNeedsClosedShape,
     ErrClearanceNegative,
     ErrPartTooSmallForClearance,

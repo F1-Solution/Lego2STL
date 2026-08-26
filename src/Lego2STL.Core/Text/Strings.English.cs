@@ -140,6 +140,14 @@ public sealed partial class Strings
             [TextKey.MsgError] = "Error",
 
             // Things that go wrong.
+            [TextKey.ErrChooseDocument] = "Choose a document to read.",
+            [TextKey.ErrChoosePartsList] = "Choose a parts list to build from.",
+            [TextKey.ErrTypeSetNumber] = "Type a set number, for example 42100-1.",
+            [TextKey.ErrNoFileAt] = "There is no file at {0}.",
+            [TextKey.ErrScaleNotPositive] = "A scale has to be greater than zero.",
+            [TextKey.ErrSpacingNegative] = "The gap between parts cannot be negative.",
+            [TextKey.ErrNotABedSize] =
+                "'{0}' is not a bed size. One looks like 220x220 or 300x300x400.",
             [TextKey.ErrClearanceNeedsClosedShape] =
                 "{0} still has {1} open edge(s), so taking every face in by a fixed amount would move " +
                 "the edges of the holes as well and distort the shape. It was written at true size " +
