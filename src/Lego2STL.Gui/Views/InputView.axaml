@@ -56,9 +56,13 @@
 
         <TextBlock Classes="group"
                    Text="{Binding [UiColourScheme], Source={x:Static loc:Loc.Current}}" />
-        <ComboBox HorizontalAlignment="Left" MinWidth="220"
-                  ItemsSource="{x:Static vm:RunOptionsViewModel.ColorSchemes}"
-                  SelectedItem="{Binding Options.ColorScheme}" />
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <ComboBox HorizontalAlignment="Left" MinWidth="220"
+                    ItemsSource="{x:Static vm:RunOptionsViewModel.ColorSchemes}"
+                    SelectedItem="{Binding Options.ColorScheme}" />
+          <!-- Named, not merely described: the flag is how this is asked for from a terminal. -->
+          <TextBlock Classes="hint" VerticalAlignment="Center" Text="--color-scheme" />
+        </StackPanel>
 
       </StackPanel>
 

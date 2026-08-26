@@ -124,6 +124,10 @@ public sealed partial class RunOptionsViewModel : ViewModelBase
     [ObservableProperty]
     public partial string? ApiKey { get; set; }
 
+    /// <summary>Say only what matters: warnings, failures and where things were written.</summary>
+    [ObservableProperty]
+    public partial bool Quiet { get; set; }
+
     [ObservableProperty]
     public partial string? LogFile { get; set; }
 
@@ -232,6 +236,7 @@ public sealed partial class RunOptionsViewModel : ViewModelBase
 
         Language = Language,
         ApiKey = Blank(ApiKey),
+        Quiet = Quiet,
         LogFile = Blank(LogFile),
     };
 

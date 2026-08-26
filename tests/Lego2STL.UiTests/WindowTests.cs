@@ -153,33 +153,6 @@ public sealed class WindowTests
         Texts(window).Should().Contain(t => t == model.Options.Problem);
     }
 
-    /// <summary>
-    /// Every option the command line takes has to be reachable here. This is the parity
-    /// promise, checked rather than asserted in a comment.
-    /// </summary>
-    [AvaloniaFact]
-    public void Every_option_the_command_line_takes_is_named_on_the_options_screen()
-    {
-        var window = Open(out var model);
-        model.Screen = Screen.Options;
-        window.CaptureRenderedFrame();
-
-        var shown = string.Join(" ", Texts(window));
-
-        string[] options =
-        [
-            "--csv-only", "--no-plates", "--output-dir", "--delimiter", "--ascii",
-            "--scale", "--clearance", "--repair", "--keep-origin", "--no-seam-repair",
-            "--weld-tolerance", "--ldraw-dir", "--ldraw-cache", "--offline", "--no-unofficial",
-            "--printer", "--plate-size", "--plate-spacing", "--lang", "--api-key", "--log",
-        ];
-
-        foreach (var option in options)
-        {
-            shown.Should().Contain(option, "{0} has to be reachable from the window", option);
-        }
-    }
-
     [AvaloniaFact]
     public void The_options_screen_offers_every_printer()
     {

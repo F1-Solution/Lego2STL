@@ -267,10 +267,10 @@ one Options screen; Task 18 amends the same test to union Setup and Settings.
 `EveryFlag` builds `ExtractCommand.Create(Strings.English)` and `BuildCommand.Create(...)`,
 selects `command.Options`, adds `CommonOptions.Language.Name`, keeps only names starting `--`,
 and drops `--help`, `--version`, `--list-pages` and `--set` — the parser's own two, and the two
-that *are* the input, chosen by radio button rather than typed. That leaves **23**: the 22
-`PipelineOptions` registers (`--color-scheme` among them, from `extract`) plus `--lang`. Pin
-that count in its own test, so a change to the CLI is visible here rather than silently
-checking less.
+that *are* the input, chosen by radio button rather than typed. That leaves **24**: the 22
+`PipelineOptions` adds unconditionally, plus `--color-scheme`, which only `extract` registers,
+plus `--lang`. Pin that count in its own test, so a change to the CLI is visible here rather
+than silently checking less.
 
 - [ ] **Step 1:** Write `OptionParityTests` with three tests — the count guard,
   `Every_option_the_command_line_takes_is_named_in_the_window` (union of `Screen.Input` and

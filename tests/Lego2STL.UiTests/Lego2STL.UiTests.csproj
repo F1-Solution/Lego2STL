@@ -31,6 +31,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Lego2STL.Gui\Lego2STL.Gui.csproj" />
+    <!--
+      The console program too, so the parity test can ask the real command declaration what
+      options it accepts instead of walking a list that has to be kept in step by hand.
+    -->
+    <ProjectReference Include="..\..\src\Lego2STL.Cli\Lego2STL.Cli.csproj" />
   </ItemGroup>
 
 </Project>

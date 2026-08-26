@@ -186,6 +186,8 @@
                   ItemsSource="{Binding Languages}"
                   SelectedItem="{Binding SelectedLanguage}"
                   DisplayMemberBinding="{Binding Name}" />
+        <!-- Named, not merely described: the flag is how this is asked for from a terminal. -->
+        <TextBlock Classes="hint" VerticalAlignment="Center" Margin="10,0,0,0" Text="--lang" />
         <TextBlock Classes="hint" VerticalAlignment="Center" Margin="10,0,0,0"
                    Text="{Binding [HelpOptLang], Source={x:Static loc:Loc.Current}}" />
       </StackPanel>
@@ -195,6 +197,13 @@
         <TextBox Grid.Column="1" PasswordChar="•" Text="{Binding Options.ApiKey}"
                  PlaceholderText="{Binding [HelpOptApiKey], Source={x:Static loc:Loc.Current}}" />
       </Grid>
+      <StackPanel Classes="row">
+        <CheckBox MinWidth="180" IsChecked="{Binding Options.Quiet}"
+                  Content="--quiet" />
+        <TextBlock Classes="hint" VerticalAlignment="Center"
+                   TextWrapping="Wrap" MaxWidth="580"
+                   Text="{Binding [HelpOptQuiet], Source={x:Static loc:Loc.Current}}" />
+      </StackPanel>
       <Grid ColumnDefinitions="180,*,Auto" Margin="0,3">
         <TextBlock Grid.Column="0" Classes="opt" Text="--log"
                    ToolTip.Tip="{Binding [HelpOptLog], Source={x:Static loc:Loc.Current}}" />
