@@ -12,6 +12,7 @@ namespace Lego2STL.Tests.Run;
 /// disagree - leaving a copy carried on a stick writing its history into the account it
 /// happened to be run under.
 /// </remarks>
+[Collection(AppDataFolder.Name)]
 public sealed class AppDataDirectoryTests
 {
     [Fact]
