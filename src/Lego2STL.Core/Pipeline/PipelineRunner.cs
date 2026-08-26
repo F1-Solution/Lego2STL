@@ -31,12 +31,21 @@ public sealed class PipelineRunner
     private readonly Action<string> _log;
     private readonly IProgress<RunProgress>? _progress;
 
+    /// <summary>What "stopped while building shapes, 38 of 91" is read from.</summary>
+    private RunProgress? _lastProgress;
+
     public PipelineRunner(Action<string>? log = null, IProgress<RunProgress>? progress = null)
     {
         _log = log ?? (_ => { });
         _progress = progress;
     }
 
+    /// <remarks>
+    /// The one place a manifest is written, so a run's four possible endings are four states of
+    /// one write rather than four scattered calls that could each be forgotten - or, worse, two
+    /// of which could fire for the same run. The <c>finally</c> is what covers cancellation:
+    /// without it a run that was stopped leaves a record reading "running" for ever.
+    /// </remarks>
     public async Task<RunOutcome> RunAsync(RunSettings settings, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(settings);
@@ -44,14 +53,35 @@ public sealed class PipelineRunner
         var problems = settings.Problems();
         if (problems.Count > 0)
         {
+            // Nothing has started and no folder has been named, so there is nothing to record.
             return RunOutcome.Failure(settings, string.Join(" ", problems));
         }
 
+        var layout = RunLayout.Plan(settings);
+        var started = DateTimeOffset.UtcNow;
+        var recorded = false;
+
         Report(RunStage.Starting);
+
+        if (layout is not null)
+        {
+            layout.CreateDirectories();
+            await Record(layout, RunManifest.Starting(settings, started), cancellationToken)
+                .ConfigureAwait(false);
+        }
 
         try
         {
-            return await RunCoreAsync(settings, cancellationToken).ConfigureAwait(false);
+            var outcome = await RunCoreAsync(settings, cancellationToken).ConfigureAwait(false);
+
+            await Record(
+                    outcome.Layout ?? layout,
+                    RunManifest.From(outcome, started, DateTimeOffset.UtcNow, _lastProgress),
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            recorded = true;
+            return outcome;
         }
         catch (OperationCanceledException)
         {
@@ -66,8 +96,38 @@ public sealed class PipelineRunner
         {
             // These all carry a message written for whoever is reading it; anything else is a
             // fault in the tool and is left to travel with its stack trace.
-            return RunOutcome.Failure(settings, ex.Message);
+            var failure = RunOutcome.Failure(settings, ex.Message) with { Layout = layout };
+
+            await Record(
+                    layout,
+                    RunManifest.From(failure, started, DateTimeOffset.UtcNow, _lastProgress),
+                    CancellationToken.None)
+                .ConfigureAwait(false);
+
+            recorded = true;
+            return failure;
         }
+        finally
+        {
+            if (!recorded)
+            {
+                await Record(
+                        layout,
+                        RunManifest.Stopped(settings, started, DateTimeOffset.UtcNow, _lastProgress),
+                        CancellationToken.None)
+                    .ConfigureAwait(false);
+            }
+        }
+    }
+
+    private static async Task Record(RunLayout? layout, RunManifest manifest, CancellationToken cancellationToken)
+    {
+        if (layout is null)
+        {
+            return;
+        }
+
+        await RunManifest.WriteAsync(layout, manifest, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<RunOutcome> RunCoreAsync(RunSettings settings, CancellationToken cancellationToken)
@@ -393,6 +453,11 @@ public sealed class PipelineRunner
     public static string RebrickableSetFolderName(string setNumber) =>
         RunLayout.SetFolderName(setNumber);
 
-    private void Report(RunStage stage, int completed = 0, int total = 0, string? detail = null) =>
-        _progress?.Report(new RunProgress(stage, completed, total, detail));
+    private void Report(RunStage stage, int completed = 0, int total = 0, string? detail = null)
+    {
+        var progress = new RunProgress(stage, completed, total, detail);
+
+        _lastProgress = progress;
+        _progress?.Report(progress);
+    }
 }
