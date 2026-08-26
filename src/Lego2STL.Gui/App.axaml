@@ -9,6 +9,80 @@
         <local:ViewLocator />
     </Application.DataTemplates>
 
+    <Application.Resources>
+        <!--
+          One place for every colour the window uses, in two variants the machine chooses
+          between. Scattered literals cannot be switched, which is how a window ends up
+          readable in one setting and not the other.
+
+          The SystemAccentColor family is overridden here rather than left to the platform:
+          that one move recolours every Fluent checkbox, radio, spinner and focus ring at
+          once, so the window stops borrowing whatever accent the machine happens to be set
+          to and contradicting its own.
+        -->
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="AppWindowBackground" Color="#F4F6F8" />
+                    <SolidColorBrush x:Key="AppSurface" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="AppCardBorder" Color="#DDE2E8" />
+                    <SolidColorBrush x:Key="AppText" Color="#14181D" />
+                    <SolidColorBrush x:Key="AppTextSecondary" Color="#55606C" />
+                    <SolidColorBrush x:Key="AppAccent" Color="#0B6BCB" />
+                    <SolidColorBrush x:Key="AppAccentHover" Color="#0A5AAA" />
+                    <SolidColorBrush x:Key="AppTextOnAccent" Color="#FFFFFF" />
+                    <SolidColorBrush x:Key="AppSuccess" Color="#16794C" />
+                    <SolidColorBrush x:Key="AppWarningText" Color="#8A5A00" />
+                    <SolidColorBrush x:Key="AppWarningBand" Color="#FDF0D2" />
+                    <SolidColorBrush x:Key="AppWarningBorder" Color="#E3C77E" />
+                    <SolidColorBrush x:Key="AppDanger" Color="#C0271B" />
+                    <SolidColorBrush x:Key="AppLogBackground" Color="#1B1F24" />
+                    <SolidColorBrush x:Key="AppLogForeground" Color="#DDE3EA" />
+
+                    <Color x:Key="AppAccentColor">#0B6BCB</Color>
+
+                    <Color x:Key="SystemAccentColor">#0B6BCB</Color>
+                    <Color x:Key="SystemAccentColorLight1">#2E83D8</Color>
+                    <Color x:Key="SystemAccentColorLight2">#5A9DE3</Color>
+                    <Color x:Key="SystemAccentColorLight3">#8CBCED</Color>
+                    <Color x:Key="SystemAccentColorDark1">#0A5AAA</Color>
+                    <Color x:Key="SystemAccentColorDark2">#084988</Color>
+                    <Color x:Key="SystemAccentColorDark3">#063766</Color>
+                </ResourceDictionary>
+
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="AppWindowBackground" Color="#0F1216" />
+                    <SolidColorBrush x:Key="AppSurface" Color="#171B21" />
+                    <SolidColorBrush x:Key="AppCardBorder" Color="#2A313A" />
+                    <SolidColorBrush x:Key="AppText" Color="#E8ECF1" />
+                    <SolidColorBrush x:Key="AppTextSecondary" Color="#9BA6B3" />
+                    <SolidColorBrush x:Key="AppAccent" Color="#6BA6F5" />
+                    <SolidColorBrush x:Key="AppAccentHover" Color="#8CBCFF" />
+                    <SolidColorBrush x:Key="AppTextOnAccent" Color="#06182E" />
+                    <SolidColorBrush x:Key="AppSuccess" Color="#58C99A" />
+                    <SolidColorBrush x:Key="AppWarningText" Color="#E2B04A" />
+                    <SolidColorBrush x:Key="AppWarningBand" Color="#2E2510" />
+                    <SolidColorBrush x:Key="AppWarningBorder" Color="#5A4A1F" />
+                    <SolidColorBrush x:Key="AppDanger" Color="#F2867C" />
+                    <SolidColorBrush x:Key="AppLogBackground" Color="#0B0E12" />
+                    <SolidColorBrush x:Key="AppLogForeground" Color="#D6DEE7" />
+
+                    <Color x:Key="AppAccentColor">#6BA6F5</Color>
+
+                    <Color x:Key="SystemAccentColor">#6BA6F5</Color>
+                    <Color x:Key="SystemAccentColorLight1">#8CBCFF</Color>
+                    <Color x:Key="SystemAccentColorLight2">#A8CDFF</Color>
+                    <Color x:Key="SystemAccentColorLight3">#C4DEFF</Color>
+                    <Color x:Key="SystemAccentColorDark1">#4E8CDB</Color>
+                    <Color x:Key="SystemAccentColorDark2">#3771BB</Color>
+                    <Color x:Key="SystemAccentColorDark3">#25589A</Color>
+                </ResourceDictionary>
+
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
     <Application.Styles>
         <FluentTheme />
     </Application.Styles>
