@@ -130,6 +130,21 @@ public sealed record RunSettings
     /// <summary>Also write everything said during the run to this file.</summary>
     public string? LogFile { get; init; }
 
+    // ---- The key, never written out ----------------------------------------------------
+
+    /// <summary>
+    /// What stands in for the key wherever the settings are written down.
+    /// </summary>
+    /// <remarks>
+    /// One rule with one spelling, applied by the shown command line and by the record a run
+    /// keeps of itself. Both are made to be copied, pasted and kept, and a secret must not
+    /// travel with either.
+    /// </remarks>
+    public const string MaskedApiKey = "<your key>";
+
+    public static string? MaskApiKey(string? apiKey) =>
+        string.IsNullOrWhiteSpace(apiKey) ? null : MaskedApiKey;
+
     // ---- Derived -----------------------------------------------------------------------
 
     public bool WantsShapes => Stages is RunStages.Shapes or RunStages.ShapesAndPlates;
@@ -410,10 +425,10 @@ public sealed record RunSettings
 
         // The key is deliberately never written out: the point of showing the command is that
         // it can be pasted somewhere, and a secret should not travel with it.
-        if (!string.IsNullOrWhiteSpace(ApiKey))
+        if (MaskApiKey(ApiKey) is { } masked)
         {
             parts.Add("--api-key");
-            parts.Add("<your key>");
+            parts.Add(masked);
         }
     }
 
