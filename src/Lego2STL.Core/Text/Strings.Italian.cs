@@ -173,10 +173,10 @@ public sealed partial class Strings
 
             // L'interfaccia.
             [TextKey.UiTitle] = "Lego2STL",
-            [TextKey.UiTabInput] = "Partenza",
-            [TextKey.UiTabOptions] = "Opzioni",
             [TextKey.UiTabRun] = "Esecuzione",
-            [TextKey.UiTabCatalogue] = "Catalogo",
+            [TextKey.UiRailRuns] = "Esecuzioni",
+            [TextKey.UiRailSetup] = "Preparazione",
+            [TextKey.UiNewRun] = "Nuova esecuzione",
             [TextKey.UiNext] = "Avanti",
             [TextKey.UiBack] = "Indietro",
             [TextKey.UiStart] = "Avvia",
@@ -230,6 +230,53 @@ public sealed partial class Strings
             [TextKey.UiEveryOptionHere] =
                 "Tutte le opzioni che accetta la riga di comando sono in questa schermata. La "
                 + "riga in fondo alla finestra è esattamente ciò a cui equivalgono.",
+
+            // Come sta un'esecuzione, e dove era arrivata se non ha finito.
+            [TextKey.UiStatusRunning] = "In corso",
+            [TextKey.UiStatusComplete] = "Completata",
+            [TextKey.UiStatusNeedsDecision] = "Richiede una scelta",
+            [TextKey.UiStatusFailed] = "Non riuscita",
+            [TextKey.UiStatusStopped] = "Interrotta",
+            [TextKey.UiStoppedAt] = "interrotta durante {0}, {1} di {2}",
+
+            // L'elenco delle esecuzioni già fatte.
+            [TextKey.UiRunsEmpty] = "Ancora nessuna esecuzione. Preparane una e comparirà qui.",
+            [TextKey.UiForget] = "Dimentica",
+            [TextKey.UiForgetEverything] = "Dimentica tutte le esecuzioni",
+            [TextKey.UiFolderMissing] = "Questa cartella non c'è più.",
+
+            // Cosa dice la pagina quando il registro manca o viene da una versione più recente.
+            [TextKey.UiNoManifest] =
+                "Questa esecuzione è precedente al registro delle esecuzioni, quindi le misure " +
+                "delle forme non sono note. Eseguila di nuovo per completarla.",
+            [TextKey.UiNewerManifest] =
+                "Questa esecuzione è stata registrata da una versione più recente del programma. " +
+                "Segue la parte che questa versione capisce.",
+            [TextKey.UiRunItAgain] = "Esegui di nuovo",
+            [TextKey.UiOpenPartsList] = "Apri l'elenco pezzi",
+            [TextKey.UiContinueFromPartsList] = "Continua dall'elenco pezzi",
+
+            // Trovare la strada fra le opzioni.
+            [TextKey.UiSearchOptions] = "Cerca fra le opzioni",
+            [TextKey.UiChangedOnly] = "Solo ciò che ho cambiato",
+            [TextKey.UiHiddenCount] = "{0} nascoste",
+            [TextKey.UiReset] = "Ripristina",
+
+            // L'esecuzione aperta.
+            [TextKey.UiQuietNote] =
+                "Qui non compare nulla per via di --quiet: è tutto in run.log.",
+            [TextKey.UiWhen] = "Quando",
+            [TextKey.UiRunFolder] = "Cartella dell'esecuzione",
+
+            // I passi di un'esecuzione, con i nomi per uno schermo e non per un registro.
+            [TextKey.UiStageReadingDocument] = "Lettura del documento",
+            [TextKey.UiStageLookingUpSet] = "Ricerca del set",
+            [TextKey.UiStageReadingPartsList] = "Lettura dell'elenco pezzi",
+            [TextKey.UiStageWritingPartsList] = "Scrittura dell'elenco pezzi",
+            [TextKey.UiStageGatheringShapes] = "Raccolta delle forme",
+            [TextKey.UiStageBuildingShapes] = "Costruzione delle forme",
+            [TextKey.UiStageArrangingPlates] = "Disposizione dei piani",
+            [TextKey.UiStageWritingReport] = "Scrittura del resoconto",
 
             // What --help says.
             [TextKey.HelpRoot] =

@@ -58,16 +58,16 @@
         <StackPanel Grid.Column="0" Orientation="Horizontal">
           <Button Classes="tab" Classes.on="{Binding OnInput}"
                   Command="{Binding ShowCommand}" CommandParameter="Input"
-                  Content="{Binding [UiTabInput], Source={x:Static loc:Loc.Current}}" />
+                  Content="{Binding [UiInputKind], Source={x:Static loc:Loc.Current}}" />
           <Button Classes="tab" Classes.on="{Binding OnOptions}"
                   Command="{Binding ShowCommand}" CommandParameter="Options"
-                  Content="{Binding [UiTabOptions], Source={x:Static loc:Loc.Current}}" />
+                  Content="{Binding [UiGroupStages], Source={x:Static loc:Loc.Current}}" />
           <Button Classes="tab" Classes.on="{Binding OnRun}"
                   Command="{Binding ShowCommand}" CommandParameter="Run"
                   Content="{Binding [UiTabRun], Source={x:Static loc:Loc.Current}}" />
           <Button Classes="tab" Classes.on="{Binding OnCatalogue}"
                   Command="{Binding ShowCommand}" CommandParameter="Catalogue"
-                  Content="{Binding [UiTabCatalogue], Source={x:Static loc:Loc.Current}}" />
+                  Content="{Binding [UiTabRun], Source={x:Static loc:Loc.Current}}" />
         </StackPanel>
 
         <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">

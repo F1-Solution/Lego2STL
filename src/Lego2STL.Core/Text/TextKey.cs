@@ -125,10 +125,10 @@ public enum TextKey
 
     // The interface.
     UiTitle,
-    UiTabInput,
-    UiTabOptions,
     UiTabRun,
-    UiTabCatalogue,
+    UiRailRuns,
+    UiRailSetup,
+    UiNewRun,
     UiNext,
     UiBack,
     UiStart,
@@ -178,6 +178,48 @@ public enum TextKey
     UiFailed,
     UiIdle,
     UiEveryOptionHere,
+
+    // How a run stands, and where it got to if it did not finish.
+    UiStatusRunning,
+    UiStatusComplete,
+    UiStatusNeedsDecision,
+    UiStatusFailed,
+    UiStatusStopped,
+    UiStoppedAt,
+
+    // The list of runs that have happened.
+    UiRunsEmpty,
+    UiForget,
+    UiForgetEverything,
+    UiFolderMissing,
+
+    // What a run's page says when its record is missing or from a newer build.
+    UiNoManifest,
+    UiNewerManifest,
+    UiRunItAgain,
+    UiOpenPartsList,
+    UiContinueFromPartsList,
+
+    // Finding a way through the options.
+    UiSearchOptions,
+    UiChangedOnly,
+    UiHiddenCount,
+    UiReset,
+
+    // The open run.
+    UiQuietNote,
+    UiWhen,
+    UiRunFolder,
+
+    // The steps of a run, named for a screen rather than for a log.
+    UiStageReadingDocument,
+    UiStageLookingUpSet,
+    UiStageReadingPartsList,
+    UiStageWritingPartsList,
+    UiStageGatheringShapes,
+    UiStageBuildingShapes,
+    UiStageArrangingPlates,
+    UiStageWritingReport,
 
     // Remarks a run makes about what it found along the way.
     NoteEntriesFound,

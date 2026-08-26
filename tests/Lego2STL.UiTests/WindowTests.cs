@@ -94,9 +94,14 @@ public sealed class WindowTests
         window.CaptureRenderedFrame();
         var italian = Texts(window).ToList();
 
-        english.Should().Contain("Input");
-        italian.Should().Contain("Partenza");
-        italian.Should().NotContain("Input");
+        // Asked for by key rather than by wording, so re-wording a phrase does not fail this:
+        // the claim is that the window re-reads itself, not that it says any one thing.
+        var inEnglish = Strings.For(DisplayLanguage.English)[TextKey.UiInputKind];
+        var inItalian = Strings.For(DisplayLanguage.Italian)[TextKey.UiInputKind];
+
+        english.Should().Contain(inEnglish);
+        italian.Should().Contain(inItalian);
+        italian.Should().NotContain(inEnglish);
     }
 
     [AvaloniaFact]

@@ -27,7 +27,7 @@
     <StackPanel Spacing="2" MaxWidth="820" HorizontalAlignment="Left">
 
       <TextBlock Classes="heading"
-                 Text="{Binding [UiTabOptions], Source={x:Static loc:Loc.Current}}" />
+                 Text="{Binding [UiGroupStages], Source={x:Static loc:Loc.Current}}" />
 
       <!-- Stages -->
       <TextBlock Classes="group"
