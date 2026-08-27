@@ -39,3 +39,29 @@ PHASE:INST-11 WAVE:0 STATUS:failed TS:2026-08-26T00:15:00Z
 # so a .pkg cannot be assembled off a Mac without building both from source, which the task
 # says is not worth working around. Optional; nothing in INST-1..10 depends on it.
 PHASE:INST-12 WAVE:0 STATUS:complete TS:2026-08-26T07:47:30Z
+# The run-document window: docs/superpowers/plans/2026-08-26-run-document-window.md, 19 tasks.
+PHASE:RDW-1 WAVE:0 STATUS:complete TS:2026-08-26T13:05:00Z
+PHASE:RDW-2 WAVE:0 STATUS:complete TS:2026-08-26T13:20:00Z
+PHASE:RDW-3 WAVE:0 STATUS:complete TS:2026-08-26T13:35:00Z
+PHASE:RDW-4 WAVE:0 STATUS:complete TS:2026-08-26T13:52:00Z
+PHASE:RDW-5 WAVE:0 STATUS:complete TS:2026-08-26T14:04:00Z
+PHASE:RDW-6 WAVE:0 STATUS:complete TS:2026-08-26T18:54:07Z
+PHASE:RDW-7 WAVE:0 STATUS:complete TS:2026-08-26T19:04:11Z
+PHASE:RDW-8 WAVE:0 STATUS:complete TS:2026-08-26T19:18:54Z
+PHASE:RDW-9 WAVE:0 STATUS:complete TS:2026-08-26T19:28:43Z
+PHASE:RDW-10 WAVE:0 STATUS:complete TS:2026-08-26T23:20:15Z
+PHASE:RDW-11 WAVE:0 STATUS:complete TS:2026-08-26T23:29:34Z
+PHASE:RDW-12 WAVE:0 STATUS:complete TS:2026-08-26T23:53:18Z
+PHASE:RDW-13 WAVE:0 STATUS:complete TS:2026-08-27T00:03:38Z
+PHASE:RDW-14 WAVE:0 STATUS:complete TS:2026-08-27T04:25:54Z
+PHASE:RDW-15 WAVE:0 STATUS:complete TS:2026-08-27T04:35:36Z
+PHASE:RDW-16 WAVE:0 STATUS:complete TS:2026-08-27T04:48:31Z
+PHASE:RDW-17 WAVE:0 STATUS:complete TS:2026-08-27T04:55:05Z
+PHASE:RDW-18 WAVE:0 STATUS:complete TS:2026-08-27T05:11:28Z
+PHASE:RDW-19 WAVE:0 STATUS:complete TS:2026-08-27T07:40:00Z
+# Verification: release build clean on both frameworks; 418 + 96 tests green (branch started
+# from 362). Coverage of the code this plan added is 94.8% of lines in Core's Run namespace;
+# Core overall reads 78.4%, held below the 80% target by pre-existing untested network,
+# OpenSCAD and zip-library paths this plan did not touch, and by Lego2STL.UiTests carrying no
+# coverage collector. Step 5 - driving the real window by hand against the reference document -
+# is left for a person; everything a headless run can check is covered above.
