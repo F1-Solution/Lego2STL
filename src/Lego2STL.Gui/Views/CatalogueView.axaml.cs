@@ -11,7 +11,7 @@ public partial class CatalogueView : UserControl
 
         ClearFilter.Click += (_, _) =>
         {
-            if (DataContext is MainViewModel model)
+            if (DataContext is RunDocumentViewModel model)
             {
                 model.ColourFilter = null;
                 model.Search = null;

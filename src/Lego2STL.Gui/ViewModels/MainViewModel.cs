@@ -10,6 +10,7 @@ using CommunityToolkit.Mvvm.Input;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Geometry;
 using Lego2STL.Core.Pipeline;
+using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
 using Lego2STL.Gui.Localization;
 using Lego2STL.Gui.Services;
@@ -313,37 +314,46 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     /// Fills the catalogue from what a run produced. Public so it can be shown a made-up run
     /// and drawn, which is how the card layout is checked without printing anything.
     /// </summary>
+    /// <remarks>
+    /// Goes through the same record and the same projection a reopened run does, rather than
+    /// reading the shapes it happens to still be holding: one route to a catalogue, so a run
+    /// just finished and the same run opened next week cannot show different things.
+    /// </remarks>
     public void ShowCatalogue(RunOutcome outcome)
     {
+        ArgumentNullException.ThrowIfNull(outcome);
+
         Parts.Clear();
         Colours.Clear();
 
-        if (outcome.PartsList is not { } list || outcome.Layout is not { } layout)
+        if (outcome.Layout is not { } layout)
         {
             OnPropertyChanged(nameof(VisibleParts));
             return;
         }
 
-        var shapes = outcome.Shapes.ToDictionary(s => s.PartNumber, StringComparer.OrdinalIgnoreCase);
-        var plates = outcome.Plates?.Plates.ToDictionary(p => p.ColorName, p => p.FileName, StringComparer.Ordinal)
-                     ?? [];
+        var document = RunDocument.From(
+            RunManifest.From(outcome, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, null), layout);
 
-        foreach (var entry in list.Entries)
+        var plates = outcome.Plates?.Plates.ToDictionary(
+            p => p.ColorName, p => p.FileName, StringComparer.Ordinal) ?? [];
+
+        foreach (var part in document.Parts)
         {
-            shapes.TryGetValue(entry.PartNumber, out var shape);
+            var shapePath = outcome.ShapesByPart.ContainsKey(part.PartNumber)
+                ? Path.Combine(layout.StlDirectory, part.PartNumber + ".stl")
+                : null;
 
-            var shapePath = shape is null
-                ? null
-                : Path.Combine(layout.StlDirectory, entry.PartNumber + ".stl");
-
-            var platePath = plates.TryGetValue(entry.ColorName, out var plateName)
+            var platePath = plates.TryGetValue(part.ColorName, out var plateName)
                 ? Path.Combine(layout.PlateDirectory, plateName)
                 : null;
 
-            Parts.Add(new CataloguePartViewModel(entry, shape, shapePath, platePath));
+            Parts.Add(new CataloguePartViewModel(part, shapePath, platePath));
         }
 
-        foreach (var colour in Parts.Select(p => p.ColorName).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal))
+        foreach (var colour in Parts.Select(p => p.ColorName)
+                     .Distinct(StringComparer.Ordinal)
+                     .Order(StringComparer.Ordinal))
         {
             Colours.Add(colour);
         }
@@ -363,7 +373,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
         foreach (var part in Parts.ToList())
         {
-            if (!ColorReference.Table.TryGet(ColorScheme.BrickLink, part.Entry.BrickLinkColorCode, out var colour))
+            if (!ColorReference.Table.TryGet(ColorScheme.BrickLink, part.BrickLinkColorCode, out var colour))
             {
                 continue;
             }

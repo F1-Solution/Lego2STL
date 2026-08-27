@@ -1,0 +1,133 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Lego2STL.Gui.ViewModels"
+             xmlns:views="using:Lego2STL.Gui.Views"
+             xmlns:loc="using:Lego2STL.Gui.Localization"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
+             x:Class="Lego2STL.Gui.Views.RunDocumentView"
+             x:DataType="vm:RunDocumentViewModel">
+
+  <DockPanel>
+
+    <!-- What this run is, how far it got, and where it put everything. -->
+    <Border DockPanel.Dock="Top" Margin="0,0,0,12" Padding="14,12" CornerRadius="4"
+            Background="{DynamicResource AppSurface}"
+            BorderBrush="{DynamicResource AppCardBorder}"
+            BorderThickness="1">
+      <StackPanel Spacing="8">
+
+        <Grid ColumnDefinitions="*,Auto,Auto">
+          <StackPanel Grid.Column="0" Spacing="2">
+            <TextBlock FontSize="18" Text="{Binding Name}"
+                       Foreground="{DynamicResource AppText}" />
+            <TextBlock Foreground="{DynamicResource AppTextSecondary}" Text="{Binding StatusText}" />
+          </StackPanel>
+
+          <Button Grid.Column="1" Margin="0,0,8,0" VerticalAlignment="Center"
+                  Command="{Binding OpenFolderCommand}"
+                  Content="{Binding [UiOpenFolder], Source={x:Static loc:Loc.Current}}" />
+
+          <Button Grid.Column="2" VerticalAlignment="Center"
+                  IsVisible="{Binding Busy}"
+                  Command="{Binding CancelCommand}"
+                  Content="{Binding [UiCancel], Source={x:Static loc:Loc.Current}}" />
+        </Grid>
+
+        <ProgressBar Minimum="0" Maximum="1" Value="{Binding Progress, Mode=OneWay}" />
+
+        <TextBlock Foreground="{DynamicResource AppTextSecondary}"
+                   IsVisible="{Binding Busy}" Text="{Binding StageText}" />
+
+        <TextBlock Foreground="{DynamicResource AppTextSecondary}"
+                   IsVisible="{Binding StoppedAt, Converter={x:Static ObjectConverters.IsNotNull}}"
+                   Text="{Binding StoppedAt}" />
+
+        <!-- The command this run stored, so it can be repeated in a terminal as it was. -->
+        <TextBlock FontFamily="Consolas, Menlo, monospace" TextWrapping="Wrap"
+                   Foreground="{DynamicResource AppTextSecondary}"
+                   Text="{Binding CommandLine}" />
+
+        <TextBlock TextWrapping="Wrap"
+                   Foreground="{DynamicResource AppTextSecondary}"
+                   Text="{Binding Folder}" />
+
+      </StackPanel>
+    </Border>
+
+    <!-- What this build could not know, and the offer to fill it in rather than guess. -->
+    <Border DockPanel.Dock="Top" Margin="0,0,0,12" Padding="12,10" CornerRadius="4"
+            Background="{DynamicResource AppWarningBand}"
+            BorderBrush="{DynamicResource AppWarningBorder}"
+            BorderThickness="1"
+            IsVisible="{Binding HasNotice}">
+      <StackPanel Spacing="8">
+        <TextBlock TextWrapping="Wrap"
+                   Foreground="{DynamicResource AppWarningText}"
+                   Text="{Binding NoticeText}" />
+        <Button HorizontalAlignment="Left"
+                IsVisible="{Binding CanRunItAgain}"
+                Command="{Binding RunItAgainCommand}"
+                Content="{Binding [UiRunItAgain], Source={x:Static loc:Loc.Current}}" />
+      </StackPanel>
+    </Border>
+
+    <!-- Why it stopped, each cause with its reason, and the two ways on from here. -->
+    <Border DockPanel.Dock="Top" Margin="0,0,0,12" Padding="12,10" CornerRadius="4"
+            Background="{DynamicResource AppWarningBand}"
+            BorderBrush="{DynamicResource AppWarningBorder}"
+            BorderThickness="1"
+            IsVisible="{Binding HasProblem}">
+      <StackPanel Spacing="8">
+        <TextBlock TextWrapping="Wrap"
+                   Foreground="{DynamicResource AppWarningText}"
+                   Text="{Binding ProblemText}" />
+
+        <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding CanContinue}">
+          <Button Command="{Binding OpenPartsListCommand}"
+                  Content="{Binding [UiOpenPartsList], Source={x:Static loc:Loc.Current}}" />
+          <Button Command="{Binding ContinueFromPartsListCommand}"
+                  Content="{Binding [UiContinueFromPartsList], Source={x:Static loc:Loc.Current}}" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <!--
+      A terminal in both themes: forced Dark so the log reads as one, with a scrollbar that
+      matches the log rather than the window around it.
+    -->
+    <ThemeVariantScope DockPanel.Dock="Bottom" RequestedThemeVariant="Dark"
+                       IsVisible="{Binding !Quiet}">
+      <Border Margin="0,12,0,0" CornerRadius="4" MaxHeight="200"
+              Background="{DynamicResource AppLogBackground}">
+        <ScrollViewer Name="LogScroll" Padding="10,8">
+          <ItemsControl ItemsSource="{Binding Log}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <TextBlock FontFamily="Consolas, Menlo, monospace" FontSize="12"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource AppLogForeground}"
+                           Text="{Binding}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+    </ThemeVariantScope>
+
+    <!-- Said where the log would be, so an empty panel is never mistaken for a silent run. -->
+    <Border DockPanel.Dock="Bottom" Margin="0,12,0,0" Padding="12,10" CornerRadius="4"
+            Background="{DynamicResource AppSurface}"
+            BorderBrush="{DynamicResource AppCardBorder}"
+            BorderThickness="1"
+            IsVisible="{Binding Quiet}">
+      <TextBlock TextWrapping="Wrap"
+                 Foreground="{DynamicResource AppTextSecondary}"
+                 Text="{Binding [UiQuietNote], Source={x:Static loc:Loc.Current}}" />
+    </Border>
+
+    <views:CatalogueView />
+
+  </DockPanel>
+</UserControl>
