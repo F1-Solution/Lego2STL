@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Lego2STL.Gui.ViewModels"
+             xmlns:loc="using:Lego2STL.Gui.Localization"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+             x:Class="Lego2STL.Gui.Views.RunsView"
+             x:DataType="vm:RunsViewModel">
+
+  <DockPanel>
+
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,12">
+      <TextBlock Grid.Column="0" Classes="heading" VerticalAlignment="Center"
+                 Text="{Binding [UiRailRuns], Source={x:Static loc:Loc.Current}}" />
+
+      <Button Grid.Column="1" Margin="0,0,8,0" Name="Adopt"
+              Content="{Binding [UiOpenFolder], Source={x:Static loc:Loc.Current}}" />
+
+      <Button Grid.Column="2"
+              IsVisible="{Binding HasAny}"
+              Command="{Binding ForgetEverythingCommand}"
+              Content="{Binding [UiForgetEverything], Source={x:Static loc:Loc.Current}}" />
+    </Grid>
+
+    <!-- Why a folder was refused, said where the folder was offered. -->
+    <Border DockPanel.Dock="Top" Margin="0,0,0,12" Padding="12,10" CornerRadius="4"
+            Background="{DynamicResource AppWarningBand}"
+            BorderBrush="{DynamicResource AppWarningBorder}"
+            BorderThickness="1"
+            IsVisible="{Binding AdoptProblem, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <TextBlock TextWrapping="Wrap"
+                 Foreground="{DynamicResource AppWarningText}"
+                 Text="{Binding AdoptProblem}" />
+    </Border>
+
+    <TextBlock DockPanel.Dock="Top" Classes="hint" TextWrapping="Wrap"
+               IsVisible="{Binding !HasAny}"
+               Text="{Binding [UiRunsEmpty], Source={x:Static loc:Loc.Current}}" />
+
+    <ScrollViewer>
+      <ItemsControl ItemsSource="{Binding Rows}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate DataType="vm:RunRowViewModel">
+
+            <Border Margin="0,0,0,6" Padding="14,12" CornerRadius="4"
+                    Background="{DynamicResource AppSurface}"
+                    BorderBrush="{DynamicResource AppCardBorder}"
+                    BorderThickness="1"
+                    Opacity="{Binding Dimmed}">
+
+              <Grid ColumnDefinitions="*,Auto,Auto">
+
+                <StackPanel Grid.Column="0" Spacing="3">
+                  <StackPanel Orientation="Horizontal" Spacing="10">
+                    <TextBlock FontSize="15" Text="{Binding Name}"
+                               Foreground="{DynamicResource AppText}" />
+                    <TextBlock VerticalAlignment="Center"
+                               Foreground="{DynamicResource AppTextSecondary}"
+                               Text="{Binding Source}" />
+                  </StackPanel>
+
+                  <TextBlock Foreground="{DynamicResource AppTextSecondary}"
+                             Text="{Binding StatusText}" />
+                  <TextBlock TextWrapping="Wrap"
+                             Foreground="{DynamicResource AppTextSecondary}"
+                             Text="{Binding Summary}" />
+                  <TextBlock Foreground="{DynamicResource AppTextSecondary}"
+                             Text="{Binding When}" />
+                </StackPanel>
+
+                <Button Grid.Column="1" Margin="0,0,8,0" VerticalAlignment="Center"
+                        IsVisible="{Binding !Missing}"
+                        Command="{Binding OpenCommand}"
+                        Content="{Binding [UiTabRun], Source={x:Static loc:Loc.Current}}" />
+
+                <Button Grid.Column="2" VerticalAlignment="Center"
+                        Command="{Binding ForgetCommand}"
+                        Content="{Binding [UiForget], Source={x:Static loc:Loc.Current}}" />
+
+              </Grid>
+            </Border>
+
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+
+  </DockPanel>
+</UserControl>
