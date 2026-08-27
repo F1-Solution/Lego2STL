@@ -1,3 +1,4 @@
+using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using FluentAssertions;
@@ -43,5 +44,36 @@ public sealed class ViewLocatorTests
     public void Nothing_at_all_gets_no_view()
     {
         new ViewLocator().Build(null).Should().BeNull();
+    }
+
+    /// <summary>
+    /// Each screen the rail can land on finds its own view, and finds the same one again.
+    /// </summary>
+    /// <remarks>
+    /// Building afresh each time would cost the log its scroll position every time the rail
+    /// moved away and back, and would take a screen's controls out of the window's tree while
+    /// it is not the one showing - which is exactly what the parity test walks.
+    /// </remarks>
+    [AvaloniaFact]
+    public void Every_screen_finds_its_own_view_and_keeps_it()
+    {
+        var locator = new ViewLocator();
+
+        var screens = new object[]
+        {
+            new SetupViewModel(new RunOptionsViewModel()),
+            new RunsViewModel(),
+            new SettingsViewModel(),
+        };
+
+        var built = screens.Select(locator.Build).ToList();
+
+        built.Should().OnlyHaveUniqueItems().And.NotContainNulls();
+        built.Select(view => view!.GetType()).Should().OnlyHaveUniqueItems();
+
+        for (var i = 0; i < screens.Length; i++)
+        {
+            locator.Build(screens[i]).Should().BeSameAs(built[i]);
+        }
     }
 }
