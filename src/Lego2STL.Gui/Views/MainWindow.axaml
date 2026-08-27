@@ -1,7 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Lego2STL.Gui.ViewModels"
-        xmlns:views="using:Lego2STL.Gui.Views"
         xmlns:loc="using:Lego2STL.Gui.Localization"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -10,6 +9,7 @@
         x:DataType="vm:MainViewModel"
         Width="1040" Height="720"
         MinWidth="820" MinHeight="560"
+        Background="{DynamicResource AppWindowBackground}"
         Title="Lego2STL">
 
   <Window.Styles>
@@ -17,107 +17,149 @@
       <Setter Property="FontSize" Value="20" />
       <Setter Property="FontWeight" Value="SemiBold" />
       <Setter Property="Margin" Value="0,0,0,12" />
+      <Setter Property="Foreground" Value="{DynamicResource AppText}" />
     </Style>
     <Style Selector="TextBlock.group">
       <Setter Property="FontWeight" Value="SemiBold" />
       <Setter Property="Margin" Value="0,16,0,6" />
-      <Setter Property="Opacity" Value="0.85" />
+      <Setter Property="Foreground" Value="{DynamicResource AppText}" />
     </Style>
     <Style Selector="TextBlock.hint">
-      <Setter Property="Opacity" Value="0.6" />
       <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{DynamicResource AppTextSecondary}" />
     </Style>
     <Style Selector="TextBlock.label">
       <Setter Property="VerticalAlignment" Value="Center" />
       <Setter Property="Margin" Value="0,0,10,0" />
+      <Setter Property="Foreground" Value="{DynamicResource AppText}" />
     </Style>
     <Style Selector="Border.card">
-      <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseLowBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppCardBorder}" />
+      <Setter Property="Background" Value="{DynamicResource AppSurface}" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="CornerRadius" Value="6" />
       <Setter Property="Padding" Value="10" />
     </Style>
-    <Style Selector="Button.tab">
-      <Setter Property="Padding" Value="16,8" />
+
+    <!--
+      A rail row is a 3 px accent bar and a surface fill when it is the one showing, rather
+      than a full accent tint: the selected row has to read as selected without shouting over
+      the screen it selects.
+    -->
+    <Style Selector="Button.rail">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="Padding" Value="11,9" />
+      <Setter Property="Margin" Value="0,0,0,2" />
       <Setter Property="Background" Value="Transparent" />
-      <Setter Property="BorderThickness" Value="0,0,0,2" />
+      <Setter Property="BorderThickness" Value="3,0,0,0" />
       <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="CornerRadius" Value="0,4,4,0" />
     </Style>
-    <Style Selector="Button.tab.on">
-      <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
-      <Setter Property="FontWeight" Value="SemiBold" />
+    <Style Selector="Button.rail.on">
+      <Setter Property="Background" Value="{DynamicResource AppSurface}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppAccent}" />
+    </Style>
+    <Style Selector="Button.rail TextBlock.name">
+      <Setter Property="Foreground" Value="{DynamicResource AppText}" />
+    </Style>
+    <Style Selector="Button.rail TextBlock.note">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Foreground" Value="{DynamicResource AppTextSecondary}" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
     </Style>
   </Window.Styles>
 
   <DockPanel>
 
-    <!-- Header: the four screens, and the language, which belongs everywhere. -->
-    <Border DockPanel.Dock="Top" Padding="16,10,16,0">
-      <Grid ColumnDefinitions="Auto,*,Auto">
-
-        <StackPanel Grid.Column="0" Orientation="Horizontal">
-          <Button Classes="tab" Classes.on="{Binding OnInput}"
-                  Command="{Binding ShowCommand}" CommandParameter="Input"
-                  Content="{Binding [UiInputKind], Source={x:Static loc:Loc.Current}}" />
-          <Button Classes="tab" Classes.on="{Binding OnOptions}"
-                  Command="{Binding ShowCommand}" CommandParameter="Options"
-                  Content="{Binding [UiGroupStages], Source={x:Static loc:Loc.Current}}" />
-          <Button Classes="tab" Classes.on="{Binding OnRun}"
-                  Command="{Binding ShowCommand}" CommandParameter="Run"
-                  Content="{Binding [UiTabRun], Source={x:Static loc:Loc.Current}}" />
-          <Button Classes="tab" Classes.on="{Binding OnCatalogue}"
-                  Command="{Binding ShowCommand}" CommandParameter="Catalogue"
-                  Content="{Binding [UiTabRun], Source={x:Static loc:Loc.Current}}" />
-        </StackPanel>
-
-        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-          <TextBlock Classes="label"
-                     Text="{Binding [UiLanguage], Source={x:Static loc:Loc.Current}}" />
-          <ComboBox MinWidth="120"
-                    ItemsSource="{Binding Languages}"
-                    SelectedItem="{Binding SelectedLanguage}"
-                    DisplayMemberBinding="{Binding Name}" />
-        </StackPanel>
-
-      </Grid>
+    <!-- The language belongs everywhere, so it stays findable when the rail cannot be read. -->
+    <Border DockPanel.Dock="Top" Padding="16,10,16,6">
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+        <TextBlock Classes="label"
+                   Text="{Binding [UiLanguage], Source={x:Static loc:Loc.Current}}" />
+        <ComboBox MinWidth="120"
+                  ItemsSource="{x:Static vm:SettingsViewModel.Languages}"
+                  SelectedItem="{Binding SelectedLanguage}"
+                  DisplayMemberBinding="{Binding Name}" />
+      </StackPanel>
     </Border>
 
-    <!-- Footer: what would be typed to do the same thing, and the button that does it. -->
+    <!--
+      The command that would do the same thing, while a run is being described. A run's own
+      page carries the line that run stored, so an old run is repeatable as it actually was.
+    -->
     <Border DockPanel.Dock="Bottom" Padding="16,10"
             BorderThickness="0,1,0,0"
-            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
-      <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
-
-        <TextBlock Grid.Row="0" Grid.Column="0" Classes="hint"
+            BorderBrush="{DynamicResource AppCardBorder}"
+            IsVisible="{Binding ShowingSetup}">
+      <StackPanel>
+        <TextBlock Classes="hint"
                    Text="{Binding [UiEquivalentCommand], Source={x:Static loc:Loc.Current}}" />
-
-        <SelectableTextBlock Grid.Row="1" Grid.Column="0"
-                             Margin="0,2,12,0"
+        <SelectableTextBlock Margin="0,2,0,0"
                              FontFamily="Cascadia Mono,Consolas,Menlo,DejaVu Sans Mono,monospace"
                              TextWrapping="Wrap"
-                             Text="{Binding Options.CommandLine}" />
-
-        <StackPanel Grid.Row="0" Grid.RowSpan="2" Grid.Column="1"
-                    Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-          <Button Command="{Binding CancelCommand}"
-                  IsVisible="{Binding Busy}"
-                  Content="{Binding [UiCancel], Source={x:Static loc:Loc.Current}}" />
-          <Button Classes="accent"
-                  Command="{Binding StartCommand}"
-                  IsEnabled="{Binding CanStart}"
-                  Content="{Binding [UiStart], Source={x:Static loc:Loc.Current}}" />
-        </StackPanel>
-
-      </Grid>
+                             Foreground="{DynamicResource AppTextSecondary}"
+                             Text="{Binding Setup.CommandLine}" />
+      </StackPanel>
     </Border>
 
-    <!-- The screen itself. -->
-    <Panel Margin="16,12">
-      <views:InputView DataContext="{Binding}" IsVisible="{Binding OnInput}" />
-      <views:OptionsView DataContext="{Binding}" IsVisible="{Binding OnOptions}" />
-      <views:RunView DataContext="{Binding}" IsVisible="{Binding OnRun}" />
-      <views:CatalogueView DataContext="{Binding}" IsVisible="{Binding OnCatalogue}" />
-    </Panel>
+    <!-- What a run can be looked at through, and the way back to setting one up. -->
+    <Border DockPanel.Dock="Left" Width="200" Padding="8,6,8,10"
+            BorderThickness="0,0,1,0"
+            BorderBrush="{DynamicResource AppCardBorder}">
+      <DockPanel>
+
+        <Button DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Padding="12,9"
+                Command="{Binding NewRunCommand}"
+                Background="{DynamicResource AppAccent}"
+                Foreground="{DynamicResource AppTextOnAccent}"
+                HorizontalContentAlignment="Center"
+                Content="{Binding [UiNewRun], Source={x:Static loc:Loc.Current}}" />
+
+        <StackPanel DockPanel.Dock="Top">
+
+          <Button Classes="rail" Classes.on="{Binding ShowingRuns}"
+                  Command="{Binding ShowRunsCommand}">
+            <StackPanel>
+              <TextBlock Classes="name"
+                         Text="{Binding [UiRailRuns], Source={x:Static loc:Loc.Current}}" />
+              <TextBlock Classes="note" Text="{Binding Runs.Count}" />
+            </StackPanel>
+          </Button>
+
+          <Button Classes="rail" Classes.on="{Binding ShowingSetup}"
+                  Command="{Binding ShowSetupCommand}">
+            <StackPanel>
+              <TextBlock Classes="name"
+                         Text="{Binding [UiRailSetup], Source={x:Static loc:Loc.Current}}" />
+              <TextBlock Classes="note" Text="{Binding Setup.ChangedCount}" />
+            </StackPanel>
+          </Button>
+
+          <Button Classes="rail" Classes.on="{Binding ShowingOpenRun}"
+                  IsVisible="{Binding OpenRun, Converter={x:Static ObjectConverters.IsNotNull}}"
+                  Command="{Binding ShowOpenRunCommand}">
+            <StackPanel>
+              <TextBlock Classes="name" Text="{Binding OpenRun.Name}" />
+              <TextBlock Classes="note" Text="{Binding OpenRun.RailText}" />
+            </StackPanel>
+          </Button>
+
+          <Button Classes="rail" Classes.on="{Binding ShowingSettings}"
+                  Command="{Binding ShowSettingsCommand}">
+            <TextBlock Classes="name"
+                       Text="{Binding [UiSettings], Source={x:Static loc:Loc.Current}}" />
+          </Button>
+
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <!--
+      Resolved by the cached locator, which is what lets each screen keep its own view - and
+      with it the log its scroll position - across every move of the rail.
+    -->
+    <ContentControl Margin="16,12" Content="{Binding Current}" />
 
   </DockPanel>
 
