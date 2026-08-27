@@ -53,18 +53,20 @@
 
     <Feature Id="Main" Title="Lego2STL" Level="1">
       <ComponentGroupRef Id="Programs" />
+      <ComponentGroupRef Id="PathEntry" />
       <ComponentGroupRef Id="Shortcuts" />
     </Feature>
 
     <ComponentGroup Id="Programs" Directory="INSTALLFOLDER">
+      <!--
+        Sixty-odd files rather than two, since the programs share one copy of everything they
+        both use, so they are gathered rather than listed one by one.
+      -->
+      <Files Include="$(Publish)\**" />
+    </ComponentGroup>
 
-      <Component Id="WindowProgram" Guid="B1E4C2D8-5A73-4F19-8C60-3D9E7A4B1F22">
-        <File Id="GuiExe" Source="$(Publish)\Lego2STL.Gui.exe" KeyPath="yes" />
-      </Component>
-
-      <Component Id="ConsoleProgram" Guid="D4A9F3B2-8C51-4E07-A6B3-1F852C9D7E40">
-        <File Id="CliExe" Source="$(Publish)\lego2stl.exe" KeyPath="yes" />
-
+    <ComponentGroup Id="PathEntry" Directory="INSTALLFOLDER">
+      <Component Id="ConsoleOnPath" Guid="D4A9F3B2-8C51-4E07-A6B3-1F852C9D7E40">
         <!--
           The console program goes on the path, so 'lego2stl' works from any terminal. The
           windowed one deliberately does not: starting it from a terminal is not how it is
@@ -77,8 +79,18 @@
                      Part="last"
                      Action="set"
                      System="no" />
-      </Component>
 
+        <!--
+          A component needs something to be identified by, and the programs are now gathered
+          rather than named, so there is no file here to point at.
+        -->
+        <RegistryValue Root="HKCU"
+                       Key="Software\Lego2STL"
+                       Name="onPath"
+                       Type="integer"
+                       Value="1"
+                       KeyPath="yes" />
+      </Component>
     </ComponentGroup>
 
     <ComponentGroup Id="Shortcuts" Directory="ShortcutFolder">

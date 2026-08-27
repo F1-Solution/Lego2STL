@@ -5,10 +5,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Lego2STL.Core.Catalogue;
-using Lego2STL.Core.Colors;
-using Lego2STL.Core.Geometry;
-using Lego2STL.Core.Text;
+using Lego2STL.Core.Run;
 using Lego2STL.Gui.Services;
 
 namespace Lego2STL.Gui.ViewModels;
@@ -24,63 +21,51 @@ namespace Lego2STL.Gui.ViewModels;
 /// </remarks>
 public sealed partial class CataloguePartViewModel : ViewModelBase
 {
-    /// <summary>
-    /// Below this, in millimetres, a wall is thinner than a common nozzle can lay down and the
-    /// slicer will either thicken it or leave it out. 0.4 mm is the usual nozzle; a wall needs
-    /// at least one line of it.
-    /// </summary>
-    private const double NozzleWidth = 0.4;
-
-    public CataloguePartViewModel(
-        PartEntry entry,
-        PreparedMesh? shape,
-        string? shapePath,
-        string? platePath,
-        DisplayLanguage language = DisplayLanguages.Fallback)
+    /// <remarks>
+    /// Takes what the run recorded rather than a shape in memory, because a run reopened weeks
+    /// later has no shape in memory and never will: nothing reads a mesh back off the disk, and
+    /// a re-welded count of open edges would depend on the tolerance it was welded at. Both
+    /// front ends therefore read the same measured facts, and a reopened run cannot quietly
+    /// disagree with what the run itself reported.
+    /// </remarks>
+    public CataloguePartViewModel(RunDocumentPart part, string? shapePath, string? platePath)
     {
-        Entry = entry;
-        Shape = shape;
+        Part = part;
         ShapePath = shapePath;
         PlatePath = platePath;
 
-        // Named once, in the run's language, because the filter list and the search both
-        // compare against this and a card saying one thing while the filter says another is
-        // a card that cannot be found.
-        ColorName = ColorNames.For(language, entry.ColorName);
-
-        Swatch = new SolidColorBrush(Color.FromRgb(entry.Rgb.R, entry.Rgb.G, entry.Rgb.B));
+        Swatch = new SolidColorBrush(Color.FromRgb(part.Rgb.R, part.Rgb.G, part.Rgb.B));
     }
 
-    public PartEntry Entry { get; }
-
-    public PreparedMesh? Shape { get; }
+    public RunDocumentPart Part { get; }
 
     public string? ShapePath { get; }
 
     public string? PlatePath { get; }
 
-    public string PartNumber => Entry.PartNumber;
+    public string PartNumber => Part.PartNumber;
 
-    public string ColorName { get; }
+    public string ColorName => Part.ColorName;
 
-    public int Quantity => Entry.Quantity;
+    public int Quantity => Part.Quantity;
+
+    public int BrickLinkColorCode => Part.BrickLinkColorCode;
 
     public IBrush Swatch { get; }
 
     [ObservableProperty]
     public partial Bitmap? Picture { get; set; }
 
-    public string Size => Shape?.DescribeSize() ?? string.Empty;
+    public string Size => Part.Size ?? string.Empty;
 
-    public string? Title => Shape?.Title;
+    public string? Title => Part.Title;
 
-    public bool HasOpenEdges => Shape is { Quality.IsClosed: false };
+    public bool HasOpenEdges => Part.HasOpenEdges;
 
     /// <summary>True when some part of the shape is finer than a nozzle can print.</summary>
-    public bool HasThinFeatures =>
-        Shape is not null && ClearanceOffset.ThinnestSpan(Shape.Mesh) < NozzleWidth * 2;
+    public bool HasThinFeatures => Part.HasThinFeatures;
 
-    public bool HasWarning => HasOpenEdges || HasThinFeatures;
+    public bool HasWarning => Part.HasWarning;
 
     public IReadOnlyList<string> Warnings
     {

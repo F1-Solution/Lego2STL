@@ -6,15 +6,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="560"
              x:Class="Lego2STL.Gui.Views.CatalogueView"
-             x:DataType="vm:MainViewModel">
+             x:DataType="vm:RunDocumentViewModel">
 
   <DockPanel>
 
     <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,10">
 
-      <TextBlock Classes="heading"
-                 Text="{Binding [UiTabCatalogue], Source={x:Static loc:Loc.Current}}" />
-
+      <!-- No heading: the run's own header names it, and a second one would only repeat. -->
       <StackPanel Orientation="Horizontal" Spacing="10">
         <TextBlock Classes="label"
                    Text="{Binding [UiFilterByColour], Source={x:Static loc:Loc.Current}}" />
@@ -69,9 +67,15 @@
                 <TextBlock Classes="hint" Text="{Binding ColorName}" TextTrimming="CharacterEllipsis" />
                 <TextBlock Classes="hint" Text="{Binding Size}" />
 
-                <Border Background="#33FFAA00" CornerRadius="3" Padding="6,4"
+                <!-- Opaque per theme: an alpha over an unknown surface goes muddy in dark. -->
+                <Border Background="{DynamicResource AppWarningBand}"
+                        BorderBrush="{DynamicResource AppWarningBorder}"
+                        BorderThickness="1"
+                        CornerRadius="3" Padding="6,4"
                         IsVisible="{Binding HasWarning}">
-                  <TextBlock FontSize="11" TextWrapping="Wrap" Text="{Binding WarningText}" />
+                  <TextBlock FontSize="11" TextWrapping="Wrap"
+                             Foreground="{DynamicResource AppWarningText}"
+                             Text="{Binding WarningText}" />
                 </Border>
 
                 <!-- Two equal halves, so a longer wording in another language still fits. -->

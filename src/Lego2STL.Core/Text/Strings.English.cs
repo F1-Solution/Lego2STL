@@ -175,6 +175,14 @@ public sealed partial class Strings
             [TextKey.MsgError] = "Error",
 
             // Things that go wrong.
+            [TextKey.ErrChooseDocument] = "Choose a document to read.",
+            [TextKey.ErrChoosePartsList] = "Choose a parts list to build from.",
+            [TextKey.ErrTypeSetNumber] = "Type a set number, for example 42100-1.",
+            [TextKey.ErrNoFileAt] = "There is no file at {0}.",
+            [TextKey.ErrScaleNotPositive] = "A scale has to be greater than zero.",
+            [TextKey.ErrSpacingNegative] = "The gap between parts cannot be negative.",
+            [TextKey.ErrNotABedSize] =
+                "'{0}' is not a bed size. One looks like 220x220 or 300x300x400.",
             [TextKey.ErrClearanceNeedsClosedShape] =
                 "{0} still has {1} open edge(s), so taking every face in by a fixed amount would move " +
                 "the edges of the holes as well and distort the shape. It was written at true size " +
@@ -223,10 +231,10 @@ public sealed partial class Strings
 
             // The interface.
             [TextKey.UiTitle] = "Lego2STL",
-            [TextKey.UiTabInput] = "Input",
-            [TextKey.UiTabOptions] = "Options",
             [TextKey.UiTabRun] = "Run",
-            [TextKey.UiTabCatalogue] = "Catalogue",
+            [TextKey.UiRailRuns] = "Runs",
+            [TextKey.UiRailSetup] = "Setup",
+            [TextKey.UiNewRun] = "New run",
             [TextKey.UiNext] = "Next",
             [TextKey.UiBack] = "Back",
             [TextKey.UiStart] = "Start",
@@ -278,6 +286,53 @@ public sealed partial class Strings
             [TextKey.UiEveryOptionHere] =
                 "Every option the command line takes is on this screen. The line at the foot of "
                 + "the window is exactly what these settings amount to.",
+
+            // How a run stands, and where it got to if it did not finish.
+            [TextKey.UiStatusRunning] = "Running",
+            [TextKey.UiStatusComplete] = "Complete",
+            [TextKey.UiStatusNeedsDecision] = "Needs a decision",
+            [TextKey.UiStatusFailed] = "Failed",
+            [TextKey.UiStatusStopped] = "Stopped",
+            [TextKey.UiStoppedAt] = "stopped while {0}, {1} of {2}",
+
+            // The list of runs that have happened.
+            [TextKey.UiRunsEmpty] = "No runs yet. Set one up and it appears here.",
+            [TextKey.UiForget] = "Forget",
+            [TextKey.UiForgetEverything] = "Forget every run",
+            [TextKey.UiFolderMissing] = "This folder is no longer there.",
+
+            // What a run's page says when its record is missing or from a newer build.
+            [TextKey.UiNoManifest] =
+                "This run was made before runs kept a record of themselves, so what its shapes " +
+                "measured is not known. Run it again to fill it in.",
+            [TextKey.UiNewerManifest] =
+                "This run was recorded by a newer version of the program. What follows is the " +
+                "part this one understands.",
+            [TextKey.UiRunItAgain] = "Run it again",
+            [TextKey.UiOpenPartsList] = "Open the parts list",
+            [TextKey.UiContinueFromPartsList] = "Continue from the parts list",
+
+            // Finding a way through the options.
+            [TextKey.UiSearchOptions] = "Search the options",
+            [TextKey.UiChangedOnly] = "Only what I changed",
+            [TextKey.UiHiddenCount] = "{0} hidden",
+            [TextKey.UiReset] = "Reset",
+
+            // The open run.
+            [TextKey.UiQuietNote] =
+                "Nothing is being shown here because of --quiet. It is all in run.log.",
+            [TextKey.UiWhen] = "When",
+            [TextKey.UiRunFolder] = "Run folder",
+
+            // The steps of a run, named for a screen rather than for a log.
+            [TextKey.UiStageReadingDocument] = "Reading the document",
+            [TextKey.UiStageLookingUpSet] = "Looking up the set",
+            [TextKey.UiStageReadingPartsList] = "Reading the parts list",
+            [TextKey.UiStageWritingPartsList] = "Writing the parts list",
+            [TextKey.UiStageGatheringShapes] = "Gathering the shapes",
+            [TextKey.UiStageBuildingShapes] = "Building the shapes",
+            [TextKey.UiStageArrangingPlates] = "Arranging the plates",
+            [TextKey.UiStageWritingReport] = "Writing the report",
 
             // What --help says.
             [TextKey.HelpRoot] =

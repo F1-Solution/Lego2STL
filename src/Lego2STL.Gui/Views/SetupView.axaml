@@ -1,0 +1,137 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Lego2STL.Gui.ViewModels"
+             xmlns:views="using:Lego2STL.Gui.Views"
+             xmlns:loc="using:Lego2STL.Gui.Localization"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
+             x:Class="Lego2STL.Gui.Views.SetupView"
+             x:DataType="vm:SetupViewModel">
+
+  <DockPanel>
+
+    <!--
+      What stops the run, and the one button that starts it, are pinned to the foot: the
+      option list above them scrolls, and neither of these should scroll out of reach.
+    -->
+    <Border DockPanel.Dock="Bottom" Margin="0,12,0,0" Padding="0">
+      <StackPanel Spacing="10">
+
+        <Border Padding="12,10" CornerRadius="4"
+                Background="{DynamicResource AppWarningBand}"
+                BorderBrush="{DynamicResource AppWarningBorder}"
+                BorderThickness="1"
+                IsVisible="{Binding Problem, Converter={x:Static ObjectConverters.IsNotNull}}">
+          <TextBlock TextWrapping="Wrap"
+                     Foreground="{DynamicResource AppWarningText}"
+                     Text="{Binding Problem}" />
+        </Border>
+
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Grid.Column="0" Spacing="2">
+            <TextBlock Foreground="{DynamicResource AppTextSecondary}"
+                       Text="{Binding [UiRunFolder], Source={x:Static loc:Loc.Current}}" />
+            <TextBlock TextWrapping="Wrap"
+                       Foreground="{DynamicResource AppTextSecondary}"
+                       Text="{Binding PlannedFolder}" />
+          </StackPanel>
+
+          <Button Grid.Column="1" MinWidth="140" Padding="16,8"
+                  VerticalAlignment="Bottom"
+                  IsEnabled="{Binding CanStart}"
+                  Command="{Binding StartCommand}"
+                  Background="{DynamicResource AppAccent}"
+                  Foreground="{DynamicResource AppTextOnAccent}"
+                  Content="{Binding [UiStart], Source={x:Static loc:Loc.Current}}" />
+        </Grid>
+
+      </StackPanel>
+    </Border>
+
+    <!-- Where the run starts from, above everything that shapes it. -->
+    <Border DockPanel.Dock="Top" Margin="0,0,0,16">
+      <StackPanel Spacing="4" MaxWidth="760" HorizontalAlignment="Left">
+
+        <TextBlock Classes="heading"
+                   Text="{Binding [UiInputKind], Source={x:Static loc:Loc.Current}}" />
+
+        <StackPanel Spacing="6">
+          <RadioButton GroupName="kind"
+                       IsChecked="{Binding Options.IsDocument, Mode=OneWay}"
+                       Command="{Binding Options.SetDocumentCommand}"
+                       Content="{Binding [UiInputDocument], Source={x:Static loc:Loc.Current}}" />
+          <RadioButton GroupName="kind"
+                       IsChecked="{Binding Options.IsPartsList, Mode=OneWay}"
+                       Command="{Binding Options.SetPartsListCommand}"
+                       Content="{Binding [UiInputPartsList], Source={x:Static loc:Loc.Current}}" />
+          <RadioButton GroupName="kind"
+                       IsChecked="{Binding Options.IsSetNumber, Mode=OneWay}"
+                       Command="{Binding Options.SetSetNumberCommand}"
+                       Content="{Binding [UiInputSetNumber], Source={x:Static loc:Loc.Current}}" />
+        </StackPanel>
+
+        <!-- A document. -->
+        <StackPanel Spacing="8" Margin="0,18,0,0" IsVisible="{Binding Options.IsDocument}">
+
+          <TextBlock Classes="group"
+                     Text="{Binding [UiChooseDocument], Source={x:Static loc:Loc.Current}}" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBox Grid.Column="0" Text="{Binding Options.DocumentPath}" />
+            <Button Grid.Column="1" Margin="8,0,0,0" Name="PickDocument"
+                    Content="{Binding [UiBrowse], Source={x:Static loc:Loc.Current}}" />
+          </Grid>
+
+          <TextBlock Classes="group"
+                     Text="{Binding [UiPageRange], Source={x:Static loc:Loc.Current}}" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBox Grid.Column="0" Text="{Binding Options.Pages}"
+                     PlaceholderText="{Binding [UiPageRangeHint], Source={x:Static loc:Loc.Current}}" />
+            <Button Grid.Column="1" Margin="8,0,0,0"
+                    Command="{Binding ScanPagesCommand}"
+                    IsEnabled="{Binding !Scanning}"
+                    Content="{Binding [UiScanPages], Source={x:Static loc:Loc.Current}}" />
+          </Grid>
+          <TextBlock Classes="hint" IsVisible="{Binding Scanning}"
+                     Text="{Binding [UiScanning], Source={x:Static loc:Loc.Current}}" />
+
+          <TextBlock Classes="group"
+                     Text="{Binding [UiColourScheme], Source={x:Static loc:Loc.Current}}" />
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <ComboBox HorizontalAlignment="Left" MinWidth="220"
+                      ItemsSource="{x:Static vm:RunOptionsViewModel.ColorSchemes}"
+                      SelectedItem="{Binding Options.ColorScheme}" />
+            <!-- Named, not merely described: the flag is how this is asked for from a terminal. -->
+            <TextBlock Classes="hint" VerticalAlignment="Center" Text="--color-scheme" />
+          </StackPanel>
+
+        </StackPanel>
+
+        <!-- A parts list. -->
+        <StackPanel Spacing="8" Margin="0,18,0,0" IsVisible="{Binding Options.IsPartsList}">
+          <TextBlock Classes="group"
+                     Text="{Binding [UiChoosePartsList], Source={x:Static loc:Loc.Current}}" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBox Grid.Column="0" Text="{Binding Options.PartsListPath}" />
+            <Button Grid.Column="1" Margin="8,0,0,0" Name="PickPartsList"
+                    Content="{Binding [UiBrowse], Source={x:Static loc:Loc.Current}}" />
+          </Grid>
+        </StackPanel>
+
+        <!-- A set number. -->
+        <StackPanel Spacing="8" Margin="0,18,0,0" IsVisible="{Binding Options.IsSetNumber}">
+          <TextBlock Classes="group"
+                     Text="{Binding [UiSetNumber], Source={x:Static loc:Loc.Current}}" />
+          <TextBox HorizontalAlignment="Left" MinWidth="220"
+                   Text="{Binding Options.SetNumber}" PlaceholderText="42100-1" />
+          <CheckBox IsChecked="{Binding Options.IncludeSpares}" Content="--include-spares" />
+        </StackPanel>
+
+      </StackPanel>
+    </Border>
+
+    <!-- Everything that shapes the run, searchable rather than merely long. -->
+    <views:OptionListView DataContext="{Binding Rows}" />
+
+  </DockPanel>
+</UserControl>

@@ -1,5 +1,5 @@
-using System.Text;
 using Lego2STL.Core.Pipeline;
+using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
 
 namespace Lego2STL.Cli;
@@ -18,7 +18,13 @@ internal static class ConsoleRun
     {
         var words = Strings.For(settings.Language);
 
-        using var log = OpenLog(settings.LogFile);
+        using var log = RunLogFile.Open(settings.LogFile);
+
+        // Before the run, not after: a run that is killed still has a row in the history.
+        if (RunLayout.Plan(settings) is { } planned)
+        {
+            RunIndex.Record(planned);
+        }
 
         void Say(string message)
         {
@@ -36,17 +42,6 @@ internal static class ConsoleRun
         log?.Flush();
 
         return Summarise(outcome, words);
-    }
-
-    private static StreamWriter? OpenLog(string? path)
-    {
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            return null;
-        }
-
-        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
-        return new StreamWriter(path, append: false, new UTF8Encoding(true));
     }
 
     private static int Summarise(RunOutcome outcome, Strings words)

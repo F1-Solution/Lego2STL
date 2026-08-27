@@ -3,11 +3,14 @@
   Runs the buildable part of the packaging workflow locally, in Docker, using act.
 
 .DESCRIPTION
-  Builds the Linux tarball and .deb exactly the way the real workflow does, without needing
-  GitHub. Prints what the packages contain, and leaves them under .act-artifacts.
+  Builds the Linux installer and tarball exactly the way the real workflow does, without
+  needing GitHub, then installs what it built twice over - once as a machine that has .NET
+  and once as one that has none - and runs the packaging tests. The packages are left under
+  .act-artifacts.
 
   Only the version and linux jobs run. act cannot run Windows or macOS containers, so the
-  test, windows, macos and release jobs are out of reach locally. See README-act.md.
+  test, windows, macos and release jobs are out of reach locally. For the Windows one use
+  packaging/local-windows.ps1 instead. See README-act.md.
 
   Needs Docker Desktop running with the Linux engine, and act on the path.
   The first run pulls about 1.1 GB of image and then downloads the .NET SDK inside it, so
@@ -44,6 +47,8 @@ Set-StrictMode -Version Latest
 $here = $PSScriptRoot
 $root = Split-Path -Parent (Split-Path -Parent $here)
 $workflow = Join-Path $here 'local-package.yml'
+
+. (Join-Path $root 'packaging/lib/find-git-bash.ps1')
 
 function Step($message) { Write-Host "==> $message" -ForegroundColor Cyan }
 function Problem($message) { Write-Host "!!  $message" -ForegroundColor Red }
@@ -91,7 +96,15 @@ if ($actVersion -and [version]$actVersion -lt [version]'0.2.86') {
 
 # ---- Refuse a version the workflow would refuse, before spending ten minutes on it -----
 
-& (Join-Path $root 'packaging/version.sh') $Version | Out-Null
+# The rule is the shell script the workflow uses. PowerShell cannot run one; see the helper.
+$gitBash = Find-GitBash
+if (-not $gitBash) {
+    Problem 'Git for Windows is needed: its bash is what runs the version rule the workflow uses.'
+    Write-Host '    winget install Git.Git'
+    exit 1
+}
+
+& $gitBash (ConvertTo-BashPath (Join-Path $root 'packaging/version.sh')) $Version | Out-Null
 if ($LASTEXITCODE -ne 0) {
     Problem "'$Version' is not a version the packages can carry. Use 1.2.0, or 1.2.0-rc1."
     exit 1
@@ -114,12 +127,16 @@ if (Compare-Object $realVersions $localVersions) {
 
 # ---- Run --------------------------------------------------------------------------------
 
-# The event file carries the default; a version given here has to override it, which is what
-# --input does. Both are passed so the workflow's own default is still exercised.
+# The version goes in the event, not in --input: act reads the event file last and a version
+# passed the other way is silently ignored, so the packages come out numbered 0.0.0-local
+# however the script was called. The file on disk keeps the default; this is a copy of it.
+$event = Join-Path ([System.IO.Path]::GetTempPath()) 'lego2stl-act-event.json'
+@{ inputs = @{ version = $Version } } | ConvertTo-Json | Set-Content $event -Encoding utf8
+
 $arguments = @(
     'workflow_dispatch'
     '-W', $workflow
-    '-e', (Join-Path $here 'event.json')
+    '-e', $event
     '--input', "version=$Version"
 )
 

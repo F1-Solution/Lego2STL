@@ -4,6 +4,7 @@ using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Geometry;
 using Lego2STL.Core.LDraw;
+using Lego2STL.Core.Ocr;
 using Lego2STL.Core.Plates;
 using Lego2STL.Core.Text;
 
@@ -92,19 +93,12 @@ public sealed record RunSettings
 
     public double Clearance { get; init; }
 
-    /// <summary>
-    /// Cover over the gaps in a shape's surface, turning it into a solid. On unless asked
-    /// otherwise: these shapes exist to be printed, and a slicer covers the gaps anyway.
-    /// </summary>
-    public bool FillGaps { get; init; } = true;
+    /// <summary>Cover over the gaps in a shape's surface, turning it into a solid.</summary>
+    public bool FillGaps { get; init; }
 
     public bool NoSeamRepair { get; init; }
 
-    /// <summary>
-    /// How close two corners have to be to count as one, in source units where a unit is
-    /// 0.4 mm. Not millimetres: the merge runs before the conversion.
-    /// </summary>
-    public double WeldTolerance { get; init; } = VertexWelder.DefaultToleranceUnits;
+    public double WeldTolerance { get; init; } = VertexWelder.DefaultToleranceMillimetres;
 
     // ---- Shape library -----------------------------------------------------------------
 
@@ -136,6 +130,21 @@ public sealed record RunSettings
 
     /// <summary>Also write everything said during the run to this file.</summary>
     public string? LogFile { get; init; }
+
+    // ---- The key, never written out ----------------------------------------------------
+
+    /// <summary>
+    /// What stands in for the key wherever the settings are written down.
+    /// </summary>
+    /// <remarks>
+    /// One rule with one spelling, applied by the shown command line and by the record a run
+    /// keeps of itself. Both are made to be copied, pasted and kept, and a secret must not
+    /// travel with either.
+    /// </remarks>
+    public const string MaskedApiKey = "<your key>";
+
+    public static string? MaskApiKey(string? apiKey) =>
+        string.IsNullOrWhiteSpace(apiKey) ? null : MaskedApiKey;
 
     // ---- Derived -----------------------------------------------------------------------
 
@@ -202,10 +211,16 @@ public sealed record RunSettings
                 break;
         }
 
+        // Refused here rather than part-way into reading the pages, which is where a build with
+        // no recogniser used to give up on a document it had already opened.
+        if (Kind == InputKind.Document && !OcrEngines.IsAvailable)
+        {
+            problems.Add(words[TextKey.ErrOcrUnavailable]);
+        }
+
         if (Clearance < 0)
         {
-            problems.Add(words.Format(
-                TextKey.ErrClearanceNegative, Format(Clearance)));
+            problems.Add(words.Format(TextKey.ErrClearanceNegative, Clearance));
         }
 
         if (ScalePercent <= 0)
@@ -215,10 +230,11 @@ public sealed record RunSettings
 
         if (PlateSpacing < 0)
         {
-            problems.Add(words[TextKey.ErrPlateSpacingNegative]);
+            problems.Add(words[TextKey.ErrSpacingNegative]);
         }
 
-        if (PlateSize is { Length: > 0 } && !PrintBeds.TryParseSize(PlateSize, out _))
+        // Only a run that will lay parts out on a bed cares what size it is.
+        if (WantsPlates && PlateSize is { Length: > 0 } && !PrintBeds.TryParseSize(PlateSize, out _))
         {
             problems.Add(words.Format(TextKey.ErrNotABedSize, PlateSize));
         }
@@ -326,9 +342,9 @@ public sealed record RunSettings
             parts.Add(Format(Clearance));
         }
 
-        if (!FillGaps)
+        if (FillGaps)
         {
-            parts.Add("--no-repair");
+            parts.Add("--repair");
         }
 
         if (NoSeamRepair)
@@ -419,10 +435,10 @@ public sealed record RunSettings
 
         // The key is deliberately never written out: the point of showing the command is that
         // it can be pasted somewhere, and a secret should not travel with it.
-        if (!string.IsNullOrWhiteSpace(ApiKey))
+        if (MaskApiKey(ApiKey) is { } masked)
         {
             parts.Add("--api-key");
-            parts.Add("<your key>");
+            parts.Add(masked);
         }
     }
 

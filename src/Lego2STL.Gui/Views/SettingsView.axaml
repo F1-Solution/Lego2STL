@@ -1,0 +1,99 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Lego2STL.Gui.ViewModels"
+             xmlns:loc="using:Lego2STL.Gui.Localization"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+             x:Class="Lego2STL.Gui.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock.flag">
+      <Setter Property="FontFamily" Value="Consolas, Menlo, monospace" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="MinWidth" Value="110" />
+      <Setter Property="Foreground" Value="{DynamicResource AppText}" />
+    </Style>
+    <Style Selector="Border.card">
+      <Setter Property="Padding" Value="14,12" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Background" Value="{DynamicResource AppSurface}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppCardBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer>
+    <StackPanel Spacing="10" MaxWidth="760" HorizontalAlignment="Left">
+
+      <TextBlock Classes="heading"
+                 Text="{Binding [UiSettings], Source={x:Static loc:Loc.Current}}" />
+
+      <!-- The window's language, and its one home. -->
+      <Border Classes="card">
+        <Grid ColumnDefinitions="Auto,Auto,*">
+          <TextBlock Grid.Column="0" Classes="flag" Text="--lang" />
+          <ComboBox Grid.Column="1" MinWidth="200"
+                    ItemsSource="{x:Static vm:SettingsViewModel.Languages}"
+                    SelectedItem="{Binding SelectedLanguage}" />
+          <TextBlock Grid.Column="2" Classes="help" Margin="12,0,0,0"
+                     VerticalAlignment="Center" TextWrapping="Wrap"
+                     Foreground="{DynamicResource AppTextSecondary}"
+                     Text="{Binding [HelpOptLang], Source={x:Static loc:Loc.Current}}" />
+        </Grid>
+      </Border>
+
+      <!-- The key for looking a set up. Named here and never printed into the shown command. -->
+      <Border Classes="card">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <TextBlock Grid.Column="0" Classes="flag" Text="--api-key" />
+          <TextBox Grid.Column="1" PasswordChar="•" Text="{Binding Options.ApiKey}" />
+          <TextBlock Grid.Column="2" Margin="12,0,0,0"
+                     VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="320"
+                     Foreground="{DynamicResource AppTextSecondary}"
+                     Text="{Binding [HelpOptApiKey], Source={x:Static loc:Loc.Current}}" />
+        </Grid>
+      </Border>
+
+      <!-- Where everything a run said is kept. -->
+      <Border Classes="card">
+        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+          <TextBlock Grid.Column="0" Classes="flag" Text="--log" />
+          <TextBox Grid.Column="1" Text="{Binding Options.LogFile}" />
+          <Button Grid.Column="2" Margin="8,0,0,0" Name="PickLog"
+                  Content="{Binding [UiBrowse], Source={x:Static loc:Loc.Current}}" />
+          <TextBlock Grid.Column="3" Margin="12,0,0,0"
+                     VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="240"
+                     Foreground="{DynamicResource AppTextSecondary}"
+                     Text="{Binding [HelpOptLog], Source={x:Static loc:Loc.Current}}" />
+        </Grid>
+      </Border>
+
+      <!-- Whether a run says anything on screen while it happens. -->
+      <Border Classes="card">
+        <Grid ColumnDefinitions="Auto,Auto,*">
+          <TextBlock Grid.Column="0" Classes="flag" Text="--quiet" />
+          <CheckBox Grid.Column="1" IsChecked="{Binding Options.Quiet}" />
+          <TextBlock Grid.Column="2" Margin="12,0,0,0"
+                     VerticalAlignment="Center" TextWrapping="Wrap"
+                     Foreground="{DynamicResource AppTextSecondary}"
+                     Text="{Binding [HelpOptQuiet], Source={x:Static loc:Loc.Current}}" />
+        </Grid>
+      </Border>
+
+      <!-- The history, not the folders: nothing on the disk is touched. -->
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <Button HorizontalAlignment="Left"
+                  Command="{Binding ForgetEveryRunCommand}"
+                  Content="{Binding [UiForgetEverything], Source={x:Static loc:Loc.Current}}" />
+          <TextBlock TextWrapping="Wrap"
+                     Foreground="{DynamicResource AppTextSecondary}"
+                     Text="{Binding [UiRunsEmpty], Source={x:Static loc:Loc.Current}}" />
+        </StackPanel>
+      </Border>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

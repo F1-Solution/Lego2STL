@@ -1,399 +1,185 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Lego2STL.Core.Colors;
-using Lego2STL.Core.Geometry;
 using Lego2STL.Core.Pipeline;
+using Lego2STL.Core.Plates;
+using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
 using Lego2STL.Gui.Localization;
 using Lego2STL.Gui.Services;
 
 namespace Lego2STL.Gui.ViewModels;
 
-/// <summary>Which of the four screens is showing.</summary>
-public enum Screen
-{
-    Input,
-    Options,
-    Run,
-    Catalogue,
-}
-
 /// <summary>
-/// The window: four screens over one run.
+/// The window: a rail over the run folder.
 /// </summary>
 /// <remarks>
-/// Nothing about the pipeline is decided here. This gathers what has been chosen, hands it to
-/// the same runner the terminal uses, and shows what comes back. The only thing it adds is
-/// that the run happens off the interface thread and can be stopped part-way, which a terminal
-/// gets from the shell for nothing.
+/// <para>
+/// A shell and nothing else. Which screen is showing is which view model the body is pointed
+/// at, rather than an enum kept alongside one - so a screen cannot be selected in the rail
+/// while the body shows something else, because there is nowhere for the two to disagree.
+/// </para>
+/// <para>
+/// Starting a run lives on Setup and only there, which is what makes starting one from a screen
+/// that cannot describe a run impossible rather than merely discouraged. This listens for that
+/// and decides what beginning a run means.
+/// </para>
 /// </remarks>
 public sealed partial class MainViewModel : ViewModelBase, IDisposable
 {
     private readonly UserSettings _saved;
-    private readonly ThumbnailCache _thumbnails = new();
     private CancellationTokenSource? _running;
 
     public MainViewModel()
     {
         _saved = UserSettings.Load();
 
-        Options = new RunOptionsViewModel
+        var options = new RunOptionsViewModel
         {
             Language = _saved.DisplayLanguage,
             LDrawDirectory = _saved.LDrawDirectory,
             OutputDirectory = _saved.OutputDirectory,
-            Printer = _saved.Printer ?? Core.Plates.PrintBeds.Default.Name,
+            Printer = _saved.Printer ?? PrintBeds.Default.Name,
         };
 
-        Loc.Current.Use(Options.Language);
-        Options.PropertyChanged += OnOptionChanged;
+        Loc.Current.Use(options.Language);
+
+        Runs = new RunsViewModel();
+
+        // Narrowed to what was changed from the second run onward: on a first there is nothing
+        // to have changed, and an empty list is a worse introduction than a long one.
+        Setup = new SetupViewModel(options, changedOnly: RunIndex.Read().Count > 0);
+        Settings = new SettingsViewModel(options, _saved, Runs);
+
+        Setup.Started += (_, _) => _ = BeginAsync(Setup.Options.ToSettings());
+        Runs.OpenRequested += (_, folder) => Open(RunDocumentViewModel.Reopened(folder));
+
+        Current = Setup;
+        _ = Runs.RefreshAsync();
     }
 
-    public RunOptionsViewModel Options { get; }
+    public RunsViewModel Runs { get; }
+
+    public SetupViewModel Setup { get; }
+
+    public SettingsViewModel Settings { get; }
+
+    /// <summary>The run being watched, or the one last opened. Null until there is one.</summary>
+    [ObservableProperty]
+    public partial RunDocumentViewModel? OpenRun { get; set; }
+
+    /// <summary>The one settings object, which the footer and the option list both read.</summary>
+    public RunOptionsViewModel Options => Setup.Options;
 
     public Loc Words => Loc.Current;
 
-    // ---- Which screen ---------------------------------------------------------------------
+    // ---- Which screen ------------------------------------------------------------------------
 
     [ObservableProperty]
-    public partial Screen Screen { get; set; } = Screen.Input;
+    public partial ViewModelBase Current { get; set; }
 
-    public bool OnInput => Screen == Screen.Input;
+    public bool ShowingRuns => ReferenceEquals(Current, Runs);
 
-    public bool OnOptions => Screen == Screen.Options;
+    public bool ShowingSetup => ReferenceEquals(Current, Setup);
 
-    public bool OnRun => Screen == Screen.Run;
+    public bool ShowingOpenRun => OpenRun is not null && ReferenceEquals(Current, OpenRun);
 
-    public bool OnCatalogue => Screen == Screen.Catalogue;
+    public bool ShowingSettings => ReferenceEquals(Current, Settings);
 
-    partial void OnScreenChanged(Screen value)
+    public void Show(ViewModelBase screen) => Current = screen;
+
+    partial void OnCurrentChanged(ViewModelBase value)
     {
-        OnPropertyChanged(nameof(OnInput));
-        OnPropertyChanged(nameof(OnOptions));
-        OnPropertyChanged(nameof(OnRun));
-        OnPropertyChanged(nameof(OnCatalogue));
+        OnPropertyChanged(nameof(ShowingRuns));
+        OnPropertyChanged(nameof(ShowingSetup));
+        OnPropertyChanged(nameof(ShowingOpenRun));
+        OnPropertyChanged(nameof(ShowingSettings));
     }
 
     [RelayCommand]
-    private void Show(string screen)
+    private void ShowRuns()
     {
-        if (Enum.TryParse<Screen>(screen, out var wanted))
+        Show(Runs);
+        _ = Runs.RefreshAsync();
+    }
+
+    [RelayCommand]
+    private void ShowSetup() => Show(Setup);
+
+    [RelayCommand]
+    private void ShowOpenRun()
+    {
+        if (OpenRun is { } run)
         {
-            Screen = wanted;
+            Show(run);
         }
     }
 
-    // ---- Language -------------------------------------------------------------------------
+    [RelayCommand]
+    private void ShowSettings() => Show(Settings);
 
-    public static IReadOnlyList<LanguageChoice> Languages => Loc.Choices;
+    /// <summary>
+    /// Back to setting a run up. The run that was open keeps its page.
+    /// </summary>
+    /// <remarks>
+    /// The rail's foot carries this, and Setup carries Start, so a run cannot be started from a
+    /// screen that has nothing to say about what it would run.
+    /// </remarks>
+    [RelayCommand]
+    private void NewRun() => Show(Setup);
 
+    /// <summary>The language menu in the header, findable when the rail cannot be read.</summary>
     public LanguageChoice SelectedLanguage
     {
-        get => Loc.Choices.First(c => c.Language == Options.Language);
+        get => Settings.SelectedLanguage;
         set
         {
-            if (value is null || value.Language == Options.Language)
-            {
-                return;
-            }
-
-            Options.Language = value.Language;
-            Loc.Current.Use(value.Language);
-
-            _saved.Language = value.Language.Tag();
-            _saved.Save();
-
+            Settings.SelectedLanguage = value;
+            OpenRun?.Reword();
             OnPropertyChanged();
-            RefreshCatalogueText();
         }
     }
 
-    // ---- Finding the catalogue pages -------------------------------------------------------
+    // ---- Running -------------------------------------------------------------------------------
 
-    [ObservableProperty]
-    public partial bool Scanning { get; set; }
-
-    [RelayCommand]
-    private async Task ScanPagesAsync()
+    private async Task BeginAsync(RunSettings settings)
     {
-        if (string.IsNullOrWhiteSpace(Options.DocumentPath) || !File.Exists(Options.DocumentPath))
+        if (RunLayout.Plan(settings) is not { } layout)
         {
-            return;
-        }
-
-        Scanning = true;
-        try
-        {
-            var found = await Task.Run(() =>
-            {
-                using var document = Core.Pdf.PdfPageImageSource.Open(Options.DocumentPath!);
-                var locator = new Core.Extraction.LabelLocator();
-                var pages = new List<int>();
-
-                for (var page = 1; page <= document.PageCount; page++)
-                {
-                    using var image = document.GetPage(page);
-                    if (locator.Locate(image).Count > 0)
-                    {
-                        pages.Add(page);
-                    }
-                }
-
-                return pages;
-            }).ConfigureAwait(true);
-
-            Options.Pages = found.Count > 0 ? Core.Pdf.PageRange.Format(found) : string.Empty;
-        }
-        catch (Exception ex) when (ex is IOException or InvalidDataException or InvalidOperationException)
-        {
-            Append(Words.Text(TextKey.MsgError) + ": " + ex.Message);
-        }
-        finally
-        {
-            Scanning = false;
-        }
-    }
-
-    // ---- The run ----------------------------------------------------------------------------
-
-    public ObservableCollection<string> Log { get; } = [];
-
-    [ObservableProperty]
-    public partial double Progress { get; set; }
-
-    [ObservableProperty]
-    public partial string StageText { get; set; } = string.Empty;
-
-    [ObservableProperty]
-    public partial bool Busy { get; set; }
-
-    [ObservableProperty]
-    public partial string? Failure { get; set; }
-
-    [ObservableProperty]
-    public partial RunOutcome? Outcome { get; set; }
-
-    public bool CanStart => !Busy && Options.CanRun;
-
-    [RelayCommand]
-    private async Task StartAsync()
-    {
-        if (Busy)
-        {
-            return;
-        }
-
-        var settings = Options.ToSettings();
-
-        if (settings.Problems() is { Count: > 0 } problems)
-        {
-            Failure = string.Join(" ", problems);
             return;
         }
 
         Remember();
 
-        Busy = true;
-        Failure = null;
-        Progress = 0;
-        Log.Clear();
-        Screen = Screen.Run;
-        OnPropertyChanged(nameof(CanStart));
+        Open(RunDocumentViewModel.Live(settings, layout));
 
         _running?.Dispose();
         _running = new CancellationTokenSource();
 
-        var progress = new Progress<RunProgress>(Report);
-
         try
         {
-            var runner = new PipelineRunner(Append, progress);
-            var outcome = await Task.Run(
-                () => runner.RunAsync(settings, _running.Token), _running.Token).ConfigureAwait(true);
-
-            Outcome = outcome;
-            Failure = outcome.Error;
-
-            StageText = outcome.Result switch
+            if (OpenRun is { } run)
             {
-                RunResult.Complete => Words.Text(TextKey.UiDone),
-                RunResult.Unverified => Words.Text(TextKey.UiDone),
-                _ => Words.Text(TextKey.UiFailed),
-            };
-
-            Progress = outcome.Result == RunResult.Failed ? 0 : 1;
-
-            ShowCatalogue(outcome);
-
-            if (outcome.Result != RunResult.Failed)
-            {
-                Screen = Screen.Catalogue;
+                await run.RunAsync(_running.Token).ConfigureAwait(true);
             }
-        }
-        catch (OperationCanceledException)
-        {
-            StageText = Words.Text(TextKey.MsgCancelled);
-            Append(Words.Text(TextKey.MsgCancelled));
         }
         finally
         {
-            Busy = false;
-            OnPropertyChanged(nameof(CanStart));
+            await Runs.RefreshAsync().ConfigureAwait(true);
         }
     }
 
-    [RelayCommand]
-    private void Cancel() => _running?.Cancel();
-
-    [RelayCommand]
-    private void OpenRunFolder()
+    private void Open(RunDocumentViewModel run)
     {
-        if (Outcome?.Layout is { } layout)
-        {
-            Desktop.Open(layout.Root);
-        }
-    }
+        OpenRun?.Dispose();
+        OpenRun = run;
 
-    private void Report(RunProgress progress)
-    {
-        Progress = progress.Fraction;
-        StageText = progress.Detail is { Length: > 0 }
-            ? $"{Describe(progress.Stage)} - {progress.Detail}"
-            : Describe(progress.Stage);
-    }
+        run.ContinueRequested += (_, settings) => _ = BeginAsync(settings);
 
-    private string Describe(RunStage stage) => stage switch
-    {
-        RunStage.ReadingDocument => Words.Text(TextKey.UiScanning),
-        RunStage.LookingUpSet => Words.Text(TextKey.UiSetNumber),
-        RunStage.ReadingPartsList => Words.Text(TextKey.UiChoosePartsList),
-        RunStage.WritingPartsList => Words.Text(TextKey.UiChoosePartsList),
-        RunStage.GatheringShapes => Words.Text(TextKey.UiGroupLibrary),
-        RunStage.BuildingShapes => Words.Text(TextKey.UiGroupGeometry),
-        RunStage.ArrangingPlates => Words.Text(TextKey.UiGroupPlates),
-        RunStage.WritingReport => Words.Text(TextKey.UiLog),
-        RunStage.Finished => Words.Text(TextKey.UiDone),
-        _ => Words.Text(TextKey.UiIdle),
-    };
-
-    private void Append(string message)
-    {
-        // The runner reports from a worker; the collection is bound, so it is added to on the
-        // thread the interface owns.
-        Avalonia.Threading.Dispatcher.UIThread.Post(() => Log.Add(message));
-    }
-
-    // ---- The catalogue -----------------------------------------------------------------------
-
-    public ObservableCollection<CataloguePartViewModel> Parts { get; } = [];
-
-    public ObservableCollection<string> Colours { get; } = [];
-
-    [ObservableProperty]
-    public partial string? ColourFilter { get; set; }
-
-    [ObservableProperty]
-    public partial string? Search { get; set; }
-
-    public IEnumerable<CataloguePartViewModel> VisibleParts =>
-        Parts.Where(p => p.Matches(ColourFilter, Search));
-
-    partial void OnColourFilterChanged(string? value) => OnPropertyChanged(nameof(VisibleParts));
-
-    partial void OnSearchChanged(string? value) => OnPropertyChanged(nameof(VisibleParts));
-
-    /// <summary>
-    /// Fills the catalogue from what a run produced. Public so it can be shown a made-up run
-    /// and drawn, which is how the card layout is checked without printing anything.
-    /// </summary>
-    public void ShowCatalogue(RunOutcome outcome)
-    {
-        Parts.Clear();
-        Colours.Clear();
-
-        if (outcome.PartsList is not { } list || outcome.Layout is not { } layout)
-        {
-            OnPropertyChanged(nameof(VisibleParts));
-            return;
-        }
-
-        var shapes = outcome.Shapes.ToDictionary(s => s.PartNumber, StringComparer.OrdinalIgnoreCase);
-
-        // Matched on the colour number, not its name: the name is translated for display and
-        // an entry and its plate would then stop finding each other in any language but one.
-        var plates = outcome.Plates?.Plates
-                         .GroupBy(p => p.BrickLinkColorCode)
-                         .ToDictionary(g => g.Key, g => g.First().FileName)
-                     ?? [];
-
-        foreach (var entry in list.Entries)
-        {
-            shapes.TryGetValue(entry.PartNumber, out var shape);
-
-            var shapePath = shape is null
-                ? null
-                : Path.Combine(layout.StlDirectory, entry.PartNumber + ".stl");
-
-            var platePath = plates.TryGetValue(entry.BrickLinkColorCode, out var plateName)
-                ? Path.Combine(layout.PlateDirectory, plateName)
-                : null;
-
-            Parts.Add(new CataloguePartViewModel(
-                entry, shape, shapePath, platePath, outcome.Settings.Language));
-        }
-
-        foreach (var colour in Parts.Select(p => p.ColorName).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal))
-        {
-            Colours.Add(colour);
-        }
-
-        OnPropertyChanged(nameof(VisibleParts));
-
-        _ = LoadPicturesAsync(outcome.Settings.Offline);
-    }
-
-    /// <summary>
-    /// Fetches the pictures after the list is already on screen, so the catalogue appears at
-    /// once and fills in rather than waiting on a network that may not answer.
-    /// </summary>
-    private async Task LoadPicturesAsync(bool offline)
-    {
-        _thumbnails.Offline = offline;
-
-        foreach (var part in Parts.ToList())
-        {
-            if (!ColorReference.Table.TryGet(ColorScheme.BrickLink, part.Entry.BrickLinkColorCode, out var colour))
-            {
-                continue;
-            }
-
-            part.Picture = await _thumbnails.TryGetAsync(part.PartNumber, colour).ConfigureAwait(true);
-        }
-    }
-
-    private void RefreshCatalogueText()
-    {
-        foreach (var part in Parts)
-        {
-            part.OnPropertyChangedPublic(nameof(CataloguePartViewModel.WarningText));
-        }
-    }
-
-    // ---- Odds and ends ------------------------------------------------------------------------
-
-    private void OnOptionChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName is nameof(RunOptionsViewModel.CanRun) or nameof(RunOptionsViewModel.Problem))
-        {
-            OnPropertyChanged(nameof(CanStart));
-        }
+        Show(run);
+        OnPropertyChanged(nameof(ShowingOpenRun));
     }
 
     private void Remember()
@@ -408,6 +194,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     public void Dispose()
     {
         _running?.Dispose();
-        _thumbnails.Dispose();
+        _running = null;
+        OpenRun?.Dispose();
     }
 }

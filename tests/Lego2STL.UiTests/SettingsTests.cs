@@ -1,0 +1,169 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
+using Avalonia.LogicalTree;
+using FluentAssertions;
+using Lego2STL.Core.Run;
+using Lego2STL.Core.Text;
+using Lego2STL.Gui.Localization;
+using Lego2STL.Gui.Services;
+using Lego2STL.Gui.ViewModels;
+using Lego2STL.Gui.Views;
+using Xunit;
+
+namespace Lego2STL.UiTests;
+
+/// <summary>
+/// The four settings that belong to this machine rather than to this run.
+/// </summary>
+/// <remarks>
+/// Nothing here appears on the setup screen as well. One home per setting is what removed the
+/// second language menu the window used to carry, and what stops a value being changed in one
+/// place and read from another.
+/// </remarks>
+[Collection("the history")]
+public sealed class SettingsTests
+{
+    [AvaloniaFact]
+    public void A_key_typed_here_is_the_key_the_run_is_given()
+    {
+        var settings = ASettingsScreen(out var options);
+
+        settings.Options.ApiKey = "secret-value";
+
+        options.ToSettings().ApiKey.Should().Be("secret-value");
+    }
+
+    /// <summary>
+    /// The key is named in the shown command and never printed into it, so a command copied
+    /// out of the window and pasted into a chat does not carry someone's key with it.
+    /// </summary>
+    [AvaloniaFact]
+    public void A_key_is_never_written_into_the_command_the_window_shows()
+    {
+        var settings = ASettingsScreen(out var options);
+
+        settings.Options.ApiKey = "secret-value";
+
+        options.CommandLine.Should().NotContain("secret-value").And.Contain("--api-key");
+    }
+
+    [AvaloniaFact]
+    public void Asking_for_quiet_reaches_the_run()
+    {
+        var settings = ASettingsScreen(out var options);
+
+        settings.Options.Quiet = true;
+
+        options.ToSettings().Quiet.Should().BeTrue();
+    }
+
+    [AvaloniaFact]
+    public void A_log_named_here_reaches_the_run()
+    {
+        var settings = ASettingsScreen(out var options);
+        var path = Path.Combine(Path.GetTempPath(), "somewhere.log");
+
+        settings.Options.LogFile = path;
+
+        options.ToSettings().LogFile.Should().Be(path);
+    }
+
+    [AvaloniaFact]
+    public void Choosing_a_language_changes_the_window_and_is_remembered()
+    {
+        var settings = ASettingsScreen(out var options, out var saved);
+
+        try
+        {
+            settings.SelectedLanguage = SettingsViewModel.Languages.First(c => c.Language == DisplayLanguage.Italian);
+
+            Loc.Current.Language.Should().Be(DisplayLanguage.Italian);
+            options.Language.Should().Be(DisplayLanguage.Italian);
+            options.ToSettings().Language.Should().Be(DisplayLanguage.Italian);
+            saved.Language.Should().Be(DisplayLanguage.Italian.Tag());
+
+            UserSettings.Load().DisplayLanguage.Should().Be(DisplayLanguage.Italian);
+        }
+        finally
+        {
+            settings.SelectedLanguage = SettingsViewModel.Languages.First(c => c.Language == DisplayLanguage.English);
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task Forgetting_every_run_empties_the_history()
+    {
+        RunIndex.ForgetEverything();
+
+        var layout = RunLayout.At(AFolder("pistola"));
+        Directory.CreateDirectory(layout.Root);
+        await File.WriteAllTextAsync(layout.PartsListPath, "id;part;colour\n");
+        RunIndex.Record(layout);
+
+        var runs = new RunsViewModel();
+        await runs.RefreshAsync();
+        runs.Rows.Should().ContainSingle();
+
+        var settings = new SettingsViewModel(new RunOptionsViewModel(), new UserSettings(), runs);
+        settings.ForgetEveryRunCommand.Execute(null);
+
+        RunIndex.Read().Should().BeEmpty();
+        runs.Rows.Should().BeEmpty("the screen showing them has to empty with the history");
+    }
+
+    /// <summary>
+    /// Each is named by its flag, because the flag is how the same thing is asked for from a
+    /// terminal, and naming it is what makes the two halves obviously the same tool.
+    /// </summary>
+    [AvaloniaFact]
+    public void The_four_are_named_by_the_flags_they_are()
+    {
+        var window = new Window
+        {
+            Width = 900,
+            Height = 600,
+            Content = new SettingsView { DataContext = ASettingsScreen(out _) },
+        };
+
+        window.Show();
+        window.CaptureRenderedFrame();
+
+        var shown = window.GetLogicalDescendants().OfType<Control>()
+            .Select(control => control switch
+            {
+                TextBlock block => block.Text,
+                ContentControl content => content.Content as string,
+                _ => null,
+            })
+            .Where(text => !string.IsNullOrWhiteSpace(text))
+            .ToList();
+
+        shown.Should().Contain("--api-key");
+        shown.Should().Contain("--log");
+        shown.Should().Contain("--quiet");
+        shown.Should().Contain("--lang");
+
+        Enum.GetNames<TextKey>().Should().NotIntersectWith(shown!,
+            "a label showing a key rather than a phrase means a wording is missing");
+    }
+
+    private static SettingsViewModel ASettingsScreen(out RunOptionsViewModel options) =>
+        ASettingsScreen(out options, out _);
+
+    private static SettingsViewModel ASettingsScreen(
+        out RunOptionsViewModel options, out UserSettings saved)
+    {
+        options = new RunOptionsViewModel();
+        saved = new UserSettings();
+
+        return new SettingsViewModel(options, saved, new RunsViewModel());
+    }
+
+    private static string AFolder(string name) => Path.Combine(
+        Path.GetTempPath(), "lego2stl-settings-" + Guid.NewGuid().ToString("N"), name);
+}

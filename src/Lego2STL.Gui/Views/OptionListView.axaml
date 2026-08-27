@@ -1,0 +1,168 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Lego2STL.Gui.ViewModels"
+             xmlns:loc="using:Lego2STL.Gui.Localization"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="820" d:DesignHeight="560"
+             x:Class="Lego2STL.Gui.Views.OptionListView"
+             x:DataType="vm:OptionRowsViewModel">
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock.flag">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="MinWidth" Value="150" />
+      <Setter Property="FontFamily" Value="Consolas, Menlo, monospace" />
+      <Setter Property="Foreground" Value="{DynamicResource AppText}" />
+    </Style>
+    <Style Selector="TextBlock.help">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="MaxWidth" Value="420" />
+      <Setter Property="Margin" Value="12,0,0,0" />
+      <Setter Property="Foreground" Value="{DynamicResource AppTextSecondary}" />
+    </Style>
+    <Style Selector="Border.row">
+      <Setter Property="Padding" Value="10,7" />
+      <Setter Property="Margin" Value="0,1" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Background" Value="{DynamicResource AppSurface}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AppCardBorder}" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="Button.reset">
+      <Setter Property="Padding" Value="8,3" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="NumericUpDown">
+      <Setter Property="MinWidth" Value="150" />
+    </Style>
+  </UserControl.Styles>
+
+  <DockPanel>
+
+    <!-- Searching and narrowing sit above the list, so what is missing is always explained. -->
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,10">
+      <TextBox Grid.Column="0"
+               Text="{Binding Search}"
+               PlaceholderText="{Binding [UiSearchOptions], Source={x:Static loc:Loc.Current}}" />
+
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0"
+                  VerticalAlignment="Center">
+        <CheckBox IsChecked="{Binding ChangedOnly}"
+                  Content="{Binding [UiChangedOnly], Source={x:Static loc:Loc.Current}}" />
+        <TextBlock VerticalAlignment="Center" Margin="8,0,0,0"
+                   Foreground="{DynamicResource AppTextSecondary}"
+                   IsVisible="{Binding HasHidden}"
+                   Text="{Binding HiddenLabel}" />
+      </StackPanel>
+
+      <Button Grid.Column="2" Classes="reset" Command="{Binding ResetAllCommand}"
+              Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />
+    </Grid>
+
+    <!--
+      Not virtualised, deliberately: every row stays a descendant of this control even while
+      it is filtered out of sight, so the parity test can read a hidden row and a hidden row
+      keeps whatever was typed into it.
+    -->
+    <ScrollViewer>
+      <ItemsControl ItemsSource="{Binding Rows}">
+
+        <ItemsControl.DataTemplates>
+
+          <DataTemplate DataType="vm:ToggleOptionRow">
+            <Border Classes="row" IsVisible="{Binding IsVisible}">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <CheckBox Grid.Column="0" MinWidth="170"
+                          IsEnabled="{Binding IsEnabled}"
+                          IsChecked="{Binding Value}"
+                          Content="{Binding Flag}" />
+                <TextBlock Grid.Column="1" Classes="help" Text="{Binding Help}" />
+                <Button Grid.Column="2" Classes="reset"
+                        IsVisible="{Binding IsChanged}"
+                        Command="{Binding ResetOneCommand}"
+                        Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />
+              </Grid>
+            </Border>
+          </DataTemplate>
+
+          <DataTemplate DataType="vm:NumberOptionRow">
+            <Border Classes="row" IsVisible="{Binding IsVisible}">
+              <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                <TextBlock Grid.Column="0" Classes="flag" Text="{Binding Flag}" />
+                <NumericUpDown Grid.Column="1"
+                               IsEnabled="{Binding IsEnabled}"
+                               Value="{Binding Value}"
+                               Minimum="{Binding Minimum}"
+                               Maximum="{Binding Maximum}"
+                               Increment="{Binding Increment}"
+                               FormatString="{Binding Format}" />
+                <TextBlock Grid.Column="2" Classes="help" Text="{Binding Help}" />
+                <Button Grid.Column="3" Classes="reset"
+                        IsVisible="{Binding IsChanged}"
+                        Command="{Binding ResetOneCommand}"
+                        Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />
+              </Grid>
+            </Border>
+          </DataTemplate>
+
+          <DataTemplate DataType="vm:PathOptionRow">
+            <Border Classes="row" IsVisible="{Binding IsVisible}">
+              <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                <TextBlock Grid.Column="0" Classes="flag" Text="{Binding Flag}" />
+                <TextBox Grid.Column="1" MinWidth="220"
+                         IsEnabled="{Binding IsEnabled}"
+                         Text="{Binding Value}"
+                         PlaceholderText="{Binding Help}" />
+                <Button Grid.Column="2" Classes="reset pick" Margin="6,0,0,0"
+                        IsEnabled="{Binding IsEnabled}" Tag="{Binding}"
+                        Content="{Binding [UiBrowse], Source={x:Static loc:Loc.Current}}" />
+                <Button Grid.Column="3" Classes="reset"
+                        IsVisible="{Binding IsChanged}"
+                        Command="{Binding ResetOneCommand}"
+                        Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />
+              </Grid>
+            </Border>
+          </DataTemplate>
+
+          <DataTemplate DataType="vm:TextOptionRow">
+            <Border Classes="row" IsVisible="{Binding IsVisible}">
+              <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                <TextBlock Grid.Column="0" Classes="flag" Text="{Binding Flag}" />
+                <TextBox Grid.Column="1" MinWidth="150"
+                         IsEnabled="{Binding IsEnabled}"
+                         Text="{Binding Value}"
+                         PlaceholderText="{Binding Placeholder}" />
+                <TextBlock Grid.Column="2" Classes="help" Text="{Binding Help}" />
+                <Button Grid.Column="3" Classes="reset"
+                        IsVisible="{Binding IsChanged}"
+                        Command="{Binding ResetOneCommand}"
+                        Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />
+              </Grid>
+            </Border>
+          </DataTemplate>
+
+          <DataTemplate DataType="vm:ChoiceOptionRow">
+            <Border Classes="row" IsVisible="{Binding IsVisible}">
+              <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                <TextBlock Grid.Column="0" Classes="flag" Text="{Binding Flag}" />
+                <ComboBox Grid.Column="1" MinWidth="150"
+                          IsEnabled="{Binding IsEnabled}"
+                          ItemsSource="{Binding Choices}"
+                          SelectedItem="{Binding Value}" />
+                <TextBlock Grid.Column="2" Classes="help" Text="{Binding Help}" />
+                <Button Grid.Column="3" Classes="reset"
+                        IsVisible="{Binding IsChanged}"
+                        Command="{Binding ResetOneCommand}"
+                        Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />
+              </Grid>
+            </Border>
+          </DataTemplate>
+
+        </ItemsControl.DataTemplates>
+      </ItemsControl>
+    </ScrollViewer>
+
+  </DockPanel>
+</UserControl>

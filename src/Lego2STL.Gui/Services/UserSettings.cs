@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
 
 namespace Lego2STL.Gui.Services;
@@ -40,15 +41,9 @@ public sealed class UserSettings
     /// Where the preferences live. The variable lets a test, or a copy carried on a stick,
     /// keep its own preferences instead of writing into the account they happen to run under.
     /// </summary>
-    public const string DirectoryVariable = "LEGO2STL_SETTINGS_DIR";
+    public const string DirectoryVariable = AppDataDirectory.Variable;
 
-    public static string FilePath => Path.Combine(
-        Environment.GetEnvironmentVariable(DirectoryVariable) is { Length: > 0 } chosen
-            ? chosen
-            : Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "Lego2STL"),
-        "interface.json");
+    public static string FilePath => AppDataDirectory.File("interface.json");
 
     private static readonly JsonSerializerOptions Format = new() { WriteIndented = true };
 

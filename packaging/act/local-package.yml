@@ -11,13 +11,15 @@
 #
 #   test      runs on windows-latest, because reading a document needs the recogniser that is
 #             part of Windows. Run it directly instead: dotnet test -c Release
-#   windows   needs the Windows installer toolset.
-#   macos     needs macOS to make a disk image.
+#   windows   needs the Windows installer toolset. Use packaging/local-windows.ps1, which does
+#             what that job does against the same scripts.
+#   macos     needs macOS to fuse two builds into one package.
 #   release   publishes to GitHub, which is not a thing to do from a laptop by accident.
 #
 # act cannot run Windows or macOS containers on a Linux engine, so those four are out of reach
-# locally whatever is done. The Linux job is the one worth having: the container is Ubuntu and
-# carries dpkg-deb, so it builds the .deb as well as the tarball.
+# locally whatever is done. The Linux job is the one worth having, and not only because it
+# builds: a container is the one place the interesting path can be walked, where .NET can be
+# taken away and the installer made to fetch it.
 
 name: package (local)
 
@@ -43,6 +45,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # act copies the working tree in with docker cp, and a Windows filesystem has no
+      # executable bit to copy. A real runner clones from git, which does carry it, so this
+      # step is needed here and nowhere else.
+      - name: Make the scripts executable
+        run: |
+          find packaging -name '*.sh' -exec chmod +x {} +
+          chmod +x packaging/macos/preinstall
+
       - name: Work out the version
         id: pick
         env:
@@ -56,6 +66,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # act copies the working tree in with docker cp, and a Windows filesystem has no
+      # executable bit to copy. A real runner clones from git, which does carry it, so this
+      # step is needed here and nowhere else.
+      - name: Make the scripts executable
+        run: |
+          find packaging -name '*.sh' -exec chmod +x {} +
+          chmod +x packaging/macos/preinstall
+
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
@@ -65,10 +83,11 @@ jobs:
           VERSION: ${{ needs.version.outputs.number }}
         run: ./packaging/build-unix.sh linux x64 "$VERSION"
 
-      # Proves the packages are the shape they claim to be, which is the part a local run is
-      # actually for. The real workflow does not need this: it hands the files to a release,
-      # and anyone can look at them there.
-      - name: Look inside what was built
+      # What a local run is actually for. The real workflow cannot do this: its runners always
+      # have .NET, so the path a stranger takes - no runtime, fetch one, check it, unpack it,
+      # run - is never exercised there. Here dotnet is taken out of the environment and the
+      # search roots are pointed somewhere empty, so the installer genuinely finds nothing.
+      - name: Install what was built, as a machine with no .NET
         run: |
           set -euo pipefail
           cd artifacts/dist
@@ -76,22 +95,39 @@ jobs:
           echo "=== produced ==="
           ls -lh
 
-          tarball=$(ls ./*linux-x64.tar.gz)
+          # Nothing here is piped into head. Under pipefail a reader that stops early kills
+          # the writer with SIGPIPE, and the step fails at 141 having actually done its work -
+          # which reads as a broken installer rather than a broken pipe.
+          installer=$(ls ./*linux-x64.run)
           echo
-          echo "=== inside $tarball ==="
-          tar -tzf "$tarball"
+          echo "=== $installer, on a machine that has .NET ==="
+          "$installer" --prefix /tmp/have
+          /tmp/have/bin/lego2stl --help > /tmp/have-help.txt
+          head -3 /tmp/have-help.txt
 
-          deb=$(ls ./*.deb 2>/dev/null || true)
-          if [ -n "$deb" ]; then
-            echo
-            echo "=== $deb declares ==="
-            dpkg-deb --info "$deb"
-            echo "=== and installs ==="
-            dpkg-deb --contents "$deb"
-          else
-            echo
-            echo "::warning::No .deb was built - dpkg-deb was missing from the image."
-          fi
+          echo
+          echo "=== $installer, on a machine that has none ==="
+          mkdir -p /tmp/nowhere /tmp/barehome
+          env -i HOME=/tmp/barehome PATH=/usr/bin:/bin \
+              RUNTIME_SEARCH_ROOTS=/tmp/nowhere \
+              "$installer" --prefix /tmp/bare
+          test -d /tmp/barehome/.dotnet/shared/Microsoft.NETCore.App
+          env -i HOME=/tmp/barehome PATH=/usr/bin:/bin \
+              /tmp/bare/bin/lego2stl --help > /tmp/bare-help.txt
+          head -3 /tmp/bare-help.txt
+
+          echo
+          echo "=== the tarball holds ==="
+          tar -tzf ./*linux-x64.tar.gz > /tmp/tarball.txt
+          head -20 /tmp/tarball.txt
+          printf '    %s entries in all\n' "$(wc -l < /tmp/tarball.txt)"
+
+      - name: Run the packaging tests
+        run: |
+          set -euo pipefail
+          ./packaging/tests/runtime-pin.test.sh
+          ./packaging/tests/runtime-probe.test.sh
+          ./packaging/tests/run-installer.test.sh
 
       - uses: actions/upload-artifact@v4
         with:

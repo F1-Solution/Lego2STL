@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Lego2STL.Core.Colors;
+using Lego2STL.Core.Ocr;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Text;
 
@@ -200,6 +201,99 @@ public sealed class RunSettingsTests
         new RunSettings { Kind = InputKind.SetNumber, SetNumber = "42100-1" }
             .Problems()
             .Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// What stops a run is the first thing anyone reads, so it is the last thing that should
+    /// still be in English on an Italian screen.
+    /// </summary>
+    [Fact]
+    public void What_stops_a_run_is_said_in_the_language_that_was_chosen()
+    {
+        var english = new RunSettings
+        {
+            Kind = InputKind.PartsList,
+            InputPath = null,
+            Language = DisplayLanguage.English,
+        };
+
+        english.Problems().Should().ContainSingle()
+            .Which.Should().Be(Strings.For(DisplayLanguage.English)[TextKey.ErrChoosePartsList]);
+
+        var italian = english with { Language = DisplayLanguage.Italian };
+
+        italian.Problems().Should().ContainSingle()
+            .Which.Should().Be(Strings.For(DisplayLanguage.Italian)[TextKey.ErrChoosePartsList])
+            .And.NotBe(english.Problems()[0]);
+    }
+
+    [Fact]
+    public void A_missing_file_is_named_in_the_language_that_was_chosen()
+    {
+        var settings = new RunSettings
+        {
+            Kind = InputKind.PartsList,
+            InputPath = "nowhere/parts.csv",
+            Language = DisplayLanguage.Italian,
+        };
+
+        settings.Problems().Should().ContainSingle()
+            .Which.Should().Contain("nowhere/parts.csv")
+            .And.Be(Strings.For(DisplayLanguage.Italian)
+                .Format(TextKey.ErrNoFileAt, "nowhere/parts.csv"));
+    }
+
+    /// <summary>
+    /// A bed size only matters to a run that is going to lay parts out on one. Refusing a
+    /// parts-list-only run over a printer nothing will use is the defect this covers.
+    /// </summary>
+    [Fact]
+    public void A_bed_size_is_only_checked_when_something_will_be_laid_out_on_it()
+    {
+        var settings = new RunSettings
+        {
+            Kind = InputKind.SetNumber,
+            SetNumber = "42100-1",
+            PlateSize = "enormous",
+        };
+
+        (settings with { Stages = RunStages.PartsListOnly }).Problems().Should().BeEmpty();
+        (settings with { Stages = RunStages.Shapes }).Problems().Should().BeEmpty();
+        (settings with { Stages = RunStages.ShapesAndPlates }).Problems().Should().ContainSingle();
+    }
+
+    /// <summary>
+    /// Written for whichever build is running rather than skipped on one of them: a build with
+    /// a recogniser has to let a document through, and a build without one has to refuse it
+    /// here, at the start, instead of part-way into reading the pages.
+    /// </summary>
+    [Fact]
+    public void A_document_is_refused_at_the_start_on_a_build_that_cannot_read_one()
+    {
+        var document = new RunSettings { Kind = InputKind.Document, InputPath = ADocumentThatExists() };
+        var refusal = Strings.For(DisplayLanguage.English)[TextKey.ErrOcrUnavailable];
+
+        if (OcrEngines.IsAvailable)
+        {
+            document.Problems().Should().BeEmpty();
+        }
+        else
+        {
+            document.Problems().Should().ContainSingle().Which.Should().Be(refusal);
+        }
+
+        new RunSettings { Kind = InputKind.PartsList, InputPath = ADocumentThatExists() }
+            .Problems()
+            .Should().NotContain(refusal, "a parts list needs no recogniser either way");
+    }
+
+    private static string ADocumentThatExists()
+    {
+        var path = Path.Combine(
+            Path.GetTempPath(), "lego2stl-settings-" + Guid.NewGuid().ToString("N") + ".pdf");
+
+        File.WriteAllText(path, "not really a document, but it is a file");
+        return path;
     }
 
     // ---- What the settings hand to the stages --------------------------------------------

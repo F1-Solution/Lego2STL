@@ -15,13 +15,14 @@ are the same program with two ways in.
 
 Download the package for your system, or build one — see [packaging](packaging/README.md).
 
-| | |
-|---|---|
-| **Windows** | Run the `.msi`. It needs no administrator, adds a Start Menu entry, and puts `lego2stl` on your path. |
-| **Linux** | Unpack the `.tar.gz` and run `./install.sh`, or `sudo ./install.sh --system`. There is a `.deb` too. |
-| **macOS** | Open the `.dmg` and drag Lego2STL into Applications. It is not notarised, so the first open needs right-click → Open. |
+| System | Install with | Or unpack |
+|---|---|---|
+| **Windows** | `Lego2STL-<version>-win-x64.exe` — no administrator unless .NET has to be installed. Adds a Start Menu entry and puts `lego2stl` on your path. | `…-win-x64.zip` |
+| **Linux** | `Lego2STL-<version>-linux-x64.run` — `./…run` for you alone, `sudo ./…run --system` for everyone. `--uninstall` removes it again. | `…-linux-x64.tar.gz`, which holds an `install.sh` |
+| **macOS** | `Lego2STL-<version>-osx-universal.pkg` — one file for any Mac, Intel or Apple silicon. It is not notarised, so the first open needs right-click → Open. | `…-osx-universal.zip` |
 
-Nothing else has to be installed. Each program carries everything it needs.
+Lego2STL needs **.NET 10**. Each installer puts it in place when the machine has not got it,
+and leaves it alone when it has. The zip and the tarball expect it to be there already.
 
 ---
 
