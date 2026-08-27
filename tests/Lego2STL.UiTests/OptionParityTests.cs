@@ -79,14 +79,24 @@ public sealed class OptionParityTests
         }
     }
 
-    /// <summary>Every screen an option can live on, visited in turn.</summary>
+    /// <summary>
+    /// Every screen an option can live on, visited in turn.
+    /// </summary>
+    /// <remarks>
+    /// Setup and Settings both, because the options divide across the two now, and with the
+    /// changed-only filter off - a hidden row is still in the tree, but this should not depend
+    /// on that subtlety holding to find a flag.
+    /// </remarks>
     private static IEnumerable<string> EverythingTheWindowSays(Window window, MainViewModel model)
     {
         var said = new List<string>();
 
-        foreach (var screen in new[] { Screen.Input, Screen.Options })
+        model.Setup.Rows.ChangedOnly = false;
+        model.Setup.Rows.Search = null;
+
+        foreach (var screen in new ViewModelBase[] { model.Setup, model.Settings })
         {
-            model.Screen = screen;
+            model.Show(screen);
             window.CaptureRenderedFrame();
             said.AddRange(Texts(window));
         }

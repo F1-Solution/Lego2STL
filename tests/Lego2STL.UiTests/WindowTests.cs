@@ -48,14 +48,15 @@ public sealed class WindowTests
     }
 
     [AvaloniaFact]
-    public void All_four_screens_draw()
+    public void Every_screen_the_rail_reaches_draws()
     {
         var window = Open(out var model);
 
-        foreach (var screen in new[] { Screen.Input, Screen.Options, Screen.Run, Screen.Catalogue })
+        foreach (var screen in Rail(model))
         {
-            model.Screen = screen;
-            window.CaptureRenderedFrame().Should().NotBeNull("the {0} screen has to draw", screen);
+            model.Show(screen);
+            window.CaptureRenderedFrame().Should().NotBeNull(
+                "the {0} screen has to draw", screen.GetType().Name);
         }
     }
 
@@ -69,9 +70,9 @@ public sealed class WindowTests
         var window = Open(out var model);
         var keys = System.Enum.GetNames<TextKey>().ToHashSet();
 
-        foreach (var screen in new[] { Screen.Input, Screen.Options, Screen.Run, Screen.Catalogue })
+        foreach (var screen in Rail(model))
         {
-            model.Screen = screen;
+            model.Show(screen);
             window.CaptureRenderedFrame();
 
             foreach (var text in Texts(window))
@@ -153,16 +154,17 @@ public sealed class WindowTests
         var window = Open(out var model);
         window.CaptureRenderedFrame();
 
-        model.CanStart.Should().BeFalse();
-        model.Options.Problem.Should().NotBeNull();
-        Texts(window).Should().Contain(t => t == model.Options.Problem);
+        model.Setup.CanStart.Should().BeFalse();
+        model.Setup.Problem.Should().NotBeNull();
+        Texts(window).Should().Contain(t => t == model.Setup.Problem);
     }
 
     [AvaloniaFact]
     public void The_options_screen_offers_every_printer()
     {
         var window = Open(out var model);
-        model.Screen = Screen.Options;
+        model.Show(model.Setup);
+        model.Setup.Rows.ChangedOnly = false;
         window.CaptureRenderedFrame();
 
         var boxes = window.GetLogicalDescendants().OfType<ComboBox>().ToList();
@@ -173,14 +175,16 @@ public sealed class WindowTests
 
     /// <summary>Saves what the window looks like, so it can be looked at rather than imagined.</summary>
     [AvaloniaTheory]
-    [InlineData(Screen.Input)]
-    [InlineData(Screen.Options)]
-    [InlineData(Screen.Run)]
-    [InlineData(Screen.Catalogue)]
-    public void A_picture_of_each_screen_is_written(Screen screen)
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void A_picture_of_each_screen_is_written(int which)
     {
         var window = Open(out var model);
-        model.Screen = screen;
+        var screen = Rail(model)[which];
+
+        model.Show(screen);
 
         var frame = window.CaptureRenderedFrame();
         frame.Should().NotBeNull();
@@ -192,7 +196,7 @@ public sealed class WindowTests
         }
 
         Directory.CreateDirectory(directory);
-        using var file = File.Create(Path.Combine(directory, $"{screen}.png"));
+        using var file = File.Create(Path.Combine(directory, $"{screen.GetType().Name}.png"));
 
         // The replacement takes an options type with no public implementation in this version.
         // This path only ever runs when someone asks for pictures, so the old call will do.
@@ -206,14 +210,16 @@ public sealed class WindowTests
     /// longer than the English it was laid out against.
     /// </summary>
     [AvaloniaTheory]
-    [InlineData(Screen.Input)]
-    [InlineData(Screen.Options)]
-    public void A_picture_of_each_screen_in_italian_is_written(Screen screen)
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(3)]
+    public void A_picture_of_each_screen_in_italian_is_written(int which)
     {
         var window = Open(out var model);
+        var screen = Rail(model)[which];
 
         model.SelectedLanguage = Loc.Choices.First(c => c.Language == DisplayLanguage.Italian);
-        model.Screen = screen;
+        model.Show(screen);
 
         var frame = window.CaptureRenderedFrame();
         frame.Should().NotBeNull();
@@ -225,10 +231,89 @@ public sealed class WindowTests
         }
 
         Directory.CreateDirectory(directory);
-        using var file = File.Create(Path.Combine(directory, $"{screen}-it.png"));
+        using var file = File.Create(Path.Combine(directory, $"{screen.GetType().Name}-it.png"));
 #pragma warning disable CS0618
         frame!.Save(file);
 #pragma warning restore CS0618
+    }
+
+    /// <summary>
+    /// Moving away from a run and back leaves its log where it was left.
+    /// </summary>
+    /// <remarks>
+    /// This is what stops the view locator's cache from being quietly removed later. Building
+    /// a fresh view each time would scroll every log back to the top on every move of the
+    /// rail, and nothing else in the suite would notice.
+    /// </remarks>
+    [AvaloniaFact]
+    public void Switching_screens_keeps_the_logs_place()
+    {
+        var window = Open(out var model);
+        var run = Rail(model)[2];
+
+        model.Show(run);
+        window.CaptureRenderedFrame();
+
+        foreach (var line in Enumerable.Range(1, 200))
+        {
+            model.OpenRun!.Log.Add("line " + line);
+        }
+
+        window.CaptureRenderedFrame();
+
+        var scroll = window.GetLogicalDescendants().OfType<ScrollViewer>()
+            .First(viewer => viewer.Name == "LogScroll");
+
+        scroll.Offset = scroll.Offset.WithY(40);
+        window.CaptureRenderedFrame();
+
+        var left = scroll.Offset;
+
+        left.Y.Should().BeGreaterThan(0, "otherwise this proves nothing about keeping a place");
+
+        model.Show(model.Setup);
+        window.CaptureRenderedFrame();
+
+        model.Show(run);
+        window.CaptureRenderedFrame();
+
+        window.GetLogicalDescendants().OfType<ScrollViewer>()
+            .First(viewer => viewer.Name == "LogScroll")
+            .Offset.Should().Be(left, "the run's page is the same control it was left as");
+    }
+
+    /// <summary>
+    /// The four the rail reaches, in its own order: the runs, setting one up, the open run,
+    /// and what belongs to this machine.
+    /// </summary>
+    /// <remarks>
+    /// A run has to be opened for the third to exist at all, which is itself the claim that
+    /// the rail is over the run folder rather than over a fixed set of pages.
+    /// </remarks>
+    private static IReadOnlyList<ViewModelBase> Rail(MainViewModel model)
+    {
+        if (model.OpenRun is null)
+        {
+            model.Show(model.Setup);
+            model.Setup.Options.Kind = InputKind.PartsList;
+            model.Setup.Options.PartsListPath = APartsList();
+            model.Setup.StartCommand.Execute(null);
+        }
+
+        return [model.Runs, model.Setup, model.OpenRun!, model.Settings];
+    }
+
+    private static string APartsList()
+    {
+        var folder = Path.Combine(
+            Path.GetTempPath(), "lego2stl-window-" + Guid.NewGuid().ToString("N"), "pistola");
+
+        Directory.CreateDirectory(folder);
+
+        var path = Path.Combine(folder, "pistola.csv");
+        File.WriteAllText(path, "id;part;colour");
+
+        return path;
     }
 
     /// <summary>Every piece of text the window is currently showing.</summary>

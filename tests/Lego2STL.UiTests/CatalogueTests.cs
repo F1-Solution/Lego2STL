@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using FluentAssertions;
@@ -19,11 +20,12 @@ namespace Lego2STL.UiTests;
 /// <remarks>
 /// The cards are the part of the window with the most going on - a picture or a colour swatch
 /// in its place, a quantity, a warning that appears only sometimes - so they are the part most
-/// worth drawing and looking at rather than reasoning about.
+/// worth drawing and looking at rather than reasoning about. The run reaches them the way every
+/// run does now: through the record it kept and the one projection of it.
 /// </remarks>
 public sealed class CatalogueTests
 {
-    private static RunOutcome APretendRun()
+    private static RunDocumentViewModel APretendRun()
     {
         var entries = new[]
         {
@@ -35,72 +37,78 @@ public sealed class CatalogueTests
             new PartEntry(6, "32017", 2, "Tan", Rgb24.Parse("#E4CD9E"), 1),
         };
 
-        return new RunOutcome
+        var layout = RunLayout.For(
+            Path.Combine(Path.GetTempPath(), "lego2stl-catalogue", "parts.csv"));
+
+        var outcome = new RunOutcome
         {
             Result = RunResult.Complete,
             Settings = new RunSettings { Kind = InputKind.PartsList, InputPath = "parts.csv", Offline = true },
-            Layout = RunLayout.For(Path.Combine(Path.GetTempPath(), "lego2stl-catalogue", "parts.csv")),
+            Layout = layout,
             PartsList = new PartsList(entries, []),
         };
+
+        return RunDocumentViewModel.Of(RunDocument.From(
+            RunManifest.From(outcome, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, null), layout));
+    }
+
+    private static Window Showing(RunDocumentViewModel run)
+    {
+        var window = new Window
+        {
+            Width = 1000,
+            Height = 700,
+            Content = new RunDocumentView { DataContext = run },
+        };
+
+        window.Show();
+        return window;
     }
 
     [AvaloniaFact]
     public void Every_part_gets_a_card()
     {
-        var model = new MainViewModel();
-        var window = new MainWindow { DataContext = model };
-        window.Show();
+        using var run = APretendRun();
+        var window = Showing(run);
 
-        model.ShowCatalogue(APretendRun());
-        model.Screen = Screen.Catalogue;
         window.CaptureRenderedFrame().Should().NotBeNull();
 
-        model.Parts.Should().HaveCount(6);
-        model.VisibleParts.Should().HaveCount(6);
+        run.Parts.Should().HaveCount(6);
+        run.VisibleParts.Should().HaveCount(6);
     }
 
     [AvaloniaFact]
     public void The_colours_present_are_offered_as_a_filter_and_the_filter_narrows_the_list()
     {
-        var model = new MainViewModel();
-        var window = new MainWindow { DataContext = model };
-        window.Show();
+        using var run = APretendRun();
+        var window = Showing(run);
 
-        model.ShowCatalogue(APretendRun());
-        model.Screen = Screen.Catalogue;
-
-        model.Colours.Should().BeEquivalentTo(
+        run.Colours.Should().BeEquivalentTo(
             ["Black", "Blue", "Dark Bluish Gray", "Light Gray", "Red", "Tan"]);
 
-        model.ColourFilter = "Red";
+        run.ColourFilter = "Red";
         window.CaptureRenderedFrame();
 
-        model.VisibleParts.Should().ContainSingle().Which.PartNumber.Should().Be("3705");
+        run.VisibleParts.Should().ContainSingle().Which.PartNumber.Should().Be("3705");
     }
 
     [AvaloniaFact]
     public void Searching_matches_a_part_number()
     {
-        var model = new MainViewModel();
-        var window = new MainWindow { DataContext = model };
-        window.Show();
+        using var run = APretendRun();
+        var window = Showing(run);
 
-        model.ShowCatalogue(APretendRun());
-        model.Search = "4265";
+        run.Search = "4265";
         window.CaptureRenderedFrame();
 
-        model.VisibleParts.Should().ContainSingle().Which.PartNumber.Should().Be("4265c");
+        run.VisibleParts.Should().ContainSingle().Which.PartNumber.Should().Be("4265c");
     }
 
     [AvaloniaFact]
     public void A_picture_of_a_filled_catalogue_is_written()
     {
-        var model = new MainViewModel();
-        var window = new MainWindow { DataContext = model };
-        window.Show();
-
-        model.ShowCatalogue(APretendRun());
-        model.Screen = Screen.Catalogue;
+        using var run = APretendRun();
+        var window = Showing(run);
 
         var frame = window.CaptureRenderedFrame();
         frame.Should().NotBeNull();
