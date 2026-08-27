@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Lego2STL.Core.Colors;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
@@ -41,6 +40,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
     private RunDocumentViewModel(RunDocument document)
     {
         Document = document;
+        Log.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowLog));
         Fill();
     }
 
@@ -119,7 +119,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
     /// <summary>Where it stopped, for a run that did not finish.</summary>
     public string? StoppedAt => Document.LastStage is { } stage && !Document.IsRunning
                                 && Document.Status != RunStatus.Complete
-        ? Loc.Current.Format(TextKey.UiStoppedAt, Describe(stage.Stage), stage.Completed, stage.Total)
+        ? Loc.Current.Format(TextKey.UiStoppedAt, RunStageWords.For(stage.Stage), stage.Completed, stage.Total)
         : null;
 
     // ---- What it has to answer for ---------------------------------------------------------
@@ -166,6 +166,16 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
 
     /// <summary>True when --quiet means the log is on the disk rather than on the screen.</summary>
     public bool Quiet => _settings?.Quiet ?? false;
+
+    /// <summary>
+    /// Whether to give the log its panel at all.
+    /// </summary>
+    /// <remarks>
+    /// A run still going keeps it even while empty, because lines are about to arrive and a
+    /// panel appearing under the cursor is worse than an empty one. A run that is over and said
+    /// nothing gets no empty black strip along the foot of its page.
+    /// </remarks>
+    public bool ShowLog => !Quiet && (Busy || Log.Count > 0);
 
     // ---- The catalogue -----------------------------------------------------------------------
 
@@ -247,6 +257,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
 
         _running = CancellationTokenSource.CreateLinkedTokenSource(outer);
         OnPropertyChanged(nameof(Busy));
+        OnPropertyChanged(nameof(ShowLog));
 
         using var log = RunLogFile.Open(settings.LogFile);
         var started = DateTimeOffset.UtcNow;
@@ -282,6 +293,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
             _running?.Dispose();
             _running = null;
             OnPropertyChanged(nameof(Busy));
+        OnPropertyChanged(nameof(ShowLog));
         }
     }
 
@@ -292,26 +304,12 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
         _last = progress;
 
         StageText = progress.Detail is { Length: > 0 }
-            ? $"{Describe(progress.Stage)} - {progress.Detail}"
-            : Describe(progress.Stage);
+            ? $"{RunStageWords.For(progress.Stage)} - {progress.Detail}"
+            : RunStageWords.For(progress.Stage);
 
         OnPropertyChanged(nameof(Progress));
         OnPropertyChanged(nameof(RailText));
     }
-
-    private static string Describe(RunStage stage) => Loc.Current.Text(stage switch
-    {
-        RunStage.ReadingDocument => TextKey.UiStageReadingDocument,
-        RunStage.LookingUpSet => TextKey.UiStageLookingUpSet,
-        RunStage.ReadingPartsList => TextKey.UiStageReadingPartsList,
-        RunStage.WritingPartsList => TextKey.UiStageWritingPartsList,
-        RunStage.GatheringShapes => TextKey.UiStageGatheringShapes,
-        RunStage.BuildingShapes => TextKey.UiStageBuildingShapes,
-        RunStage.ArrangingPlates => TextKey.UiStageArrangingPlates,
-        RunStage.WritingReport => TextKey.UiStageWritingReport,
-        RunStage.Finished => TextKey.UiDone,
-        _ => TextKey.UiIdle,
-    });
 
     private void Replace(RunDocument document)
     {
@@ -336,71 +334,20 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
         Parts.Clear();
         Colours.Clear();
 
-        foreach (var part in Document.Parts)
+        foreach (var part in RunCatalogue.Build(Document))
         {
-            var shape = Path.Combine(Document.StlDirectory, part.PartNumber + ".stl");
-            var plate = PlateFor(part.ColorName);
-
-            Parts.Add(new CataloguePartViewModel(
-                part,
-                File.Exists(shape) ? shape : null,
-                plate));
+            Parts.Add(part);
         }
 
-        foreach (var colour in Parts.Select(p => p.ColorName)
-                     .Distinct(StringComparer.Ordinal)
-                     .Order(StringComparer.Ordinal))
+        foreach (var colour in RunCatalogue.ColoursIn(Parts))
         {
             Colours.Add(colour);
         }
 
         OnPropertyChanged(nameof(VisibleParts));
 
-        _ = LoadPicturesAsync();
-    }
-
-    /// <summary>
-    /// The plate a colour's pieces were laid out on, found by looking rather than recorded.
-    /// </summary>
-    /// <remarks>
-    /// A plate's file is named for its colour, so the folder answers this without the manifest
-    /// having to carry a second list that could disagree with what is actually there.
-    /// </remarks>
-    private string? PlateFor(string colourName)
-    {
-        try
-        {
-            if (!Directory.Exists(Document.PlateDirectory))
-            {
-                return null;
-            }
-
-            var wanted = colourName.Replace(' ', '-').ToLowerInvariant();
-
-            return Directory.EnumerateFiles(Document.PlateDirectory, "*.3mf")
-                .FirstOrDefault(file =>
-                    Path.GetFileNameWithoutExtension(file)
-                        .StartsWith(wanted, StringComparison.OrdinalIgnoreCase));
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            return null;
-        }
-    }
-
-    private async Task LoadPicturesAsync()
-    {
-        _thumbnails.Offline = Document.Settings?.Offline ?? true;
-
-        foreach (var part in Parts.ToList())
-        {
-            if (!ColorReference.Table.TryGet(ColorScheme.BrickLink, part.BrickLinkColorCode, out var colour))
-            {
-                continue;
-            }
-
-            part.Picture = await _thumbnails.TryGetAsync(part.PartNumber, colour).ConfigureAwait(true);
-        }
+        _ = RunCatalogue.LoadPicturesAsync(
+            _thumbnails, [.. Parts], Document.Settings?.Offline ?? true);
     }
 
     /// <summary>Re-reads everything worded, after the language has been changed.</summary>

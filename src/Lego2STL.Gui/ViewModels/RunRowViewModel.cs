@@ -65,7 +65,7 @@ public sealed partial class RunRowViewModel : ViewModelBase
             if (Document.LastStage is { } stage && Document.Status is RunStatus.Stopped or RunStatus.Failed)
             {
                 return Loc.Current.Format(
-                    TextKey.UiStoppedAt, Describe(stage.Stage), stage.Completed, stage.Total);
+                    TextKey.UiStoppedAt, RunStageWords.For(stage.Stage), stage.Completed, stage.Total);
             }
 
             return Loc.Current.Format(
@@ -101,17 +101,4 @@ public sealed partial class RunRowViewModel : ViewModelBase
     [RelayCommand]
     private void Forget() => ForgetRequested?.Invoke(this, this);
 
-    private static string Describe(RunStage stage) => Loc.Current.Text(stage switch
-    {
-        RunStage.ReadingDocument => TextKey.UiStageReadingDocument,
-        RunStage.LookingUpSet => TextKey.UiStageLookingUpSet,
-        RunStage.ReadingPartsList => TextKey.UiStageReadingPartsList,
-        RunStage.WritingPartsList => TextKey.UiStageWritingPartsList,
-        RunStage.GatheringShapes => TextKey.UiStageGatheringShapes,
-        RunStage.BuildingShapes => TextKey.UiStageBuildingShapes,
-        RunStage.ArrangingPlates => TextKey.UiStageArrangingPlates,
-        RunStage.WritingReport => TextKey.UiStageWritingReport,
-        RunStage.Finished => TextKey.UiDone,
-        _ => TextKey.UiIdle,
-    });
 }
