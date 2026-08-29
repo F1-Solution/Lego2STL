@@ -170,4 +170,43 @@ public sealed class PartsListBuilderTests
         list.DistinctPartNumbers.Should().HaveCount(ExpectedCatalogue.DistinctPartNumbers.Count);
         list.Entries.Select(e => e.Id).Should().BeInAscendingOrder();
     }
+
+    /// <summary>
+    /// The element number a book printed is kept, because it is what a part is bought by.
+    /// </summary>
+    /// <remarks>
+    /// It used to be read, turned into a part and a colour, and dropped - so the one number
+    /// actually printed in the instructions was the one number the run could not show.
+    /// </remarks>
+    [Fact]
+    public void An_entry_read_from_an_element_number_remembers_it()
+    {
+        var readings = new[]
+        {
+            new CatalogueReading(
+                370, new PixelBounds(0, 0, 10, 10), 7, "32523", 11,
+                ReadingSource.PrintedText, ReadingSource.PrintedText,
+                ColorScheme.BrickLink, ElementId: "6177114"),
+        };
+
+        var list = PartsListBuilder.Build(readings, ColorReference.Table, ColorScheme.BrickLink);
+
+        list.Entries.Should().ContainSingle().Which.ElementId.Should().Be("6177114");
+    }
+
+    /// <summary>A list read from a CSV has none, and says so rather than inventing one.</summary>
+    [Fact]
+    public void An_entry_read_without_an_element_number_has_none()
+    {
+        var readings = new[]
+        {
+            new CatalogueReading(
+                2, new PixelBounds(0, 0, 10, 10), 4, "3705", 5,
+                ReadingSource.TextRecogniser, ReadingSource.TextRecogniser),
+        };
+
+        var list = PartsListBuilder.Build(readings, ColorReference.Table, ColorScheme.BrickLink);
+
+        list.Entries.Should().ContainSingle().Which.ElementId.Should().BeNull();
+    }
 }

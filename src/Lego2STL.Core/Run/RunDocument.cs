@@ -27,7 +27,8 @@ public sealed record RunDocumentPart(
     int? OpenEdgeCount,
     double? ThinnestSpanMm,
     int? OverusedEdgeCount = null,
-    float? ClosedAtTolerance = null)
+    float? ClosedAtTolerance = null,
+    string? ElementId = null)
 {
     /// <summary>
     /// Below this, in millimetres, a wall is thinner than a common nozzle can lay down and the
@@ -213,7 +214,8 @@ public sealed record RunDocument
                     part.OpenEdgeCount,
                     part.ThinnestSpanMm,
                     part.OverusedEdgeCount,
-                    part.ClosedAtTolerance)),
+                    part.ClosedAtTolerance,
+                    part.ElementId)),
             ],
         };
     }

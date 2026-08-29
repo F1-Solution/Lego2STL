@@ -34,7 +34,8 @@ public sealed record CatalogueReading(
     int ColorCode,
     ReadingSource QuantitySource,
     ReadingSource PartSource,
-    ColorScheme? Scheme = null)
+    ColorScheme? Scheme = null,
+    string? ElementId = null)
 {
     public override string ToString() => $"p{Page} {Quantity}x {PartNumber},{ColorCode}";
 }

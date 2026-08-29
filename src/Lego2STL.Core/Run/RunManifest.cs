@@ -71,7 +71,8 @@ public sealed record ManifestPart(
     int? OpenEdgeCount,
     double? ThinnestSpanMm,
     int? OverusedEdgeCount = null,
-    float? ClosedAtTolerance = null);
+    float? ClosedAtTolerance = null,
+    string? ElementId = null);
 
 /// <summary>
 /// What a run records about itself, in its own folder.
@@ -251,7 +252,8 @@ public sealed record RunManifest
             shape?.Quality.OpenEdgeCount,
             shape is null ? null : ClearanceOffset.ThinnestSpan(shape.Mesh),
             shape?.Quality.OverusedEdgeCount,
-            shape?.ClosedAtTolerance);
+            shape?.ClosedAtTolerance,
+            entry.ElementId);
     }
 
     private static ManifestStage? Stage(RunProgress? progress) =>

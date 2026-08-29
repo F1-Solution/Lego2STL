@@ -96,7 +96,8 @@ public static class PartsListBuilder
                 BrickLinkColorCode: brickLinkId,
                 ColorName: color.Name,
                 Rgb: color.Rgb,
-                Quantity: reading.Quantity));
+                Quantity: reading.Quantity,
+                ElementId: reading.ElementId));
         }
 
         var numbered = merged

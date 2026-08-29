@@ -14,13 +14,18 @@ namespace Lego2STL.Core.Catalogue;
 /// <param name="ColorName">The colour's name, so the file can be read by a human.</param>
 /// <param name="Rgb">The colour's value, for previews and for colouring plates.</param>
 /// <param name="Quantity">How many of this part in this colour.</param>
+/// <param name="ElementId">
+/// The LEGO element number the entry was read from, when it was read from one. Null for a list
+/// that came from a CSV or from a set, which name a part and a colour rather than an element.
+/// </param>
 public sealed record PartEntry(
     int Id,
     string PartNumber,
     int BrickLinkColorCode,
     string ColorName,
     Rgb24 Rgb,
-    int Quantity)
+    int Quantity,
+    string? ElementId = null)
 {
     /// <summary>
     /// What makes two rows the same row. Colour is part of the identity because the same

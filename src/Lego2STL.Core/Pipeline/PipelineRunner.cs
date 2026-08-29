@@ -365,7 +365,8 @@ public sealed class PipelineRunner
                 resolved.ColorCode,
                 ReadingSource.PrintedText,
                 ReadingSource.PrintedText,
-                resolved.Scheme));
+                resolved.Scheme,
+                entry.ElementId));
         }
 
         notes.AddRange(elements.Notes());
