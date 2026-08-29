@@ -28,11 +28,13 @@ public sealed partial class CataloguePartViewModel : ViewModelBase
     /// front ends therefore read the same measured facts, and a reopened run cannot quietly
     /// disagree with what the run itself reported.
     /// </remarks>
-    public CataloguePartViewModel(RunDocumentPart part, string? shapePath, string? platePath)
+    public CataloguePartViewModel(
+        RunDocumentPart part, string? shapePath, string? platePath, bool doesNotFitThePlate = false)
     {
         Part = part;
         ShapePath = shapePath;
         PlatePath = platePath;
+        DoesNotFitThePlate = doesNotFitThePlate;
 
         Swatch = new SolidColorBrush(Color.FromRgb(part.Rgb.R, part.Rgb.G, part.Rgb.B));
     }
@@ -68,7 +70,10 @@ public sealed partial class CataloguePartViewModel : ViewModelBase
     /// <summary>True when some part of the shape is finer than a nozzle can print.</summary>
     public bool HasThinFeatures => Part.HasThinFeatures;
 
-    public bool HasWarning => Part.HasWarning;
+    /// <summary>True when no plate could take this part at the scale the run used.</summary>
+    public bool DoesNotFitThePlate { get; }
+
+    public bool HasWarning => Part.HasWarning || DoesNotFitThePlate;
 
     public IReadOnlyList<string> Warnings
     {
@@ -89,6 +94,11 @@ public sealed partial class CataloguePartViewModel : ViewModelBase
             if (HasThinFeatures)
             {
                 warnings.Add(Localization.Loc.Current.Text(Core.Text.TextKey.UiWarningThinFeature));
+            }
+
+            if (DoesNotFitThePlate)
+            {
+                warnings.Add(Localization.Loc.Current.Text(Core.Text.TextKey.UiDoesNotFitThePlate));
             }
 
             return warnings;

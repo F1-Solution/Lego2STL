@@ -258,4 +258,82 @@ public sealed class CatalogueTests
             Loc.Current.Text(TextKey.UiWarningNotClosed),
             "it has no open edges to warn about");
     }
+
+    /// <summary>
+    /// A run with a part too big says so, and offers the scale that would fit.
+    /// </summary>
+    /// <remarks>
+    /// Pressing the offer starts again from this run's own parts list, so it lands in the same
+    /// folder rather than scattering a second copy - the same path "continue from the parts
+    /// list" already takes.
+    /// </remarks>
+    [AvaloniaFact]
+    public void A_run_whose_parts_do_not_fit_offers_a_scale_that_would()
+    {
+        using var run = ARunWithAPartTooBig();
+
+        run.HasPartsThatDoNotFit.Should().BeTrue();
+        run.DoesNotFitText.Should().Contain("168");
+
+        run.Parts.Single(p => p.PartNumber == "46891").DoesNotFitThePlate.Should().BeTrue();
+        run.Parts.Single(p => p.PartNumber == "32523").DoesNotFitThePlate.Should().BeFalse();
+
+        RunSettings? asked = null;
+        run.ContinueRequested += (_, settings) => asked = settings;
+
+        run.TryASmallerScaleCommand.Execute(null);
+
+        asked.Should().NotBeNull();
+        asked!.ScalePercent.Should().Be(168);
+        asked.Kind.Should().Be(InputKind.PartsList);
+    }
+
+    /// <summary>A run where everything fits offers nothing.</summary>
+    [AvaloniaFact]
+    public void A_run_whose_parts_all_fit_offers_nothing()
+    {
+        using var run = APretendRun();
+
+        run.HasPartsThatDoNotFit.Should().BeFalse();
+    }
+
+    private static RunDocumentViewModel ARunWithAPartTooBig()
+    {
+        var layout = RunLayout.For(Path.Combine(
+            Path.GetTempPath(), "lego2stl-toobig-" + Guid.NewGuid().ToString("N"), "parts.csv"));
+
+        layout.CreateDirectories();
+        File.WriteAllText(layout.PartsListPath, "a parts list");
+
+        var entries = new[]
+        {
+            new PartEntry(1, "32523", 11, "Black", Rgb24.Parse("#05131D"), 4),
+            new PartEntry(2, "46891", 11, "Black", Rgb24.Parse("#05131D"), 1),
+        };
+
+        var outcome = new RunOutcome
+        {
+            Result = RunResult.Complete,
+            Settings = new RunSettings
+            {
+                Kind = InputKind.PartsList,
+                InputPath = layout.PartsListPath,
+                Offline = true,
+                ScalePercent = 200,
+            },
+            Layout = layout,
+            PartsList = new PartsList(entries, []),
+            Plates = new PlateBuildResult(
+                [],
+                [new SkippedPart("46891", 304f, 184.8f, 192.2f, TooTall: false)]),
+        };
+
+        var manifest = RunManifest.From(
+            outcome, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, null) with
+        {
+            LargestFittingScalePercent = 168,
+        };
+
+        return RunDocumentViewModel.Of(RunDocument.From(manifest, layout));
+    }
 }

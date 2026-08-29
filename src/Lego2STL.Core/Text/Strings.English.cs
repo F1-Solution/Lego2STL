@@ -292,6 +292,10 @@ public sealed partial class Strings
             [TextKey.UiWarningSelfIntersects] =
                 "Some of this shape's surfaces pass through each other; a slicer will still print it.",
             [TextKey.UiWarningThinFeature] = "This part has features thinner than a 0.4 mm nozzle.",
+            [TextKey.UiDoesNotFitThePlate] = "Too big for the plate, so it is on none.",
+            [TextKey.UiSomePartsDoNotFit] =
+                "{0} part(s) do not fit the plate. Everything fits at {1}%.",
+            [TextKey.UiTryASmallerScale] = "Start again at {0}%",
             [TextKey.UiQuantity] = "Quantity",
             [TextKey.UiDone] = "Done",
             [TextKey.UiFailed] = "Failed",

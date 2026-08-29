@@ -212,6 +212,15 @@ public enum TextKey
     /// <summary>Said of a shape whose surfaces pass through each other rather than gape.</summary>
     UiWarningSelfIntersects,
     UiWarningThinFeature,
+
+    /// <summary>Said of a part no plate could take.</summary>
+    UiDoesNotFitThePlate,
+
+    /// <summary>The band offering a scale at which everything would fit.</summary>
+    UiSomePartsDoNotFit,
+
+    /// <summary>The button on that band.</summary>
+    UiTryASmallerScale,
     UiQuantity,
     UiDone,
     UiFailed,

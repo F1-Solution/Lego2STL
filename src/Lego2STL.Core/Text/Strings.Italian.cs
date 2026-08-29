@@ -304,6 +304,10 @@ public sealed partial class Strings
                 "Alcune superfici di questa forma si compenetrano; lo slicer la stampa comunque.",
             [TextKey.UiWarningThinFeature] =
                 "Questo pezzo ha dettagli più sottili di un ugello da 0,4 mm.",
+            [TextKey.UiDoesNotFitThePlate] = "Troppo grande per il piano, quindi non è su nessuno.",
+            [TextKey.UiSomePartsDoNotFit] =
+                "{0} pezzo/i non entrano nel piano. Alla scala {1}% entra tutto.",
+            [TextKey.UiTryASmallerScale] = "Riparti al {0}%",
             [TextKey.UiQuantity] = "Quantità",
             [TextKey.UiDone] = "Fatto",
             [TextKey.UiFailed] = "Non riuscito",

@@ -122,6 +122,9 @@ public sealed record RunManifest
     /// <summary>The largest scale at which every part would fit, when some did not.</summary>
     public double? LargestFittingScalePercent { get; init; }
 
+    /// <summary>Parts no plate could take, with what ruled each one out.</summary>
+    public IReadOnlyList<SkippedPart> DidNotFit { get; init; } = [];
+
     /// <summary>Every plate written, in the order they were written.</summary>
     public IReadOnlyList<ManifestPlate> Plates { get; init; } = [];
 
@@ -211,6 +214,7 @@ public sealed record RunManifest
                 outcome.Settings.Bed,
                 margin: new PackingOptions().Margin,
                 scaleUsed: outcome.Settings.ScalePercent),
+            DidNotFit = outcome.Plates?.Skipped ?? [],
             Plates =
             [
                 .. (outcome.Plates?.Plates ?? [])

@@ -1,6 +1,7 @@
 ﻿using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Pipeline;
+using Lego2STL.Core.Plates;
 
 namespace Lego2STL.Core.Run;
 
@@ -119,6 +120,9 @@ public sealed record RunDocument
     /// <summary>The largest scale at which every part would fit, when some did not.</summary>
     public double? LargestFittingScalePercent { get; init; }
 
+    /// <summary>Parts no plate could take, with what ruled each one out.</summary>
+    public IReadOnlyList<SkippedPart> DidNotFit { get; init; } = [];
+
     /// <summary>Every plate the run wrote, so a colour can be matched to its file by code.</summary>
     public IReadOnlyList<ManifestPlate> Plates { get; init; } = [];
 
@@ -186,6 +190,7 @@ public sealed record RunDocument
             ClosedShapeCount = manifest.ClosedShapeCount,
             PlateCount = manifest.PlateCount,
             LargestFittingScalePercent = manifest.LargestFittingScalePercent,
+            DidNotFit = manifest.DidNotFit,
             Plates = manifest.Plates,
 
             Unread = manifest.Unread,

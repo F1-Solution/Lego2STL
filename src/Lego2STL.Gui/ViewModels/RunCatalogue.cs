@@ -26,6 +26,10 @@ internal static class RunCatalogue
     {
         var plates = PlatesIn(document.PlateDirectory);
 
+        var tooBig = document.DidNotFit
+            .Select(part => part.PartNumber)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
         return
         [
             .. document.Parts.Select(part =>
@@ -35,7 +39,8 @@ internal static class RunCatalogue
                 return new CataloguePartViewModel(
                     part,
                     File.Exists(shape) ? shape : null,
-                    PlateFor(document, plates, part));
+                    PlateFor(document, plates, part),
+                    tooBig.Contains(part.PartNumber));
             }),
         ];
     }

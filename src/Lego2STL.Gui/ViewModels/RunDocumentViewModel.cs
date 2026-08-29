@@ -161,6 +161,17 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
 
     public bool CanContinue => NeedsDecision && File.Exists(Document.PartsListPath);
 
+    public bool HasPartsThatDoNotFit =>
+        Document.DidNotFit.Count > 0 && Document.LargestFittingScalePercent is not null;
+
+    public string DoesNotFitText => Loc.Current.Format(
+        TextKey.UiSomePartsDoNotFit,
+        Document.DidNotFit.Count,
+        Document.LargestFittingScalePercent ?? 0);
+
+    public string TryASmallerScaleText => Loc.Current.Format(
+        TextKey.UiTryASmallerScale, Document.LargestFittingScalePercent ?? 0);
+
     // ---- The log -----------------------------------------------------------------------------
 
     public ObservableCollection<string> Log { get; } = [];
@@ -236,6 +247,36 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
         };
 
         ContinueRequested?.Invoke(this, settings);
+    }
+
+    /// <summary>
+    /// Starts again from this run's parts list at the largest scale everything fits at.
+    /// </summary>
+    /// <remarks>
+    /// The same road "continue from the parts list" takes, so the second run lands in the folder
+    /// the first one used rather than beside it.
+    /// </remarks>
+    [RelayCommand]
+    private void TryASmallerScale()
+    {
+        if (Document.LargestFittingScalePercent is not { } scale)
+        {
+            return;
+        }
+
+        if (!File.Exists(Document.PartsListPath))
+        {
+            return;
+        }
+
+        ContinueRequested?.Invoke(this, (Document.Settings ?? new RunSettings()) with
+        {
+            Kind = InputKind.PartsList,
+            InputPath = Document.PartsListPath,
+            SetNumber = null,
+            Pages = null,
+            ScalePercent = scale,
+        });
     }
 
     [RelayCommand]
@@ -350,6 +391,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
                      nameof(NeedsDecision), nameof(Failing), nameof(HasProblem), nameof(ProblemText),
                      nameof(NoticeText), nameof(HasNotice), nameof(CanRunItAgain), nameof(CanContinue),
                      nameof(StoppedAt), nameof(CommandLine), nameof(Busy), nameof(VisibleParts),
+                     nameof(HasPartsThatDoNotFit), nameof(DoesNotFitText), nameof(TryASmallerScaleText),
                  })
         {
             OnPropertyChanged(name);
@@ -385,6 +427,9 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(RailText));
         OnPropertyChanged(nameof(NoticeText));
         OnPropertyChanged(nameof(StoppedAt));
+        OnPropertyChanged(nameof(HasPartsThatDoNotFit));
+        OnPropertyChanged(nameof(DoesNotFitText));
+        OnPropertyChanged(nameof(TryASmallerScaleText));
 
         foreach (var part in Parts)
         {
