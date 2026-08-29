@@ -10,6 +10,16 @@ using Lego2STL.Gui.Services;
 
 namespace Lego2STL.Gui.ViewModels;
 
+/// <summary>Which of a part's two numbers the catalogue shows.</summary>
+public enum PartNumbering
+{
+    /// <summary>The part number, which is what the shape files are named after.</summary>
+    BrickLink,
+
+    /// <summary>The LEGO element number, which names a moulding and a colour together.</summary>
+    LegoElement,
+}
+
 /// <summary>
 /// One part in the catalogue: what it is, how many, and what came of it.
 /// </summary>
@@ -69,6 +79,26 @@ public sealed partial class CataloguePartViewModel : ViewModelBase
 
     /// <summary>True when some part of the shape is finer than a nozzle can print.</summary>
     public bool HasThinFeatures => Part.HasThinFeatures;
+
+    /// <summary>Which numbering to show. Set by the page, which owns the choice.</summary>
+    [ObservableProperty]
+    public partial PartNumbering Numbering { get; set; } = PartNumbering.BrickLink;
+
+    partial void OnNumberingChanged(PartNumbering value) => OnPropertyChanged(nameof(ShownNumber));
+
+    /// <summary>
+    /// The number on the card, in whichever numbering was asked for.
+    /// </summary>
+    /// <remarks>
+    /// A list read from a CSV or from a set has no element numbers, and says so rather than
+    /// showing a blank that reads as missing data.
+    /// </remarks>
+    public string ShownNumber => Numbering switch
+    {
+        PartNumbering.LegoElement => Part.ElementId
+                                     ?? Localization.Loc.Current.Text(Core.Text.TextKey.UiNoElementNumber),
+        _ => PartNumber,
+    };
 
     /// <summary>True when no plate could take this part at the scale the run used.</summary>
     public bool DoesNotFitThePlate { get; }

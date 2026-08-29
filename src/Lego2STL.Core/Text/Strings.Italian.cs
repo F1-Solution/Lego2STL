@@ -308,6 +308,8 @@ public sealed partial class Strings
             [TextKey.UiSomePartsDoNotFit] =
                 "{0} pezzo/i non entrano nel piano. Alla scala {1}% entra tutto.",
             [TextKey.UiTryASmallerScale] = "Riparti al {0}%",
+            [TextKey.UiNumbering] = "Numerazione",
+            [TextKey.UiNoElementNumber] = "nessun numero elemento",
             [TextKey.UiQuantity] = "Quantità",
             [TextKey.UiDone] = "Fatto",
             [TextKey.UiFailed] = "Non riuscito",

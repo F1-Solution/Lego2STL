@@ -336,4 +336,49 @@ public sealed class CatalogueTests
 
         return RunDocumentViewModel.Of(RunDocument.From(manifest, layout));
     }
+
+    /// <summary>The catalogue can show either numbering, and says when it has none.</summary>
+    [AvaloniaFact]
+    public void The_catalogue_shows_either_numbering()
+    {
+        using var run = ARunWithElementNumbers();
+
+        var withOne = run.Parts.Single(p => p.PartNumber == "32523");
+        var without = run.Parts.Single(p => p.PartNumber == "3705");
+
+        withOne.ShownNumber.Should().Be("32523");
+
+        run.Numbering = PartNumbering.LegoElement;
+
+        withOne.ShownNumber.Should().Be("6177114");
+        without.ShownNumber.Should().Be(
+            Loc.Current.Text(TextKey.UiNoElementNumber),
+            "a list from a CSV has no element numbers and must not invent one");
+
+        run.Numbering = PartNumbering.BrickLink;
+        withOne.ShownNumber.Should().Be("32523");
+    }
+
+    private static RunDocumentViewModel ARunWithElementNumbers()
+    {
+        var layout = RunLayout.For(Path.Combine(
+            Path.GetTempPath(), "lego2stl-numbering-" + Guid.NewGuid().ToString("N"), "parts.csv"));
+
+        var entries = new[]
+        {
+            new PartEntry(1, "32523", 11, "Black", Rgb24.Parse("#05131D"), 4, ElementId: "6177114"),
+            new PartEntry(2, "3705", 5, "Red", Rgb24.Parse("#C91A09"), 12),
+        };
+
+        var outcome = new RunOutcome
+        {
+            Result = RunResult.Complete,
+            Settings = new RunSettings { Kind = InputKind.PartsList, InputPath = "parts.csv", Offline = true },
+            Layout = layout,
+            PartsList = new PartsList(entries, []),
+        };
+
+        return RunDocumentViewModel.Of(RunDocument.From(
+            RunManifest.From(outcome, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, null), layout));
+    }
 }

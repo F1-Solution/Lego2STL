@@ -221,6 +221,12 @@ public enum TextKey
 
     /// <summary>The button on that band.</summary>
     UiTryASmallerScale,
+    /// <summary>The catalogue's choice of which numbering to show.</summary>
+    UiNumbering,
+
+    /// <summary>Shown in place of an element number for a list that has none.</summary>
+    UiNoElementNumber,
+
     UiQuantity,
     UiDone,
     UiFailed,

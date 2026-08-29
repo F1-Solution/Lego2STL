@@ -22,6 +22,10 @@
                   SelectedItem="{Binding ColourFilter}" />
         <Button Name="ClearFilter" Content="✕" ToolTip.Tip="{Binding [UiAllColours], Source={x:Static loc:Loc.Current}}" />
         <TextBox MinWidth="220" PlaceholderText="32523" Text="{Binding Search}" />
+        <TextBlock Classes="label" VerticalAlignment="Center"
+                   Text="{Binding [UiNumbering], Source={x:Static loc:Loc.Current}}" />
+        <ComboBox MinWidth="170" SelectedItem="{Binding Numbering}"
+                  ItemsSource="{Binding Numberings}" />
       </StackPanel>
 
       <!-- Said once, above the cards, because it is about the run rather than about one part. -->
@@ -76,7 +80,7 @@
                           BorderThickness="1"
                           BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" />
                   <TextBlock Grid.Column="1" FontWeight="SemiBold"
-                             Text="{Binding PartNumber}" TextTrimming="CharacterEllipsis" />
+                             Text="{Binding ShownNumber}" TextTrimming="CharacterEllipsis" />
                   <TextBlock Grid.Column="2" Text="{Binding Quantity, StringFormat='x{0}'}" />
                 </Grid>
 

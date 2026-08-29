@@ -38,6 +38,10 @@ public sealed class UserSettings
     [JsonPropertyName("printer")]
     public string? Printer { get; set; }
 
+    /// <summary>Which numbering the catalogue last showed.</summary>
+    [JsonPropertyName("partNumbering")]
+    public string? PartNumbering { get; set; }
+
     [JsonIgnore]
     public DisplayLanguage DisplayLanguage =>
         DisplayLanguages.TryParse(Language, out var parsed)

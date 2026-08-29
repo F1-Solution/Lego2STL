@@ -296,6 +296,8 @@ public sealed partial class Strings
             [TextKey.UiSomePartsDoNotFit] =
                 "{0} part(s) do not fit the plate. Everything fits at {1}%.",
             [TextKey.UiTryASmallerScale] = "Start again at {0}%",
+            [TextKey.UiNumbering] = "Numbering",
+            [TextKey.UiNoElementNumber] = "no element number",
             [TextKey.UiQuantity] = "Quantity",
             [TextKey.UiDone] = "Done",
             [TextKey.UiFailed] = "Failed",

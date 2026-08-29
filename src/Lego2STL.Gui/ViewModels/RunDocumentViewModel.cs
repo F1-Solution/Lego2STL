@@ -201,6 +201,22 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     public partial string? Search { get; set; }
 
+    /// <summary>Which numbering the catalogue shows, remembered between sessions.</summary>
+    [ObservableProperty]
+    public partial PartNumbering Numbering { get; set; } = PartNumbering.BrickLink;
+
+    /// <summary>The two numberings, for the menu that chooses between them.</summary>
+    public static IReadOnlyList<PartNumbering> Numberings { get; } =
+        [PartNumbering.BrickLink, PartNumbering.LegoElement];
+
+    partial void OnNumberingChanged(PartNumbering value)
+    {
+        foreach (var part in Parts)
+        {
+            part.Numbering = value;
+        }
+    }
+
     public IEnumerable<CataloguePartViewModel> VisibleParts =>
         Parts.Where(part => part.Matches(ColourFilter, Search));
 
@@ -406,6 +422,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
 
         foreach (var part in RunCatalogue.Build(Document))
         {
+            part.Numbering = Numbering;
             Parts.Add(part);
         }
 
