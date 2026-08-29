@@ -122,6 +122,38 @@ public sealed class BoundaryFillTests
         result.Applied.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Two gaps that meet at a single corner are covered separately.
+    /// </summary>
+    /// <remarks>
+    /// Two triangles sharing exactly one corner is the smallest shape whose free edges walk
+    /// into one path that passes through the same vertex twice. Covered as a single loop, the
+    /// fan reuses the edge from its centre to that vertex four times over, and the result is a
+    /// mesh with no holes that still does not count as closed. Measured on run 6324712, this
+    /// alone accounted for 19 of the 52 parts reported as unrepaired.
+    /// </remarks>
+    [Fact]
+    public void Two_gaps_meeting_at_a_corner_are_covered_as_two()
+    {
+        var vertices = new List<Vector3>
+        {
+            new(0, 0, 0), new(1, 0, 0), new(2, 0, 0), new(0, 1, 0), new(2, 1, 0),
+        };
+
+        // Sharing vertex 1, numbered so the walk starts at 0 and reaches 1 twice.
+        var mesh = new IndexedMesh(vertices, [new IndexedTriangle(0, 1, 3), new IndexedTriangle(1, 2, 4)]);
+
+        MeshAnalysis.Measure(mesh).OverusedEdgeCount.Should().Be(0, "the source has none");
+
+        var filled = BoundaryFill.Fill(mesh);
+        var quality = MeshAnalysis.Measure(filled.Mesh);
+
+        filled.LoopsFilled.Should().Be(2, "the two gaps are separate gaps");
+        quality.OpenEdgeCount.Should().Be(0);
+        quality.OverusedEdgeCount.Should().Be(0, "the fill must not invent what it then reports");
+        quality.IsClosed.Should().BeTrue();
+    }
+
     /// <summary>Six times the volume, which is all the sign test needs.</summary>
     private static float SignedVolume(IndexedMesh mesh)
     {

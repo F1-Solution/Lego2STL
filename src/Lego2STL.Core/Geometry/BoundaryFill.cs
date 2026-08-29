@@ -128,9 +128,12 @@ public static class BoundaryFill
     /// Walks the free edges into closed loops, consuming each edge once.
     /// </summary>
     /// <remarks>
-    /// Where a corner has several free edges leaving it - which happens when two gaps touch at
-    /// a point - the lowest-numbered is taken, so that the same surface always produces the
-    /// same loops and therefore the same file.
+    /// A path that arrives back at a vertex it has already been through is not one gap but two
+    /// meeting at a point. The ring that closes there is detached and covered on its own,
+    /// because a single fan across both would use the edge from its centre to that vertex four
+    /// times over - leaving a shape with no holes that still does not count as closed.
+    /// Where a corner has several free edges leaving it, the lowest-numbered is taken, so that
+    /// the same surface always produces the same loops and therefore the same file.
     /// </remarks>
     private static List<List<int>> Loops(Dictionary<int, List<int>> next, ref int leftOpen)
     {
@@ -147,6 +150,7 @@ public static class BoundaryFill
             while (next.TryGetValue(start, out var fromStart) && fromStart.Count > 0)
             {
                 var loop = new List<int> { start };
+                var where = new Dictionary<int, int> { [start] = 0 };
                 var current = Take(next, start);
 
                 var closed = false;
@@ -159,6 +163,19 @@ public static class BoundaryFill
                         break;
                     }
 
+                    if (where.TryGetValue(current, out var earlier))
+                    {
+                        loops.Add(loop[earlier..]);
+
+                        for (var i = earlier; i < loop.Count; i++)
+                        {
+                            where.Remove(loop[i]);
+                        }
+
+                        loop.RemoveRange(earlier, loop.Count - earlier);
+                    }
+
+                    where[current] = loop.Count;
                     loop.Add(current);
 
                     if (!next.TryGetValue(current, out var onward) || onward.Count == 0)
