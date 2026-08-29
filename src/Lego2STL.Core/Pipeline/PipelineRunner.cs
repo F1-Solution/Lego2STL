@@ -573,9 +573,9 @@ public sealed class PipelineRunner
                 cancellationToken)
             .ConfigureAwait(false);
 
-        foreach (var note in plates.Skipped)
+        foreach (var part in plates.Skipped)
         {
-            _log("  " + note);
+            _log("  " + PlateBuilder.Describe(part, words, settings.Bed));
         }
 
         _log(words.Format(TextKey.MsgWrotePlates, plates.Plates.Count, layout.PlateDirectory));

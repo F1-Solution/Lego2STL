@@ -290,9 +290,10 @@ public static class RunReport
         {
             sb.AppendLine();
             sb.AppendLine(words[TextKey.ReportPlateDidNotFit]);
-            foreach (var note in plates.Skipped)
+
+            foreach (var part in plates.Skipped)
             {
-                sb.AppendLine("  " + note);
+                sb.AppendLine("  " + PlateBuilder.Describe(part, words, outcome.Settings.Bed));
             }
         }
 

@@ -118,4 +118,42 @@ public sealed class PlateBuilderTests : IDisposable
 
         result.PieceCount.Should().Be(7);
     }
+
+    /// <summary>
+    /// A part no plate can take is recorded with its measurements, not just described.
+    /// </summary>
+    /// <remarks>
+    /// It used to be kept as a finished sentence, which is why nothing but the report could say
+    /// anything about it - the catalogue could not offer a smaller scale because it did not
+    /// know by how much the part missed.
+    /// </remarks>
+    [Fact]
+    public async Task A_part_too_big_for_the_bed_is_recorded_with_its_size()
+    {
+        var list = new PartsList(
+            [new PartEntry(1, "huge", 11, "Black", Rgb24.Parse("#05131D"), 1)], []);
+
+        // 400 mm across, against a bed 256 mm wide.
+        var shapes = new Dictionary<string, IndexedMesh>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["huge"] = ABoxOf(400f, 10f, 10f),
+        };
+
+        var built = await PlateBuilder.WriteAsync(list, shapes, _directory);
+
+        var skipped = built.Skipped.Should().ContainSingle().Subject;
+
+        skipped.PartNumber.Should().Be("huge");
+        skipped.Width.Should().BeApproximately(400f, 0.1f);
+        skipped.TooTall.Should().BeFalse("it is wide, not tall");
+    }
+
+    private static IndexedMesh ABoxOf(float x, float y, float z) =>
+        VertexWelder.Weld(
+        [
+            new Triangle(new Vector3(0, 0, 0), new Vector3(x, 0, 0), new Vector3(x, y, 0)),
+            new Triangle(new Vector3(0, 0, 0), new Vector3(x, y, 0), new Vector3(0, y, 0)),
+            new Triangle(new Vector3(0, 0, z), new Vector3(x, y, z), new Vector3(x, 0, z)),
+            new Triangle(new Vector3(0, 0, z), new Vector3(0, y, z), new Vector3(x, y, z)),
+        ]);
 }

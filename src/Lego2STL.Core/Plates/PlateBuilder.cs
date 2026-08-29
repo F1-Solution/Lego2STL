@@ -22,6 +22,18 @@ public sealed record BuiltPlate(
     int PieceCount,
     string Footprint);
 
+/// <summary>A part no plate could take, with the measurements that ruled it out.</summary>
+/// <param name="TooTall">
+/// Whether it was the height rather than the footprint. Kept apart because a taller bed and a
+/// smaller scale are different answers.
+/// </param>
+public sealed record SkippedPart(
+    string PartNumber,
+    float Width,
+    float Depth,
+    float Height,
+    bool TooTall);
+
 /// <summary>Everything the plate stage produced.</summary>
 /// <param name="Plates">One entry per file written, in the order they were written.</param>
 /// <param name="Skipped">
@@ -30,7 +42,7 @@ public sealed record BuiltPlate(
 /// </param>
 public sealed record PlateBuildResult(
     IReadOnlyList<BuiltPlate> Plates,
-    IReadOnlyList<string> Skipped)
+    IReadOnlyList<SkippedPart> Skipped)
 {
     public int ColorCount => Plates.Select(p => p.ColorName).Distinct(StringComparer.Ordinal).Count();
 
@@ -72,7 +84,7 @@ public static class PlateBuilder
         Directory.CreateDirectory(directory);
 
         var written = new List<BuiltPlate>();
-        var skipped = new List<string>();
+        var skipped = new List<SkippedPart>();
 
         foreach (var colorGroup in GroupByColor(list))
         {
@@ -110,7 +122,12 @@ public static class PlateBuilder
 
             foreach (var over in packed.Oversized.DistinctBy(x => x.Item.PartNumber))
             {
-                skipped.Add(Describe(words, over, o.Bed));
+                skipped.Add(new SkippedPart(
+                    over.Item.PartNumber,
+                    over.Item.Footprint.X,
+                    over.Item.Footprint.Y,
+                    over.Item.Height,
+                    over.TooTall));
             }
 
             // The colour is named in the run's language here and nowhere earlier: the file
@@ -195,18 +212,23 @@ public static class PlateBuilder
         return new PlateContents(name, colorName, group.Rgb, objects);
     }
 
-    private static string Describe(Strings words, OversizedItem over, PrintBed bed) =>
-        over.TooTall
+    /// <summary>Why a part is not on any plate, said the way the report prints it.</summary>
+    public static string Describe(SkippedPart part, Strings words, PrintBed bed)
+    {
+        ArgumentNullException.ThrowIfNull(part);
+        ArgumentNullException.ThrowIfNull(words);
+        ArgumentNullException.ThrowIfNull(bed);
+
+        return part.TooTall
             ? words.Format(
                 TextKey.ErrPartTooTallForBed,
-                over.Item.PartNumber,
-                over.Item.Height.ToString("0.#", CultureInfo.InvariantCulture),
+                part.PartNumber,
+                part.Height.ToString("0.#", CultureInfo.InvariantCulture),
                 bed.Height.ToString("0.#", CultureInfo.InvariantCulture))
             : words.Format(
                 TextKey.ErrPlateTooSmall,
-                over.Item.PartNumber,
-                string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"{over.Item.Footprint.X:0.#} x {over.Item.Footprint.Y:0.#} mm"),
+                part.PartNumber,
+                string.Create(CultureInfo.InvariantCulture, $"{part.Width:0.#} x {part.Depth:0.#} mm"),
                 bed.Name);
+    }
 }
