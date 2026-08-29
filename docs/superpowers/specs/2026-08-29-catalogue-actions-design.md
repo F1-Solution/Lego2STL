@@ -108,9 +108,10 @@ guess: the absence of the figure is not evidence of zero.
 
 ### 1.4 What success looks like
 
-`6324712` goes from **123 closed of 175**. The projection from measurement is ~150; the number
-that will be reported is the one measured on the real run afterwards, not this estimate. The 25
-parts measured as closing at no tolerance will still be open and will still say so.
+`6324712` goes from **123 closed of 175** to **145 closed of 175**, measured on the real run
+after the change. Seven of those took a larger tolerance than the one asked for, and the ladder
+never went beyond its bound. The 30 still open all have surfaces that pass through each other,
+27 of them holes as well, and the catalogue now names the fault it actually found.
 
 ## Part 2 — A scale that fits
 
