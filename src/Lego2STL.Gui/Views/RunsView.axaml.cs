@@ -1,7 +1,8 @@
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using Lego2STL.Gui.Services;
 using Lego2STL.Gui.ViewModels;
 
 namespace Lego2STL.Gui.Views;
@@ -19,6 +20,7 @@ public partial class RunsView : UserControl
     {
         InitializeComponent();
         Adopt.Click += async (_, _) => await ChooseAsync();
+        this.CopiesWhatItsButtonsCarry();
     }
 
     private async Task ChooseAsync()

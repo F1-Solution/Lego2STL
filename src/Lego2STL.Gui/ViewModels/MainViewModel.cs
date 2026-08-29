@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -55,9 +55,9 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
         Runs = new RunsViewModel();
 
-        // Narrowed to what was changed from the second run onward: on a first there is nothing
-        // to have changed, and an empty list is a worse introduction than a long one.
-        Setup = new SetupViewModel(options, changedOnly: RunIndex.Read().Count > 0);
+        // The whole list, every time: the options are what the window is for, and opening on a
+        // narrowed one hides the settings someone came to change.
+        Setup = new SetupViewModel(options);
         Settings = new SettingsViewModel(options, _saved, Runs);
 
         Setup.Started += (_, _) => _ = BeginAsync(Setup.Options.ToSettings());

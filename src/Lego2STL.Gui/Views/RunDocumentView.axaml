@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Lego2STL.Gui.ViewModels"
              xmlns:views="using:Lego2STL.Gui.Views"
@@ -45,9 +45,15 @@
                    Text="{Binding StoppedAt}" />
 
         <!-- The command this run stored, so it can be repeated in a terminal as it was. -->
-        <TextBlock FontFamily="Consolas, Menlo, monospace" TextWrapping="Wrap"
-                   Foreground="{DynamicResource AppTextSecondary}"
-                   Text="{Binding CommandLine}" />
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Grid.Column="0" FontFamily="Consolas, Menlo, monospace" TextWrapping="Wrap"
+                     VerticalAlignment="Center"
+                     Foreground="{DynamicResource AppTextSecondary}"
+                     Text="{Binding CommandLine}" />
+          <Button Grid.Column="1" Classes="copy" Margin="8,0,0,0" VerticalAlignment="Center"
+                  Tag="{Binding CommandLine}"
+                  Content="{Binding [UiCopyCommand], Source={x:Static loc:Loc.Current}}" />
+        </Grid>
 
         <TextBlock TextWrapping="Wrap"
                    Foreground="{DynamicResource AppTextSecondary}"

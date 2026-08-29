@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -71,6 +71,16 @@ public abstract partial class OptionRowViewModel : ViewModelBase
     /// <summary>Whether this option has been moved off what a fresh run would use.</summary>
     public abstract bool IsChanged { get; }
 
+    /// <summary>
+    /// How visible the put-back button is, which is never how much room it takes.
+    /// </summary>
+    /// <remarks>
+    /// Hiding the button outright collapsed its column, and every description on the page
+    /// shifted sideways the moment any one option was touched. It keeps its place and fades
+    /// instead, so changing an option moves nothing but the button.
+    /// </remarks>
+    public double ResetOpacity => IsChanged ? 1 : 0;
+
     public abstract void Reset();
 
     /// <summary>What decides <see cref="IsEnabled"/>; always able, unless given a reason.</summary>
@@ -99,6 +109,7 @@ public abstract partial class OptionRowViewModel : ViewModelBase
         OnPropertyChanged(nameof(Help));
         OnPropertyChanged(nameof(IsEnabled));
         OnPropertyChanged(nameof(IsChanged));
+        OnPropertyChanged(nameof(ResetOpacity));
         OnPropertyChanged("Value");
 
         // Named as a string for the same reason "Value" is: only some of the five kinds have one.
@@ -131,6 +142,7 @@ public sealed partial class ToggleOptionRow(
             write(value);
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsChanged));
+            OnPropertyChanged(nameof(ResetOpacity));
         }
     }
 
@@ -157,6 +169,7 @@ public sealed partial class NumberOptionRow(
             write(value);
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsChanged));
+            OnPropertyChanged(nameof(ResetOpacity));
         }
     }
 
@@ -191,6 +204,7 @@ public partial class TextOptionRow(
             write(value);
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsChanged));
+            OnPropertyChanged(nameof(ResetOpacity));
         }
     }
 
@@ -245,6 +259,7 @@ public sealed partial class ChoiceOptionRow(
             write(value);
             OnPropertyChanged();
             OnPropertyChanged(nameof(IsChanged));
+            OnPropertyChanged(nameof(ResetOpacity));
         }
     }
 

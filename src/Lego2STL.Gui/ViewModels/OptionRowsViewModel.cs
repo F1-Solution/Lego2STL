@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -29,11 +29,7 @@ namespace Lego2STL.Gui.ViewModels;
 /// </remarks>
 public sealed partial class OptionRowsViewModel : ViewModelBase
 {
-    /// <param name="changedOnly">
-    /// Whether to open narrowed to what was changed. Given by whoever knows whether a run has
-    /// happened before rather than worked out here, so the history has the two readers it is
-    /// meant to have and this stays answerable without one.
-    /// </param>
+    /// <param name="changedOnly">Whether to open narrowed to what was changed. Off by default.</param>
     public OptionRowsViewModel(RunOptionsViewModel options, bool changedOnly = false)
     {
         Rows = Build(options);
@@ -52,10 +48,8 @@ public sealed partial class OptionRowsViewModel : ViewModelBase
     /// Show only what was moved off its default.
     /// </summary>
     /// <remarks>
-    /// On from the second run onward and off on a first, because on a first run there is
-    /// nothing to have changed and an empty list is a worse introduction than a long one.
-    /// Whether a run has ever happened is already recorded, so this needs no preference of
-    /// its own.
+    /// Off when the window opens. It used to come on from the second run onward, which meant
+    /// the options someone had come to change were the ones hidden from them.
     /// </remarks>
     [ObservableProperty]
     public partial bool ChangedOnly { get; set; }

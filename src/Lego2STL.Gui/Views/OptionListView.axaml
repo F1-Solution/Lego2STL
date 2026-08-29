@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Lego2STL.Gui.ViewModels"
              xmlns:loc="using:Lego2STL.Gui.Localization"
@@ -10,9 +10,10 @@
 
   <UserControl.Styles>
     <!--
-      Every row is the same five columns - box, name, control, help, put-back - so that the
-      names line up down the page and a check box sits where a check box is looked for. A
-      row with no box leaves the first column empty rather than closing it up.
+      Every row is the same four columns - name, control, help, put-back - so the names line
+      up down the page and every control, check box included, starts at the same point to the
+      right of the name it belongs to. The put-back column is always there, even when the
+      button in it is not being offered, so touching an option moves nothing but the button.
     -->
     <Style Selector="StackPanel.name">
       <Setter Property="VerticalAlignment" Value="Center" />
@@ -48,15 +49,22 @@
       <Setter Property="Padding" Value="8,3" />
       <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
-    <!-- One width for every control, so the third column is a column and not a ragged edge. -->
+    <!--
+      One width for every control, and every one of them against the left edge of its column.
+      A fixed width inside a wider column is centred by default, which left the boxes five
+      pixels right of the check boxes beside them and the column looking like a ragged edge.
+    -->
     <Style Selector="NumericUpDown.value">
       <Setter Property="Width" Value="170" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
     </Style>
     <Style Selector="TextBox.value">
       <Setter Property="Width" Value="170" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
     </Style>
     <Style Selector="ComboBox.value">
       <Setter Property="Width" Value="170" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
     </Style>
   </UserControl.Styles>
 
@@ -94,17 +102,19 @@
 
           <DataTemplate DataType="vm:ToggleOptionRow">
             <Border Classes="row" IsVisible="{Binding IsVisible}">
-              <Grid ColumnDefinitions="28,Auto,180,*,Auto">
-                <CheckBox Grid.Column="0" VerticalAlignment="Center" Padding="0"
-                          IsEnabled="{Binding IsEnabled}"
-                          IsChecked="{Binding Value}" />
-                <StackPanel Grid.Column="1" Classes="name">
+              <Grid ColumnDefinitions="Auto,180,*,Auto">
+                <StackPanel Grid.Column="0" Classes="name">
                   <TextBlock Classes="label" Text="{Binding Label}" />
                   <TextBlock Classes="flag" Text="{Binding Flag}" />
                 </StackPanel>
-                <TextBlock Grid.Column="3" Classes="help" Text="{Binding Help}" />
-                <Button Grid.Column="4" Classes="reset"
-                        IsVisible="{Binding IsChanged}"
+                <CheckBox Grid.Column="1" VerticalAlignment="Center"
+                          IsEnabled="{Binding IsEnabled}"
+                          IsChecked="{Binding Value}" />
+                <TextBlock Grid.Column="2" Classes="help" Text="{Binding Help}" />
+                <Button Grid.Column="3" Classes="reset"
+                        Opacity="{Binding ResetOpacity}"
+                        IsHitTestVisible="{Binding IsChanged}"
+                        IsTabStop="{Binding IsChanged}"
                         Command="{Binding ResetOneCommand}"
                         Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />
               </Grid>
@@ -113,21 +123,23 @@
 
           <DataTemplate DataType="vm:NumberOptionRow">
             <Border Classes="row" IsVisible="{Binding IsVisible}">
-              <Grid ColumnDefinitions="28,Auto,180,*,Auto">
-                <StackPanel Grid.Column="1" Classes="name">
+              <Grid ColumnDefinitions="Auto,180,*,Auto">
+                <StackPanel Grid.Column="0" Classes="name">
                   <TextBlock Classes="label" Text="{Binding Label}" />
                   <TextBlock Classes="flag" Text="{Binding Flag}" />
                 </StackPanel>
-                <NumericUpDown Grid.Column="2" Classes="value" VerticalAlignment="Center"
+                <NumericUpDown Grid.Column="1" Classes="value" VerticalAlignment="Center"
                                IsEnabled="{Binding IsEnabled}"
                                Value="{Binding Value}"
                                Minimum="{Binding Minimum}"
                                Maximum="{Binding Maximum}"
                                Increment="{Binding Increment}"
                                FormatString="{Binding Format}" />
-                <TextBlock Grid.Column="3" Classes="help" Text="{Binding Help}" />
-                <Button Grid.Column="4" Classes="reset"
-                        IsVisible="{Binding IsChanged}"
+                <TextBlock Grid.Column="2" Classes="help" Text="{Binding Help}" />
+                <Button Grid.Column="3" Classes="reset"
+                        Opacity="{Binding ResetOpacity}"
+                        IsHitTestVisible="{Binding IsChanged}"
+                        IsTabStop="{Binding IsChanged}"
                         Command="{Binding ResetOneCommand}"
                         Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />
               </Grid>
@@ -136,20 +148,22 @@
 
           <DataTemplate DataType="vm:PathOptionRow">
             <Border Classes="row" IsVisible="{Binding IsVisible}">
-              <Grid ColumnDefinitions="28,Auto,*,Auto,Auto">
-                <StackPanel Grid.Column="1" Classes="name">
+              <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                <StackPanel Grid.Column="0" Classes="name">
                   <TextBlock Classes="label" Text="{Binding Label}" />
                   <TextBlock Classes="flag" Text="{Binding Flag}" />
                 </StackPanel>
-                <TextBox Grid.Column="2" MinWidth="180" VerticalAlignment="Center"
+                <TextBox Grid.Column="1" MinWidth="180" VerticalAlignment="Center"
                          IsEnabled="{Binding IsEnabled}"
                          Text="{Binding Value}"
                          PlaceholderText="{Binding Help}" />
-                <Button Grid.Column="3" Classes="reset pick" Margin="6,0,0,0"
+                <Button Grid.Column="2" Classes="reset pick" Margin="6,0,0,0"
                         IsEnabled="{Binding IsEnabled}" Tag="{Binding}"
                         Content="{Binding [UiBrowse], Source={x:Static loc:Loc.Current}}" />
-                <Button Grid.Column="4" Classes="reset"
-                        IsVisible="{Binding IsChanged}"
+                <Button Grid.Column="3" Classes="reset"
+                        Opacity="{Binding ResetOpacity}"
+                        IsHitTestVisible="{Binding IsChanged}"
+                        IsTabStop="{Binding IsChanged}"
                         Command="{Binding ResetOneCommand}"
                         Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />
               </Grid>
@@ -158,18 +172,20 @@
 
           <DataTemplate DataType="vm:TextOptionRow">
             <Border Classes="row" IsVisible="{Binding IsVisible}">
-              <Grid ColumnDefinitions="28,Auto,180,*,Auto">
-                <StackPanel Grid.Column="1" Classes="name">
+              <Grid ColumnDefinitions="Auto,180,*,Auto">
+                <StackPanel Grid.Column="0" Classes="name">
                   <TextBlock Classes="label" Text="{Binding Label}" />
                   <TextBlock Classes="flag" Text="{Binding Flag}" />
                 </StackPanel>
-                <TextBox Grid.Column="2" Classes="value" VerticalAlignment="Center"
+                <TextBox Grid.Column="1" Classes="value" VerticalAlignment="Center"
                          IsEnabled="{Binding IsEnabled}"
                          Text="{Binding Value}"
                          PlaceholderText="{Binding Placeholder}" />
-                <TextBlock Grid.Column="3" Classes="help" Text="{Binding Help}" />
-                <Button Grid.Column="4" Classes="reset"
-                        IsVisible="{Binding IsChanged}"
+                <TextBlock Grid.Column="2" Classes="help" Text="{Binding Help}" />
+                <Button Grid.Column="3" Classes="reset"
+                        Opacity="{Binding ResetOpacity}"
+                        IsHitTestVisible="{Binding IsChanged}"
+                        IsTabStop="{Binding IsChanged}"
                         Command="{Binding ResetOneCommand}"
                         Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />
               </Grid>
@@ -178,18 +194,20 @@
 
           <DataTemplate DataType="vm:ChoiceOptionRow">
             <Border Classes="row" IsVisible="{Binding IsVisible}">
-              <Grid ColumnDefinitions="28,Auto,180,*,Auto">
-                <StackPanel Grid.Column="1" Classes="name">
+              <Grid ColumnDefinitions="Auto,180,*,Auto">
+                <StackPanel Grid.Column="0" Classes="name">
                   <TextBlock Classes="label" Text="{Binding Label}" />
                   <TextBlock Classes="flag" Text="{Binding Flag}" />
                 </StackPanel>
-                <ComboBox Grid.Column="2" Classes="value" VerticalAlignment="Center"
+                <ComboBox Grid.Column="1" Classes="value" VerticalAlignment="Center"
                           IsEnabled="{Binding IsEnabled}"
                           ItemsSource="{Binding Choices}"
                           SelectedItem="{Binding Value}" />
-                <TextBlock Grid.Column="3" Classes="help" Text="{Binding Help}" />
-                <Button Grid.Column="4" Classes="reset"
-                        IsVisible="{Binding IsChanged}"
+                <TextBlock Grid.Column="2" Classes="help" Text="{Binding Help}" />
+                <Button Grid.Column="3" Classes="reset"
+                        Opacity="{Binding ResetOpacity}"
+                        IsHitTestVisible="{Binding IsChanged}"
+                        IsTabStop="{Binding IsChanged}"
                         Command="{Binding ResetOneCommand}"
                         Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />
               </Grid>

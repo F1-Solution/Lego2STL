@@ -1,4 +1,4 @@
-# Lego2STL
+﻿# Lego2STL
 
 Turns a LEGO parts catalogue into a parts list and into shapes you can print.
 
@@ -37,7 +37,9 @@ Start Lego2STL. Four screens, left to right:
 2. **Options** — every setting, grouped. The line along the bottom of the window is the
    command that would do the same thing, so the window teaches the command line rather than
    hiding it.
-3. **Run** — a progress bar and everything the run has to say.
+3. **Run** — a progress bar and everything the run has to say. *Copy command* takes the
+   command that made it, ready to paste into a terminal; the list of past runs offers the
+   same on every row.
 4. **Catalogue** — every part in its real colour, with how many, and a warning on any shape
    that will not print cleanly. Buttons open a shape, a plate, or the folder.
 

@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Headless.XUnit;
 using FluentAssertions;
@@ -217,6 +218,56 @@ public sealed class OptionRowTests
         clearance.IsChanged.Should().BeFalse();
         options.Clearance.Should().Be(0);
         options.ScalePercent.Should().Be(90, "one row was put back, not the lot");
+    }
+
+    /// <summary>
+    /// The put-back button fades rather than disappearing, so nothing else on the row moves.
+    /// </summary>
+    /// <remarks>
+    /// Hiding it collapsed its column, and every description on the page shifted sideways the
+    /// moment any one option was touched.
+    /// </remarks>
+    [AvaloniaFact]
+    public void The_put_back_button_keeps_its_place_whether_or_not_it_is_offered()
+    {
+        var options = new RunOptionsViewModel();
+        var rows = new OptionRowsViewModel(options);
+        var clearance = rows.Rows.Single(row => row.Flag == "--clearance");
+
+        clearance.ResetOpacity.Should().Be(0, "nothing has been changed yet");
+
+        options.Clearance = 0.15;
+
+        clearance.ResetOpacity.Should().Be(1);
+
+        clearance.ResetOneCommand.Execute(null);
+
+        clearance.ResetOpacity.Should().Be(0);
+    }
+
+    /// <summary>Changing a value tells the window the button's visibility has moved with it.</summary>
+    [AvaloniaFact]
+    public void Changing_an_option_announces_the_put_back_button()
+    {
+        var rows = new OptionRowsViewModel(new RunOptionsViewModel());
+        var offline = rows.Rows.OfType<ToggleOptionRow>().Single(row => row.Flag == "--offline");
+
+        var announced = new List<string?>();
+        offline.PropertyChanged += (_, e) => announced.Add(e.PropertyName);
+
+        offline.Value = true;
+
+        announced.Should().Contain(nameof(OptionRowViewModel.ResetOpacity));
+    }
+
+    /// <summary>The window opens on the whole list, not on what happens to have been changed.</summary>
+    [AvaloniaFact]
+    public void The_options_open_unnarrowed()
+    {
+        var rows = new OptionRowsViewModel(new RunOptionsViewModel());
+
+        rows.ChangedOnly.Should().BeFalse();
+        rows.Rows.Should().OnlyContain(row => row.IsVisible);
     }
 
     [AvaloniaFact]

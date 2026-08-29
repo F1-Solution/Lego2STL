@@ -1,4 +1,4 @@
-namespace Lego2STL.Core.Text;
+﻿namespace Lego2STL.Core.Text;
 
 /// <summary>
 /// Every piece of text the tool shows.

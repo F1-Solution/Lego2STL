@@ -1,4 +1,4 @@
-namespace Lego2STL.Core.Text;
+﻿namespace Lego2STL.Core.Text;
 
 public sealed partial class Strings
 {
@@ -266,7 +266,7 @@ public sealed partial class Strings
             [TextKey.UiLanguage] = "Language",
             [TextKey.UiSettings] = "Settings",
             [TextKey.UiEquivalentCommand] = "The same thing from the command line",
-            [TextKey.UiCopyCommand] = "Copy",
+            [TextKey.UiCopyCommand] = "Copy command",
             [TextKey.UiCopied] = "Copied",
             [TextKey.UiGroupStages] = "Stages",
             [TextKey.UiGroupOutput] = "Output",

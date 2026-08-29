@@ -1,5 +1,6 @@
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using Avalonia.Controls;
+using Lego2STL.Gui.Services;
 using Lego2STL.Gui.ViewModels;
 
 namespace Lego2STL.Gui.Views;
@@ -18,6 +19,7 @@ public partial class RunDocumentView : UserControl
     {
         InitializeComponent();
         DataContextChanged += (_, _) => Follow();
+        this.CopiesWhatItsButtonsCarry();
     }
 
     private void Follow()

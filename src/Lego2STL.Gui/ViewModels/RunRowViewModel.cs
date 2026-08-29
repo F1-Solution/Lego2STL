@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using CommunityToolkit.Mvvm.Input;
 using Lego2STL.Core.Pipeline;
@@ -34,6 +34,9 @@ public sealed partial class RunRowViewModel : ViewModelBase
     public string Folder => Document.Folder;
 
     public string Name => Document.Name;
+
+    /// <summary>The command that made this run, kept so it can be repeated in a terminal.</summary>
+    public string CommandLine => Document.CommandLine;
 
     /// <summary>The folder has gone. The row stays, so it can be forgotten deliberately.</summary>
     public bool Missing => !_folder.Exists;

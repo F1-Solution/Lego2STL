@@ -1,4 +1,4 @@
-# Lego2STL — Execution Progress
+﻿# Lego2STL — Execution Progress
 
 Protocol: read this file before each phase; append one line immediately after each phase.
 Format: `PHASE:<id> WAVE:<id> STATUS:<complete|failed> TS:<ISO-8601-UTC>`
@@ -65,3 +65,6 @@ PHASE:RDW-19 WAVE:0 STATUS:complete TS:2026-08-27T07:40:00Z
 # OpenSCAD and zip-library paths this plan did not touch, and by Lego2STL.UiTests carrying no
 # coverage collector. Step 5 - driving the real window by hand against the reference document -
 # is left for a person; everything a headless run can check is covered above.
+# Lot A: seven fixes reported from the window - one catalogue-page search shared by all three
+# front ends, plates matched to parts by colour code, and four interface corrections.
+PHASE:LOT-A WAVE:0 STATUS:complete TS:2026-08-29T06:01:50Z
