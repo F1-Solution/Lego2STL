@@ -68,3 +68,5 @@ PHASE:RDW-19 WAVE:0 STATUS:complete TS:2026-08-27T07:40:00Z
 # Lot A: seven fixes reported from the window - one catalogue-page search shared by all three
 # front ends, plates matched to parts by colour code, and four interface corrections.
 PHASE:LOT-A WAVE:0 STATUS:complete TS:2026-08-29T06:01:50Z
+# Lot B: mesh repair that closes what it can, oversized parts as data, element numbers.
+PHASE:LOT-B WAVE:1 STATUS:complete TS:2026-08-29T15:34:34Z
