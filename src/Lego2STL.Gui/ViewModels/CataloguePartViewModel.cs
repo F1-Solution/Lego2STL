@@ -20,6 +20,17 @@ public enum PartNumbering
     LegoElement,
 }
 
+/// <summary>A numbering as it appears in the menu, in the window's own words.</summary>
+public sealed record NumberingChoice(PartNumbering Numbering)
+{
+    public string Name => Localization.Loc.Current.Text(
+        Numbering == PartNumbering.LegoElement
+            ? Core.Text.TextKey.UiNumberingLegoElement
+            : Core.Text.TextKey.UiNumberingBrickLink);
+
+    public override string ToString() => Name;
+}
+
 /// <summary>
 /// One part in the catalogue: what it is, how many, and what came of it.
 /// </summary>

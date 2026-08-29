@@ -205,12 +205,27 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     public partial PartNumbering Numbering { get; set; } = PartNumbering.BrickLink;
 
-    /// <summary>The two numberings, for the menu that chooses between them.</summary>
-    public static IReadOnlyList<PartNumbering> Numberings { get; } =
-        [PartNumbering.BrickLink, PartNumbering.LegoElement];
+    /// <summary>
+    /// The two numberings, for the menu that chooses between them.
+    /// </summary>
+    /// <remarks>
+    /// Built afresh on every read so that changing the language re-words the menu, which is
+    /// what re-raising it in <see cref="Reword"/> then does.
+    /// </remarks>
+    public IReadOnlyList<NumberingChoice> Numberings =>
+        [new(PartNumbering.BrickLink), new(PartNumbering.LegoElement)];
+
+    /// <summary>The chosen numbering as the menu holds it.</summary>
+    public NumberingChoice SelectedNumbering
+    {
+        get => new(Numbering);
+        set => Numbering = value?.Numbering ?? PartNumbering.BrickLink;
+    }
 
     partial void OnNumberingChanged(PartNumbering value)
     {
+        OnPropertyChanged(nameof(SelectedNumbering));
+
         foreach (var part in Parts)
         {
             part.Numbering = value;
@@ -447,11 +462,14 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(HasPartsThatDoNotFit));
         OnPropertyChanged(nameof(DoesNotFitText));
         OnPropertyChanged(nameof(TryASmallerScaleText));
+        OnPropertyChanged(nameof(Numberings));
+        OnPropertyChanged(nameof(SelectedNumbering));
 
         foreach (var part in Parts)
         {
             part.OnPropertyChangedPublic(nameof(CataloguePartViewModel.WarningText));
             part.OnPropertyChangedPublic(nameof(CataloguePartViewModel.HasSelfIntersection));
+            part.OnPropertyChangedPublic(nameof(CataloguePartViewModel.ShownNumber));
         }
     }
 

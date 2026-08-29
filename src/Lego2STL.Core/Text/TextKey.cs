@@ -227,6 +227,12 @@ public enum TextKey
     /// <summary>Shown in place of an element number for a list that has none.</summary>
     UiNoElementNumber,
 
+    /// <summary>The numbering menu's first choice.</summary>
+    UiNumberingBrickLink,
+
+    /// <summary>The numbering menu's second choice.</summary>
+    UiNumberingLegoElement,
+
     UiQuantity,
     UiDone,
     UiFailed,

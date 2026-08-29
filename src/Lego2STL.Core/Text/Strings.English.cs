@@ -298,6 +298,8 @@ public sealed partial class Strings
             [TextKey.UiTryASmallerScale] = "Start again at {0}%",
             [TextKey.UiNumbering] = "Numbering",
             [TextKey.UiNoElementNumber] = "no element number",
+            [TextKey.UiNumberingBrickLink] = "BrickLink part number",
+            [TextKey.UiNumberingLegoElement] = "LEGO element number",
             [TextKey.UiQuantity] = "Quantity",
             [TextKey.UiDone] = "Done",
             [TextKey.UiFailed] = "Failed",

@@ -24,7 +24,7 @@
         <TextBox MinWidth="220" PlaceholderText="32523" Text="{Binding Search}" />
         <TextBlock Classes="label" VerticalAlignment="Center"
                    Text="{Binding [UiNumbering], Source={x:Static loc:Loc.Current}}" />
-        <ComboBox MinWidth="170" SelectedItem="{Binding Numbering}"
+        <ComboBox MinWidth="200" SelectedItem="{Binding SelectedNumbering}"
                   ItemsSource="{Binding Numberings}" />
       </StackPanel>
 
