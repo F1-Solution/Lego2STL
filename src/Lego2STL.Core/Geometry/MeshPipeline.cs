@@ -58,7 +58,8 @@ public sealed record PreparedMesh(
     string? MovedTo,
     IReadOnlyList<string> MissingReferences,
     bool ClearanceApplied = false,
-    string? ClearanceRefusedBecause = null)
+    string? ClearanceRefusedBecause = null,
+    float? ClosedAtTolerance = null)
 {
     public (Vector3 Min, Vector3 Max) Bounds => Mesh.Bounds();
 
@@ -89,20 +90,57 @@ public sealed record PreparedMesh(
 /// </remarks>
 public static class MeshPipeline
 {
+    /// <summary>
+    /// Tolerances to try when the one asked for leaves the shape open, smallest first.
+    /// </summary>
+    /// <remarks>
+    /// In source units, where one unit is 0.4 mm, so the largest is 0.04 mm - below what a
+    /// 0.4 mm nozzle can lay down, and therefore too small to deform anything it closes.
+    /// </remarks>
+    private static readonly float[] HarderTolerances = [5e-3f, 2e-2f, 5e-2f, 1e-1f];
+
     public static PreparedMesh Prepare(PartMesh part, MeshPipelineOptions? options = null)
     {
         ArgumentNullException.ThrowIfNull(part);
 
         var o = options ?? new MeshPipelineOptions();
+        var prepared = Attempt(part, o, o.WeldTolerance);
 
-        var welded = VertexWelder.Weld(part.Triangles, o.WeldTolerance);
+        if (!o.FillGaps || prepared.Quality.IsClosed)
+        {
+            return prepared;
+        }
+
+        // Each attempt starts from the source triangles rather than from the last result:
+        // re-welding a welded mesh compounds the tolerance instead of applying it.
+        foreach (var tolerance in HarderTolerances)
+        {
+            if (tolerance <= o.WeldTolerance)
+            {
+                continue;
+            }
+
+            var harder = Attempt(part, o, tolerance);
+
+            if (harder.Quality.IsClosed)
+            {
+                return harder with { ClosedAtTolerance = tolerance };
+            }
+        }
+
+        return prepared;
+    }
+
+    private static PreparedMesh Attempt(PartMesh part, MeshPipelineOptions o, float tolerance)
+    {
+        var welded = VertexWelder.Weld(part.Triangles, tolerance);
         var tidied = welded.WithoutDegenerateTriangles(out var degenerateRemoved);
 
         var before = MeshAnalysis.Measure(tidied);
 
         var seamsClosed = 0;
         IndexedMesh repaired = o.RepairSeams
-            ? TJunctionRepair.Repair(tidied, out seamsClosed, o.WeldTolerance)
+            ? TJunctionRepair.Repair(tidied, out seamsClosed, tolerance)
             : tidied;
 
         var gapsFilled = 0;
