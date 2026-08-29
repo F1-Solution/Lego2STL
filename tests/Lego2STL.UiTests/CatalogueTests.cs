@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using Avalonia.Controls;
@@ -8,7 +8,9 @@ using FluentAssertions;
 using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Pipeline;
+using Lego2STL.Core.Plates;
 using Lego2STL.Core.Run;
+using Lego2STL.Core.Text;
 using Lego2STL.Gui.ViewModels;
 using Lego2STL.Gui.Views;
 
@@ -102,6 +104,116 @@ public sealed class CatalogueTests
         window.CaptureRenderedFrame();
 
         run.VisibleParts.Should().ContainSingle().Which.PartNumber.Should().Be("4265c");
+    }
+
+    /// <summary>
+    /// A plate is found from the record even though the two are worded in different languages.
+    /// </summary>
+    /// <remarks>
+    /// The failure this ends: a run made in Italian names its plates in Italian - "bianco.3mf" -
+    /// while the record keeps every colour in the one canonical English, "White". Matching the
+    /// file name against the record's wording therefore found nothing, and every single "open
+    /// plate" button on the page was disabled however well the run had gone. The colour code is
+    /// the same number in both, so that is what they are matched on now.
+    /// </remarks>
+    [AvaloniaFact]
+    public void A_plate_named_in_italian_is_found_for_a_part_recorded_in_english()
+    {
+        using var run = APretendRunWithPlates(DisplayLanguage.Italian);
+
+        var black = run.Parts.Single(part => part.PartNumber == "32523");
+
+        black.PlatePath.Should().NotBeNull();
+        Path.GetFileName(black.PlatePath!).Should().Be("nero.3mf");
+        black.HasPlateFile.Should().BeTrue("the run wrote this plate and it is still there");
+    }
+
+    /// <summary>The same run in English, so the match is not merely an Italian special case.</summary>
+    [AvaloniaFact]
+    public void A_plate_named_in_english_is_found_too()
+    {
+        using var run = APretendRunWithPlates(DisplayLanguage.English);
+
+        var black = run.Parts.Single(part => part.PartNumber == "32523");
+
+        Path.GetFileName(black.PlatePath!).Should().Be("black.3mf");
+        black.HasPlateFile.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// A run recorded before plates were listed still finds them, by their names on the disk.
+    /// </summary>
+    /// <remarks>
+    /// Without this every run already sitting in someone's folders would stay broken until it
+    /// was made again, which for a run of several hours is not a fix.
+    /// </remarks>
+    [AvaloniaFact]
+    public void A_run_that_recorded_no_plates_falls_back_to_the_names_on_the_disk()
+    {
+        using var run = APretendRunWithPlates(DisplayLanguage.Italian, recordPlates: false);
+
+        var black = run.Parts.Single(part => part.PartNumber == "32523");
+
+        black.PlatePath.Should().NotBeNull("the file is there to be found by name");
+        Path.GetFileName(black.PlatePath!).Should().Be("nero.3mf");
+    }
+
+    /// <summary>A colour whose plate was never written offers nothing to open.</summary>
+    [AvaloniaFact]
+    public void A_colour_with_no_plate_offers_none()
+    {
+        using var run = APretendRunWithPlates(DisplayLanguage.Italian);
+
+        var red = run.Parts.Single(part => part.PartNumber == "3705");
+
+        red.PlatePath.Should().BeNull();
+        red.HasPlateFile.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// A run that wrote one plate per colour, in the language it was run in.
+    /// </summary>
+    /// <remarks>
+    /// Only black gets a plate, so the test can tell "found the right one" from "found one".
+    /// </remarks>
+    private static RunDocumentViewModel APretendRunWithPlates(
+        DisplayLanguage language, bool recordPlates = true)
+    {
+        var entries = new[]
+        {
+            new PartEntry(1, "32523", 11, "Black", Rgb24.Parse("#05131D"), 4),
+            new PartEntry(2, "3705", 5, "Red", Rgb24.Parse("#C91A09"), 12),
+        };
+
+        var folder = Path.Combine(
+            Path.GetTempPath(), "lego2stl-plates-" + Guid.NewGuid().ToString("N"), "parts.csv");
+
+        var layout = RunLayout.For(folder);
+        Directory.CreateDirectory(layout.PlateDirectory);
+
+        var plateName = PlateFileName.For(ColorNames.For(language, "Black"), 1, 1);
+        File.WriteAllText(Path.Combine(layout.PlateDirectory, plateName), "not really a plate");
+
+        var built = new BuiltPlate(plateName, ColorNames.For(language, "Black"), 11,
+            Rgb24.Parse("#05131D"), 1, 4, "40 x 40");
+
+        var outcome = new RunOutcome
+        {
+            Result = RunResult.Complete,
+            Settings = new RunSettings
+            {
+                Kind = InputKind.PartsList,
+                InputPath = "parts.csv",
+                Offline = true,
+                Language = language,
+            },
+            Layout = layout,
+            PartsList = new PartsList(entries, []),
+            Plates = recordPlates ? new PlateBuildResult([built], []) : null,
+        };
+
+        return RunDocumentViewModel.Of(RunDocument.From(
+            RunManifest.From(outcome, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, null), layout));
     }
 
     [AvaloniaFact]

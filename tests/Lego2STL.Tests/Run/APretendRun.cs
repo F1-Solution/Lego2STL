@@ -1,10 +1,13 @@
-using System.Numerics;
+﻿using System.Numerics;
 using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Colors;
+using Lego2STL.Core.Extraction;
 using Lego2STL.Core.Geometry;
+using Lego2STL.Core.Ocr;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Plates;
 using Lego2STL.Core.Run;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Tests.Run;
 
@@ -98,6 +101,28 @@ internal static class APretendRun
         []),
         GeometrySource = "a made-up library",
         Notes = ["one note about what was read"],
+    };
+
+    /// <summary>A run held up by one entry it could not read, in the language given.</summary>
+    public static RunOutcome WithAnUnreadEntry(RunLayout layout, DisplayLanguage language) => new()
+    {
+        Result = RunResult.Unverified,
+        Settings = ASetting() with { Language = language },
+        Layout = layout,
+        PartsList = AList(),
+        Unread =
+        [
+            new UnresolvedReading(
+                372,
+                new PixelBounds(444, 530, 512, 566),
+                "7x 6177114",
+                7,
+                null,
+                null,
+                "could not be read"),
+        ],
+        GeometrySource = "a made-up library",
+        Notes = [],
     };
 
     /// <summary>A run that wrote a parts list and then refused to go on.</summary>

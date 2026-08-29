@@ -1,10 +1,12 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Lego2STL.Core.Colors;
+using Lego2STL.Core.Plates;
 using Lego2STL.Core.Run;
+using Lego2STL.Core.Text;
 using Lego2STL.Gui.Services;
 
 namespace Lego2STL.Gui.ViewModels;
@@ -33,7 +35,7 @@ internal static class RunCatalogue
                 return new CataloguePartViewModel(
                     part,
                     File.Exists(shape) ? shape : null,
-                    PlateFor(plates, part.ColorName));
+                    PlateFor(document, plates, part));
             }),
         ];
     }
@@ -68,11 +70,6 @@ internal static class RunCatalogue
         }
     }
 
-    /// <remarks>
-    /// A plate's file is named for its colour, so the folder answers which plate a colour went
-    /// on without the record having to carry a second list that could disagree with what is
-    /// actually there.
-    /// </remarks>
     private static IReadOnlyList<string> PlatesIn(string directory)
     {
         try
@@ -87,12 +84,57 @@ internal static class RunCatalogue
         }
     }
 
-    private static string? PlateFor(IReadOnlyList<string> plates, string colourName)
+    /// <summary>
+    /// Which plate a part went on: the one the run recorded for its colour code.
+    /// </summary>
+    /// <remarks>
+    /// By code, never by name. A plate is named in the language the run spoke - "bianco.3mf" -
+    /// while every colour in the record is kept in the one canonical English, "White", so
+    /// matching the two by wording found nothing and disabled every "open plate" button on the
+    /// page. The file still has to be there: a plate deleted by hand stops offering to be
+    /// opened, which is why the folder is consulted as well as the record.
+    /// </remarks>
+    private static string? PlateFor(
+        RunDocument document, IReadOnlyList<string> plates, RunDocumentPart part)
     {
-        var wanted = colourName.Replace(' ', '-').ToLowerInvariant();
+        foreach (var plate in document.Plates.Where(p => p.ColorCode == part.BrickLinkColorCode))
+        {
+            var match = plates.FirstOrDefault(file =>
+                string.Equals(Path.GetFileName(file), plate.FileName, StringComparison.OrdinalIgnoreCase));
 
-        return plates.FirstOrDefault(file =>
-            Path.GetFileNameWithoutExtension(file)
-                .StartsWith(wanted, StringComparison.OrdinalIgnoreCase));
+            if (match is not null)
+            {
+                return match;
+            }
+        }
+
+        return document.Plates.Count == 0 ? ByName(plates, part.ColorName) : null;
+    }
+
+    /// <summary>
+    /// The plate for a colour, found by its file name.
+    /// </summary>
+    /// <remarks>
+    /// For runs made before the record listed its plates. Every wording of the colour is tried,
+    /// because the file was named in whatever language that run spoke and the record does not
+    /// say which. Without this, every run already sitting in someone's folders would stay
+    /// broken until it was made again - which, for a run of several hours, is not a fix.
+    /// </remarks>
+    private static string? ByName(IReadOnlyList<string> plates, string colourName)
+    {
+        foreach (var language in DisplayLanguages.All)
+        {
+            var wording = ColorNames.For(language, colourName);
+
+            var match = plates.FirstOrDefault(
+                file => PlateFileName.IsPlateOf(Path.GetFileName(file), wording));
+
+            if (match is not null)
+            {
+                return match;
+            }
+        }
+
+        return null;
     }
 }

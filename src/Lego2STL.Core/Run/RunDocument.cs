@@ -1,4 +1,4 @@
-using Lego2STL.Core.Catalogue;
+﻿using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Pipeline;
 
@@ -101,6 +101,9 @@ public sealed record RunDocument
 
     public int PlateCount { get; init; }
 
+    /// <summary>Every plate the run wrote, so a colour can be matched to its file by code.</summary>
+    public IReadOnlyList<ManifestPlate> Plates { get; init; } = [];
+
     public IReadOnlyList<string> Unread { get; init; } = [];
 
     public IReadOnlyList<ManifestFailure> Failed { get; init; } = [];
@@ -164,6 +167,7 @@ public sealed record RunDocument
             ShapeCount = manifest.ShapeCount,
             ClosedShapeCount = manifest.ClosedShapeCount,
             PlateCount = manifest.PlateCount,
+            Plates = manifest.Plates,
 
             Unread = manifest.Unread,
             Failed = manifest.Failed,

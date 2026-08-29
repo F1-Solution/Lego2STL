@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Numerics;
 using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Colors;
@@ -121,7 +121,7 @@ public static class PlateBuilder
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var name = FileNameFor(colorName, plate.Number, packed.Plates.Count);
+                var name = PlateFileName.For(colorName, plate.Number, packed.Plates.Count);
                 var contents = Contents(name, colorName, colorGroup, plate, shapesByPart);
 
                 await ThreeMfWriter
@@ -193,30 +193,6 @@ public static class PlateBuilder
         }
 
         return new PlateContents(name, colorName, group.Rgb, objects);
-    }
-
-    private static string FileNameFor(string colorName, int number, int total)
-    {
-        var slug = Slug(colorName);
-        return total == 1
-            ? $"{slug}.3mf"
-            : string.Create(CultureInfo.InvariantCulture, $"{slug}-{number}.3mf");
-    }
-
-    /// <summary>A colour's name as a file name: lower case, words joined by hyphens.</summary>
-    private static string Slug(string name)
-    {
-        var slug = new string([.. name
-            .ToLowerInvariant()
-            .Select(c => char.IsLetterOrDigit(c) ? c : '-')]);
-
-        while (slug.Contains("--", StringComparison.Ordinal))
-        {
-            slug = slug.Replace("--", "-", StringComparison.Ordinal);
-        }
-
-        slug = slug.Trim('-');
-        return slug.Length == 0 ? "colour" : slug;
     }
 
     private static string Describe(Strings words, OversizedItem over, PrintBed bed) =>

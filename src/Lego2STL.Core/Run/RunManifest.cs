@@ -1,8 +1,9 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Geometry;
 using Lego2STL.Core.Pipeline;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Core.Run;
 
@@ -34,6 +35,16 @@ public sealed record ManifestStage(RunStage Stage, int Completed, int Total);
 
 /// <summary>A part that produced no shape, and why.</summary>
 public sealed record ManifestFailure(string Part, string Reason);
+
+/// <summary>
+/// A plate the run wrote, and the colour that went on it.
+/// </summary>
+/// <remarks>
+/// The colour code rather than the name, because the name is written in whichever language the
+/// run spoke and the code is the same number in all of them. That is what lets a run made in
+/// Italian be reopened in English and still offer its plates.
+/// </remarks>
+public sealed record ManifestPlate(string FileName, int ColorCode);
 
 /// <summary>
 /// One part as the run left it.
@@ -104,6 +115,9 @@ public sealed record RunManifest
 
     public int PlateCount { get; init; }
 
+    /// <summary>Every plate written, in the order they were written.</summary>
+    public IReadOnlyList<ManifestPlate> Plates { get; init; } = [];
+
     public IReadOnlyList<string> Unread { get; init; } = [];
 
     public IReadOnlyList<ManifestFailure> Failed { get; init; } = [];
@@ -156,6 +170,10 @@ public sealed record RunManifest
         var shapes = outcome.Shapes.ToDictionary(s => s.PartNumber, StringComparer.OrdinalIgnoreCase);
         var entries = outcome.PartsList?.Entries ?? [];
 
+        // The run's own language, because everything else it records is already in it: a lone
+        // English sentence among Italian findings is the odd one out, not the norm.
+        var words = Strings.For(outcome.Settings.Language);
+
         return new RunManifest
         {
             Status = outcome.Result switch
@@ -176,8 +194,17 @@ public sealed record RunManifest
             ShapeCount = outcome.Shapes.Count,
             ClosedShapeCount = outcome.ClosedShapeCount,
             PlateCount = outcome.Plates?.Plates.Count ?? 0,
+            Plates =
+            [
+                .. (outcome.Plates?.Plates ?? [])
+                    .Select(plate => new ManifestPlate(plate.FileName, plate.BrickLinkColorCode)),
+            ],
 
-            Unread = [.. outcome.Unread.Select(u => $"page {u.Page} at {u.Bounds}: {u.Reason}")],
+            Unread =
+            [
+                .. outcome.Unread.Select(u =>
+                    words.Format(TextKey.MsgUnreadEntryAt, u.Page, u.Bounds, u.Reason)),
+            ],
             Failed = [.. outcome.Failed.Select(f => new ManifestFailure(f.PartNumber, f.Reason))],
             Notes = [.. outcome.Notes],
             Error = outcome.Error,

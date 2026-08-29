@@ -1,6 +1,7 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Run;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Tests.Run;
 
@@ -29,6 +30,44 @@ public sealed class RunManifestTests
 
         state.Should().Be(ManifestState.Present);
         read.Should().BeEquivalentTo(written);
+    }
+
+    /// <summary>
+    /// An entry that could not be read is recorded in the language the run was made in.
+    /// </summary>
+    /// <remarks>
+    /// It used to be built by hand as "page {0} at {1}: {2}" and so arrived in English however
+    /// the run had been asked to speak, which is what put a lone English sentence in the middle
+    /// of an Italian window. The wording already existed in both languages; nothing was using it.
+    /// </remarks>
+    [Theory]
+    [InlineData(DisplayLanguage.Italian, "pagina 372 in")]
+    [InlineData(DisplayLanguage.English, "page 372 at")]
+    public void An_unread_entry_is_worded_in_the_language_of_the_run(
+        DisplayLanguage language, string expected)
+    {
+        var layout = ARunFolder();
+
+        var manifest = RunManifest.From(
+            APretendRun.WithAnUnreadEntry(layout, language),
+            APretendRun.Started,
+            APretendRun.Finished,
+            null);
+
+        manifest.Unread.Should().ContainSingle().Which.Should().StartWith(expected);
+    }
+
+    /// <summary>Every plate is recorded with its colour code, which is what finds it again.</summary>
+    [Fact]
+    public void The_plates_a_run_wrote_are_recorded_with_the_colour_that_went_on_them()
+    {
+        var layout = ARunFolder();
+
+        var manifest = RunManifest.From(
+            APretendRun.Complete(layout), APretendRun.Started, APretendRun.Finished, null);
+
+        manifest.Plates.Should().HaveCount(manifest.PlateCount);
+        manifest.Plates.Should().OnlyContain(plate => plate.FileName.EndsWith(".3mf"));
     }
 
     [Fact]
