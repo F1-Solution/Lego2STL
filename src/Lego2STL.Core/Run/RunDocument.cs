@@ -116,6 +116,9 @@ public sealed record RunDocument
 
     public int PlateCount { get; init; }
 
+    /// <summary>The largest scale at which every part would fit, when some did not.</summary>
+    public double? LargestFittingScalePercent { get; init; }
+
     /// <summary>Every plate the run wrote, so a colour can be matched to its file by code.</summary>
     public IReadOnlyList<ManifestPlate> Plates { get; init; } = [];
 
@@ -182,6 +185,7 @@ public sealed record RunDocument
             ShapeCount = manifest.ShapeCount,
             ClosedShapeCount = manifest.ClosedShapeCount,
             PlateCount = manifest.PlateCount,
+            LargestFittingScalePercent = manifest.LargestFittingScalePercent,
             Plates = manifest.Plates,
 
             Unread = manifest.Unread,

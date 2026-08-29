@@ -1,8 +1,10 @@
-﻿using System.Text.Json;
+﻿using System.Numerics;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Geometry;
 using Lego2STL.Core.Pipeline;
+using Lego2STL.Core.Plates;
 using Lego2STL.Core.Text;
 
 namespace Lego2STL.Core.Run;
@@ -117,6 +119,9 @@ public sealed record RunManifest
 
     public int PlateCount { get; init; }
 
+    /// <summary>The largest scale at which every part would fit, when some did not.</summary>
+    public double? LargestFittingScalePercent { get; init; }
+
     /// <summary>Every plate written, in the order they were written.</summary>
     public IReadOnlyList<ManifestPlate> Plates { get; init; } = [];
 
@@ -196,6 +201,16 @@ public sealed record RunManifest
             ShapeCount = outcome.Shapes.Count,
             ClosedShapeCount = outcome.ClosedShapeCount,
             PlateCount = outcome.Plates?.Plates.Count ?? 0,
+            LargestFittingScalePercent = FittingScale.Largest(
+                outcome.ShapesByPart.Select(pair =>
+                {
+                    var (min, max) = pair.Value.Bounds();
+                    var size = max - min;
+                    return new PackableItem(pair.Key, new Vector2(size.X, size.Y), size.Z);
+                }),
+                outcome.Settings.Bed,
+                margin: new PackingOptions().Margin,
+                scaleUsed: outcome.Settings.ScalePercent),
             Plates =
             [
                 .. (outcome.Plates?.Plates ?? [])
