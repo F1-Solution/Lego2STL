@@ -289,6 +289,8 @@ public sealed partial class Strings
             [TextKey.UiOpenPlate] = "Open the plate",
             [TextKey.UiOpenFolder] = "Open the folder",
             [TextKey.UiWarningNotClosed] = "This shape has open edges; a slicer will repair it.",
+            [TextKey.UiWarningSelfIntersects] =
+                "Some of this shape's surfaces pass through each other; a slicer will still print it.",
             [TextKey.UiWarningThinFeature] = "This part has features thinner than a 0.4 mm nozzle.",
             [TextKey.UiQuantity] = "Quantity",
             [TextKey.UiDone] = "Done",

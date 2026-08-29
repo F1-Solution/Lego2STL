@@ -24,7 +24,9 @@ public sealed record RunDocumentPart(
     string? Size,
     bool? IsClosed,
     int? OpenEdgeCount,
-    double? ThinnestSpanMm)
+    double? ThinnestSpanMm,
+    int? OverusedEdgeCount = null,
+    float? ClosedAtTolerance = null)
 {
     /// <summary>
     /// Below this, in millimetres, a wall is thinner than a common nozzle can lay down and the
@@ -35,12 +37,25 @@ public sealed record RunDocumentPart(
 
     public bool ShapeWasMeasured => IsClosed is not null;
 
-    public bool HasOpenEdges => IsClosed == false;
+    /// <summary>Holes in the surface. Not merely "not closed" - that is two faults, not one.</summary>
+    public bool HasOpenEdges => OpenEdgeCount > 0;
+
+    /// <summary>
+    /// Surfaces that pass through each other, which is not the same as a hole.
+    /// </summary>
+    /// <remarks>
+    /// A run recorded before both counts were kept has no overused figure, but it does say the
+    /// shape was not closed and had no open edges, and only this fault can produce that pair -
+    /// so runs already on disk name the right fault without being made again.
+    /// </remarks>
+    public bool HasSelfIntersection =>
+        OverusedEdgeCount > 0
+        || (OverusedEdgeCount is null && IsClosed == false && OpenEdgeCount == 0);
 
     public bool HasThinFeatures =>
         ThinnestSpanMm is { } span && span < ThinnestPrintableMillimetres;
 
-    public bool HasWarning => HasOpenEdges || HasThinFeatures;
+    public bool HasWarning => HasOpenEdges || HasThinFeatures || HasSelfIntersection;
 }
 
 /// <summary>
@@ -187,7 +202,9 @@ public sealed record RunDocument
                     part.Size,
                     part.IsClosed,
                     part.OpenEdgeCount,
-                    part.ThinnestSpanMm)),
+                    part.ThinnestSpanMm,
+                    part.OverusedEdgeCount,
+                    part.ClosedAtTolerance)),
             ],
         };
     }

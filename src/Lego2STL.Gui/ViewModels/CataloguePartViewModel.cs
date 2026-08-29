@@ -62,6 +62,9 @@ public sealed partial class CataloguePartViewModel : ViewModelBase
 
     public bool HasOpenEdges => Part.HasOpenEdges;
 
+    /// <summary>True when the shape has no holes but its surfaces pass through each other.</summary>
+    public bool HasSelfIntersection => Part.HasSelfIntersection;
+
     /// <summary>True when some part of the shape is finer than a nozzle can print.</summary>
     public bool HasThinFeatures => Part.HasThinFeatures;
 
@@ -76,6 +79,11 @@ public sealed partial class CataloguePartViewModel : ViewModelBase
             if (HasOpenEdges)
             {
                 warnings.Add(Localization.Loc.Current.Text(Core.Text.TextKey.UiWarningNotClosed));
+            }
+
+            if (HasSelfIntersection)
+            {
+                warnings.Add(Localization.Loc.Current.Text(Core.Text.TextKey.UiWarningSelfIntersects));
             }
 
             if (HasThinFeatures)

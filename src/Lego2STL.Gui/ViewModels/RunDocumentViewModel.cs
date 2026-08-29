@@ -389,6 +389,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
         foreach (var part in Parts)
         {
             part.OnPropertyChangedPublic(nameof(CataloguePartViewModel.WarningText));
+            part.OnPropertyChangedPublic(nameof(CataloguePartViewModel.HasSelfIntersection));
         }
     }
 

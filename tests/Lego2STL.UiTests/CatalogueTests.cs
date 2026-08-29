@@ -11,6 +11,7 @@ using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Plates;
 using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
+using Lego2STL.Gui.Localization;
 using Lego2STL.Gui.ViewModels;
 using Lego2STL.Gui.Views;
 
@@ -236,5 +237,25 @@ public sealed class CatalogueTests
 #pragma warning disable CS0618
         frame!.Save(file);
 #pragma warning restore CS0618
+    }
+
+    /// <summary>Surfaces passing through each other is not the same fault as holes.</summary>
+    [AvaloniaFact]
+    public void A_shape_with_no_holes_is_not_told_it_has_open_edges()
+    {
+        var part = new RunDocumentPart(
+            1, "32064a", 11, "Black", Rgb24.Parse("#05131D"), 2,
+            Title: "a part", Size: "32 x 16 x 22.4 mm",
+            IsClosed: false, OpenEdgeCount: 0, ThinnestSpanMm: 8,
+            OverusedEdgeCount: 2, ClosedAtTolerance: null);
+
+        var card = new CataloguePartViewModel(part, null, null);
+
+        card.HasOpenEdges.Should().BeFalse();
+        card.HasSelfIntersection.Should().BeTrue();
+        card.HasWarning.Should().BeTrue();
+        card.WarningText.Should().NotContain(
+            Loc.Current.Text(TextKey.UiWarningNotClosed),
+            "it has no open edges to warn about");
     }
 }

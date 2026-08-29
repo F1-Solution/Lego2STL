@@ -300,6 +300,8 @@ public sealed partial class Strings
             [TextKey.UiOpenPlate] = "Apri il piano",
             [TextKey.UiOpenFolder] = "Apri la cartella",
             [TextKey.UiWarningNotClosed] = "Questa forma ha spigoli aperti; uno slicer la ripara.",
+            [TextKey.UiWarningSelfIntersects] =
+                "Alcune superfici di questa forma si compenetrano; lo slicer la stampa comunque.",
             [TextKey.UiWarningThinFeature] =
                 "Questo pezzo ha dettagli più sottili di un ugello da 0,4 mm.",
             [TextKey.UiQuantity] = "Quantità",

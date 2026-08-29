@@ -242,4 +242,27 @@ public sealed class RunManifestTests
 
         await write.Should().NotThrowAsync();
     }
+
+    /// <summary>
+    /// Both ways a shape can fail to be closed are recorded, because they are different faults.
+    /// </summary>
+    /// <remarks>
+    /// Only the open-edge count used to be kept, so a part with no holes whose surfaces pass
+    /// through each other was recorded as indistinguishable from a part full of holes - and the
+    /// catalogue told 19 parts of run 6324712 they had open edges when they had none.
+    /// </remarks>
+    [Fact]
+    public void A_shape_records_both_kinds_of_fault()
+    {
+        var layout = ARunFolder();
+
+        var manifest = RunManifest.From(
+            APretendRun.Complete(layout), APretendRun.Started, APretendRun.Finished, null);
+
+        var measured = manifest.Parts.Where(part => part.IsClosed is not null).ToList();
+
+        measured.Should().NotBeEmpty();
+        measured.Should().OnlyContain(part => part.OverusedEdgeCount != null,
+            "a shape that was measured was measured for both");
+    }
 }

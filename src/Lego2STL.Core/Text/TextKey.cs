@@ -208,6 +208,9 @@ public enum TextKey
     UiOpenPlate,
     UiOpenFolder,
     UiWarningNotClosed,
+
+    /// <summary>Said of a shape whose surfaces pass through each other rather than gape.</summary>
+    UiWarningSelfIntersects,
     UiWarningThinFeature,
     UiQuantity,
     UiDone,
