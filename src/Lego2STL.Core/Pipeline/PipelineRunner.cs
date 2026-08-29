@@ -183,59 +183,207 @@ public sealed class PipelineRunner
             .ConfigureAwait(false);
     }
 
+    /// <remarks>
+    /// <para>
+    /// Two ways to read a page, and the document decides which. Official building instructions
+    /// carry a text layer, and their catalogue pages can simply be quoted from it: exact, free
+    /// of any recogniser, and free of rasterising the pages at all. Documents without one -
+    /// scans, and the image-only exports the pixel path was written for - go the other way,
+    /// and a document can be part one and part the other without anyone having to say so.
+    /// </para>
+    /// <para>
+    /// What a printed page yields is element numbers rather than parts and colours, so the
+    /// third step is a lookup. That is the only cost of the fast path, and it is paid once per
+    /// distinct number.
+    /// </para>
+    /// </remarks>
     private async Task<(PartsList List, RunLayout Layout, IReadOnlyList<UnresolvedReading> Unread)>
         FromDocumentAsync(RunSettings settings, List<string> notes, CancellationToken cancellationToken)
     {
         var words = Strings.For(settings.Language);
 
-        // Asked before the document is opened: a missing recogniser is the whole answer, and
-        // saying it after a page count reads as though the reading had begun.
-        if (!OcrEngines.IsAvailable)
+        using var document = PdfPageImageSource.Open(settings.InputPath!);
+        _log(words.Format(TextKey.MsgPagesInDocument, Path.GetFileName(settings.InputPath!), document.PageCount));
+
+        var typeset = false;
+        IReadOnlyList<int> pages;
+
+        if (string.IsNullOrWhiteSpace(settings.Pages))
+        {
+            (pages, typeset) = DetectCataloguePages(document, words, cancellationToken);
+        }
+        else
+        {
+            pages = PageRange.Parse(settings.Pages, document.PageCount);
+        }
+
+        if (pages.Count == 0)
+        {
+            // A typeset book that prints no catalogue is usually one volume of a set, and the
+            // parts list is in another; a document with no text at all was simply not read.
+            throw new InvalidOperationException(words[
+                typeset ? TextKey.MsgNoCatalogueInThisBook : TextKey.MsgNoCataloguePages]);
+        }
+
+        var printed = new List<int>();
+        var toRecognise = new List<int>();
+
+        foreach (var page in pages)
+        {
+            (document.ReadPrintedCatalogue(page).Count > 0 ? printed : toRecognise).Add(page);
+        }
+
+        // Said here rather than before the document is opened, because a book that prints its
+        // catalogue needs no recogniser at all and used to be refused by a build without one.
+        // It is still said before a single page has been read.
+        if (toRecognise.Count > 0 && !OcrEngines.IsAvailable)
         {
             throw new OcrUnavailableException(OcrEngines.DescribeUnavailable(words));
         }
 
-        using var document = PdfPageImageSource.Open(settings.InputPath!);
-        _log(words.Format(TextKey.MsgPagesInDocument, Path.GetFileName(settings.InputPath!), document.PageCount));
+        var entries = new List<CatalogueReading>();
+        var unresolved = new List<UnresolvedReading>();
+        var read = new List<string>();
 
-        var pages = string.IsNullOrWhiteSpace(settings.Pages)
-            ? DetectCataloguePages(document, words, cancellationToken)
-            : PageRange.Parse(settings.Pages, document.PageCount);
+        Report(RunStage.ReadingDocument, 0, pages.Count);
 
-        if (pages.Count == 0)
+        if (printed.Count > 0)
         {
-            throw new InvalidOperationException(words[TextKey.MsgNoCataloguePages]);
+            _log(words.Format(TextKey.MsgReadingPrintedPages, PageRange.Format(printed)));
+
+            var (found, missed) = await ReadPrintedPagesAsync(
+                settings, document, printed, read, cancellationToken).ConfigureAwait(false);
+
+            entries.AddRange(found);
+            unresolved.AddRange(missed);
         }
 
-        _log(words.Format(TextKey.MsgReadingPages, PageRange.Format(pages), settings.ColorScheme));
+        if (toRecognise.Count > 0)
+        {
+            _log(words.Format(TextKey.MsgReadingPages, PageRange.Format(toRecognise), settings.ColorScheme));
 
-        var reader = new CatalogueReader(OcrEngines.Create(null, words), null, words);
-        var read = await ReadPagesAsync(reader, document, pages, cancellationToken).ConfigureAwait(false);
+            var reader = new CatalogueReader(OcrEngines.Create(null, words), null, words);
+            var recognised = await ReadPagesAsync(
+                    reader, document, toRecognise, printed.Count, pages.Count, cancellationToken)
+                .ConfigureAwait(false);
 
-        notes.AddRange(read.Notes);
-        foreach (var note in read.Notes)
+            entries.AddRange(recognised.Entries);
+            unresolved.AddRange(recognised.Unresolved);
+            read.AddRange(recognised.Notes);
+        }
+
+        Report(RunStage.ReadingDocument, pages.Count, pages.Count);
+
+        notes.AddRange(read);
+        foreach (var note in read)
         {
             _log("  " + note);
         }
 
-        var list = PartsListBuilder.Build(
-            read.Entries, ColorReference.Table, settings.ColorScheme, words);
+        var list = PartsListBuilder.Build(entries, ColorReference.Table, settings.ColorScheme, words);
         notes.AddRange(list.Notes);
 
         var layout = RunLayout.Plan(settings)!;
         layout.CreateDirectories();
 
-        return (list, layout, read.Unresolved);
+        return (list, layout, unresolved);
     }
 
+    /// <summary>
+    /// Reads the pages that print their catalogue, and turns their element numbers into parts
+    /// and colours.
+    /// </summary>
+    private async Task<(List<CatalogueReading> Entries, List<UnresolvedReading> Unresolved)>
+        ReadPrintedPagesAsync(
+            RunSettings settings,
+            PdfPageImageSource document,
+            IReadOnlyList<int> pages,
+            List<string> notes,
+            CancellationToken cancellationToken)
+    {
+        var words = Strings.For(settings.Language);
+
+        using var elements = ElementLookup.Open(
+            settings.ElementMap,
+            [Path.GetDirectoryName(Path.GetFullPath(settings.InputPath!)), Directory.GetCurrentDirectory()],
+            settings.ApiKey,
+            ColorReference.Table,
+            words);
+
+        // Read first, resolve after. Quoting the pages costs nothing, and knowing how many
+        // distinct numbers there are before looking any of them up is what lets a run that has
+        // to ask Rebrickable say so, and say how long it will take, rather than going quiet.
+        var printed = new List<(int Page, PrintedEntry Entry)>();
+
+        foreach (var pageNumber in pages)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var onPage = document.ReadPrintedCatalogue(pageNumber);
+            notes.Add(words.Format(TextKey.NoteEntriesFound, pageNumber, onPage.Count));
+            printed.AddRange(onPage.Select(e => (pageNumber, e)));
+        }
+
+        var distinct = printed.Select(p => p.Entry.ElementId).Distinct(StringComparer.OrdinalIgnoreCase).Count();
+
+        if (elements.TablePath is null && elements.CanAskRebrickable)
+        {
+            _log(words.Format(TextKey.MsgLookingUpElements, distinct));
+        }
+
+        var entries = new List<CatalogueReading>();
+        var unresolved = new List<UnresolvedReading>();
+
+        for (var i = 0; i < printed.Count; i++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var (pageNumber, entry) = printed[i];
+            Report(RunStage.ReadingDocument, i, printed.Count, entry.ElementId);
+
+            var resolved = await elements.ResolveAsync(entry.ElementId, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (resolved is null)
+            {
+                unresolved.Add(new UnresolvedReading(
+                    pageNumber,
+                    entry.Bounds,
+                    entry.ToString(),
+                    entry.Quantity,
+                    null,
+                    null,
+                    words.Format(TextKey.ReasonUnknownElement, entry.ElementId)));
+                continue;
+            }
+
+            entries.Add(new CatalogueReading(
+                pageNumber,
+                entry.Bounds,
+                entry.Quantity,
+                resolved.PartNumber,
+                resolved.ColorCode,
+                ReadingSource.PrintedText,
+                ReadingSource.PrintedText,
+                resolved.Scheme));
+        }
+
+        notes.AddRange(elements.Notes());
+        return (entries, unresolved);
+    }
+
+    /// <param name="alreadyDone">
+    /// Pages read by the other path, so that a document read partly each way still shows one
+    /// bar filling once rather than two filling in turn.
+    /// </param>
     private async Task<CatalogueReadResult> ReadPagesAsync(
         CatalogueReader reader,
         PdfPageImageSource document,
         IReadOnlyList<int> pages,
+        int alreadyDone,
+        int total,
         CancellationToken cancellationToken)
     {
-        Report(RunStage.ReadingDocument, 0, pages.Count);
-
         // The reader works a page at a time internally; running it per page as well is what
         // lets the bar move rather than sitting still for the whole document.
         var entries = new List<CatalogueReading>();
@@ -246,7 +394,7 @@ public sealed class PipelineRunner
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            Report(RunStage.ReadingDocument, i, pages.Count, $"page {pages[i]}");
+            Report(RunStage.ReadingDocument, alreadyDone + i, total, $"page {pages[i]}");
 
             var one = await reader.ReadAsync(document, [pages[i]], cancellationToken).ConfigureAwait(false);
 
@@ -254,8 +402,6 @@ public sealed class PipelineRunner
             unresolved.AddRange(one.Unresolved);
             notes.AddRange(one.Notes);
         }
-
-        Report(RunStage.ReadingDocument, pages.Count, pages.Count);
 
         return new CatalogueReadResult(entries, unresolved, notes);
     }
@@ -439,15 +585,74 @@ public sealed class PipelineRunner
     /// <summary>
     /// Which pages hold a catalogue, when no range was given: the ones with entries on them.
     /// </summary>
-    private List<int> DetectCataloguePages(
+    /// <remarks>
+    /// <para>
+    /// The text layer is asked first, and for a document that has one the answer is both exact
+    /// and quick - a building step prints counts too, but never an element number beneath one,
+    /// so the two cannot be confused. It also spares rasterising a book that may run to a
+    /// thousand pages.
+    /// </para>
+    /// <para>
+    /// A document that has a text layer is believed even when it says there is no catalogue,
+    /// and that matters: official instructions come in several books and only one of them
+    /// carries the parts list. Asked to look at the pixels of a book that has none, the
+    /// pixel-reading path finds a "2x" on nearly every building step and reports hundreds of
+    /// catalogue pages that are not there. Falling back is right for a scan, which has no text
+    /// on any page and nothing else to go on, and wrong for a book that has already answered.
+    /// </para>
+    /// </remarks>
+    /// <returns>The pages, and whether the document carries a text layer at all.</returns>
+    private (List<int> Pages, bool Typeset) DetectCataloguePages(
         PdfPageImageSource document,
         Strings words,
         CancellationToken cancellationToken)
     {
+        Report(RunStage.ReadingDocument, 0, document.PageCount, "looking for the catalogue");
+
+        var (found, hasText) = FindPrintedCataloguePages(document, cancellationToken);
+
+        if (found.Count == 0 && !hasText)
+        {
+            found = FindDrawnCataloguePages(document, cancellationToken);
+        }
+
+        if (found.Count > 0)
+        {
+            _log(words.Format(TextKey.MsgCataloguePagesFound, PageRange.Format(found)));
+        }
+
+        return (found, hasText);
+    }
+
+    private static (List<int> Found, bool HasText) FindPrintedCataloguePages(
+        PdfPageImageSource document,
+        CancellationToken cancellationToken)
+    {
+        var found = new List<int>();
+        var hasText = false;
+
+        for (var pageNumber = 1; pageNumber <= document.PageCount; pageNumber++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var text = document.ReadText(pageNumber);
+            hasText |= text.HasText;
+
+            if (text.Entries.Count > 0)
+            {
+                found.Add(pageNumber);
+            }
+        }
+
+        return (found, hasText);
+    }
+
+    private List<int> FindDrawnCataloguePages(
+        PdfPageImageSource document,
+        CancellationToken cancellationToken)
+    {
         var locator = new Extraction.LabelLocator();
         var found = new List<int>();
-
-        Report(RunStage.ReadingDocument, 0, document.PageCount, "looking for the catalogue");
 
         for (var pageNumber = 1; pageNumber <= document.PageCount; pageNumber++)
         {
@@ -458,11 +663,6 @@ public sealed class PipelineRunner
             {
                 found.Add(pageNumber);
             }
-        }
-
-        if (found.Count > 0)
-        {
-            _log(words.Format(TextKey.MsgCataloguePagesFound, PageRange.Format(found)));
         }
 
         return found;

@@ -1,8 +1,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Headless.XUnit;
+using Avalonia.Threading;
 using FluentAssertions;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Run;
@@ -170,6 +172,66 @@ public sealed class RunDocumentViewTests
         page.IsLive.Should().BeFalse();
         page.Busy.Should().BeFalse();
         page.Log.Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// The defect this ends: "the calling thread cannot access this object because a different
+    /// thread owns it", as soon as a run got past its first fetch.
+    /// </summary>
+    /// <remarks>
+    /// The pipeline awaits without capturing a context, so it hands its log lines and its
+    /// progress back on a pool thread. The log is bound to a list on screen and the stage to a
+    /// label, so both have to be touched on the window's thread. Watching where the collection
+    /// changes is the whole of the claim; a real run is what makes the thread really move.
+    /// </remarks>
+    [AvaloniaFact]
+    public async Task What_a_running_pipeline_says_reaches_the_page_on_the_windows_thread()
+    {
+        var settings = ARunThatLeavesTheMachineAlone();
+        var layout = RunLayout.Plan(settings)!;
+
+        using var page = RunDocumentViewModel.Live(settings, layout);
+
+        var saidOffTheWindowsThread = 0;
+        page.Log.CollectionChanged += (_, _) =>
+        {
+            if (!Dispatcher.UIThread.CheckAccess())
+            {
+                Interlocked.Increment(ref saidOffTheWindowsThread);
+            }
+        };
+
+        await page.RunAsync();
+
+        page.Log.Should().NotBeEmpty("a run says what it is doing as it does it");
+        saidOffTheWindowsThread.Should().Be(0,
+            "every line has to arrive on the thread the window is on");
+        page.StageText.Should().NotBeNullOrWhiteSpace();
+    }
+
+    /// <summary>
+    /// A parts list on a disk, the shape library pointed at nothing and the network refused, so
+    /// a shapes run reaches its failure path without leaving the machine.
+    /// </summary>
+    private static RunSettings ARunThatLeavesTheMachineAlone()
+    {
+        var folder = Path.Combine(
+            Path.GetTempPath(), "lego2stl-threading-" + Guid.NewGuid().ToString("N"));
+
+        Directory.CreateDirectory(folder);
+
+        var path = Path.Combine(folder, "pistola.csv");
+        File.WriteAllText(path, "Id;Part;BrickLink colour;Colour;RGB;Quantity\n1;32523;11;Black;#05131D;4\n");
+
+        return new RunSettings
+        {
+            Kind = InputKind.PartsList,
+            InputPath = path,
+            Stages = RunStages.Shapes,
+            Offline = true,
+            LDrawCache = Path.Combine(folder, "no-library"),
+            OutputDirectory = folder,
+        };
     }
 
     private static object Facts(CataloguePartViewModel part) => new

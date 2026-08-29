@@ -82,12 +82,36 @@ internal static class ExtractCommand
         var locator = new LabelLocator();
         var candidates = new List<int>();
 
+        // The document's own text first, page by page, exactly as a run would: a book that
+        // prints its catalogue is classified without rasterising anything, and this listing
+        // then agrees with what the run will do rather than describing a different search.
+        var printed = new int[document.PageCount + 1];
+        var typeset = false;
+
         for (var pageNumber = 1; pageNumber <= document.PageCount; pageNumber++)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using var page = document.GetPage(pageNumber);
-            var count = locator.Locate(page).Count;
+            var text = document.ReadText(pageNumber);
+            printed[pageNumber] = text.Entries.Count;
+            typeset |= text.HasText;
+        }
+
+        for (var pageNumber = 1; pageNumber <= document.PageCount; pageNumber++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            int count;
+
+            if (typeset)
+            {
+                count = printed[pageNumber];
+            }
+            else
+            {
+                using var page = document.GetPage(pageNumber);
+                count = locator.Locate(page).Count;
+            }
 
             if (count == 0)
             {
@@ -102,9 +126,9 @@ internal static class ExtractCommand
         }
 
         Console.WriteLine();
-        Console.WriteLine(candidates.Count == 0
-            ? words[TextKey.MsgNoCataloguePages]
-            : words.Format(TextKey.MsgSuggestedRange, PageRange.Format(candidates)));
+        Console.WriteLine(candidates.Count > 0
+            ? words.Format(TextKey.MsgSuggestedRange, PageRange.Format(candidates))
+            : words[typeset ? TextKey.MsgNoCatalogueInThisBook : TextKey.MsgNoCataloguePages]);
 
         return Program.ExitOk;
     }

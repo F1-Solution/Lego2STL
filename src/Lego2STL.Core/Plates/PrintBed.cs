@@ -14,6 +14,18 @@ public sealed record PrintBed(string Name, float Width, float Depth, float Heigh
     public override string ToString() =>
         string.Create(CultureInfo.InvariantCulture, $"{Width:0.#} x {Depth:0.#} x {Height:0.#} mm");
 
+    /// <summary>
+    /// The bed written the way <c>--plate-size</c> takes it back.
+    /// </summary>
+    /// <remarks>
+    /// The height is left off when it matches the width, because that is the shape those two
+    /// numbers already mean - saying it again would be a third number that carries nothing.
+    /// Kept here so the one way of spelling a bed size is written once.
+    /// </remarks>
+    public string AsSize => Math.Abs(Height - Width) < 0.05f
+        ? string.Create(CultureInfo.InvariantCulture, $"{Width:0.#}x{Depth:0.#}")
+        : string.Create(CultureInfo.InvariantCulture, $"{Width:0.#}x{Depth:0.#}x{Height:0.#}");
+
     /// <summary>True when a part of this size could be printed at all, laid out as it stands.</summary>
     public bool Fits(float width, float depth, float height) =>
         width <= Width && depth <= Depth && height <= Height;

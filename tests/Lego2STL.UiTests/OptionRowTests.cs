@@ -1,7 +1,10 @@
+using System;
 using System.Linq;
 using Avalonia.Headless.XUnit;
 using FluentAssertions;
 using Lego2STL.Core.Pipeline;
+using Lego2STL.Core.Plates;
+using Lego2STL.Core.Text;
 using Lego2STL.Gui.ViewModels;
 
 namespace Lego2STL.UiTests;
@@ -17,12 +20,12 @@ namespace Lego2STL.UiTests;
 /// </remarks>
 public sealed class OptionRowTests
 {
-    private static readonly string[] TheEighteen =
+    private static readonly string[] TheNineteen =
     [
         "--csv-only", "--no-plates", "--ascii", "--keep-origin",
-        "--repair", "--no-seam-repair", "--offline", "--no-unofficial",
+        "--no-repair", "--no-seam-repair", "--offline", "--no-unofficial",
         "--scale", "--clearance", "--weld-tolerance", "--plate-spacing",
-        "--output-dir", "--ldraw-dir", "--ldraw-cache",
+        "--output-dir", "--element-map", "--ldraw-dir", "--ldraw-cache",
         "--plate-size",
         "--delimiter", "--printer",
     ];
@@ -32,9 +35,84 @@ public sealed class OptionRowTests
     {
         var rows = new OptionRowsViewModel(new RunOptionsViewModel());
 
-        rows.Rows.Should().HaveCount(18);
-        rows.Rows.Select(row => row.Flag).Should().BeEquivalentTo(TheEighteen);
+        rows.Rows.Should().HaveCount(19);
+        rows.Rows.Select(row => row.Flag).Should().BeEquivalentTo(TheNineteen);
         rows.Rows.Select(row => row.Flag).Should().OnlyHaveUniqueItems();
+    }
+
+    /// <summary>
+    /// Every row is named in the reader's own language, and still says which flag it is. A row
+    /// showing a key rather than a phrase means a wording was never written.
+    /// </summary>
+    [AvaloniaFact]
+    public void Every_option_is_named_in_words_as_well_as_by_its_flag()
+    {
+        var rows = new OptionRowsViewModel(new RunOptionsViewModel());
+
+        rows.Rows.Should().OnlyContain(row => !string.IsNullOrWhiteSpace(row.Label));
+        rows.Rows.Select(row => row.Label).Should().OnlyHaveUniqueItems();
+        rows.Rows.Select(row => row.Label).Should().NotIntersectWith(Enum.GetNames<TextKey>());
+        rows.Rows.Should().OnlyContain(row => !row.Label.StartsWith("--", StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Naming the options did not cost the search the flags: anyone arriving from the terminal
+    /// still finds a row by the flag they already know.
+    /// </summary>
+    [AvaloniaFact]
+    public void An_option_is_found_by_its_name_as_well_as_by_its_flag()
+    {
+        var rows = new OptionRowsViewModel(new RunOptionsViewModel());
+        var clearance = rows.Rows.Single(row => row.Flag == "--clearance");
+
+        rows.Search = clearance.Label;
+
+        clearance.IsVisible.Should().BeTrue();
+
+        rows.Search = "--clearance";
+
+        clearance.IsVisible.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// A help text with a placeholder left in it is a sentence with a hole: the printer row read
+    /// "...to lay plates out for: {0}." on screen while the command line filled the same phrase
+    /// in properly.
+    /// </summary>
+    [AvaloniaFact]
+    public void No_option_describes_itself_with_a_placeholder_still_in_it()
+    {
+        var rows = new OptionRowsViewModel(new RunOptionsViewModel());
+
+        rows.Rows.Should().OnlyContain(row => !row.Help.Contains('{', StringComparison.Ordinal));
+
+        rows.Rows.Single(row => row.Flag == "--printer").Help
+            .Should().Contain(PrintBeds.Default.Name);
+    }
+
+    /// <summary>
+    /// An empty bed size means "whatever the printer's bed is", so that is what the empty box
+    /// says. It read a flat "220x220" while the default printer's bed was 256x256, which is a
+    /// grey number that was never anybody's default.
+    /// </summary>
+    [AvaloniaFact]
+    public void The_empty_bed_size_shows_the_bed_the_chosen_printer_really_has()
+    {
+        var options = new RunOptionsViewModel();
+        var rows = new OptionRowsViewModel(options);
+        var bedSize = (TextOptionRow)rows.Rows.Single(row => row.Flag == "--plate-size");
+
+        bedSize.Value.Should().BeNull("a bed size is only typed when it differs from the printer");
+        bedSize.Placeholder.Should().Be(PrintBeds.Default.AsSize).And.Be("256x256");
+
+        options.Printer = "H2D";
+
+        bedSize.Placeholder.Should().Be("350x320x325",
+            "the placeholder has to follow the printer, or it is a default nobody has");
+
+        options.Printer = "A1mini";
+
+        bedSize.Placeholder.Should().Be("180x180");
     }
 
     [AvaloniaFact]
@@ -63,7 +141,7 @@ public sealed class OptionRowTests
         var rows = new OptionRowsViewModel(options) { ChangedOnly = true };
 
         rows.Rows.Where(row => row.IsVisible).Select(row => row.Flag).Should().Equal("--clearance");
-        rows.HiddenCount.Should().Be(17, "an option set three runs ago must not sit invisible in silence");
+        rows.HiddenCount.Should().Be(18, "an option set three runs ago must not sit invisible in silence");
     }
 
     /// <summary>
@@ -86,7 +164,7 @@ public sealed class OptionRowTests
     {
         var rows = new OptionRowsViewModel(new RunOptionsViewModel()) { ChangedOnly = true };
 
-        rows.Rows.Should().HaveCount(18, "filtering hides rows; it does not throw them away");
+        rows.Rows.Should().HaveCount(19, "filtering hides rows; it does not throw them away");
         rows.Rows.Should().OnlyContain(row => row.IsVisible == false);
     }
 

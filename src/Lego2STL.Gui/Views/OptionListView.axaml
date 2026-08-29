@@ -9,11 +9,25 @@
              x:DataType="vm:OptionRowsViewModel">
 
   <UserControl.Styles>
-    <Style Selector="TextBlock.flag">
+    <!--
+      Every row is the same five columns - box, name, control, help, put-back - so that the
+      names line up down the page and a check box sits where a check box is looked for. A
+      row with no box leaves the first column empty rather than closing it up.
+    -->
+    <Style Selector="StackPanel.name">
       <Setter Property="VerticalAlignment" Value="Center" />
-      <Setter Property="MinWidth" Value="150" />
-      <Setter Property="FontFamily" Value="Consolas, Menlo, monospace" />
+      <Setter Property="Width" Value="210" />
+      <Setter Property="Spacing" Value="1" />
+    </Style>
+    <Style Selector="TextBlock.label">
+      <Setter Property="TextWrapping" Value="Wrap" />
       <Setter Property="Foreground" Value="{DynamicResource AppText}" />
+    </Style>
+    <!-- The flag, kept in sight: an option nobody can turn into a command is half an answer. -->
+    <Style Selector="TextBlock.flag">
+      <Setter Property="FontFamily" Value="Consolas, Menlo, monospace" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Foreground" Value="{DynamicResource AppTextSecondary}" />
     </Style>
     <Style Selector="TextBlock.help">
       <Setter Property="VerticalAlignment" Value="Center" />
@@ -34,8 +48,15 @@
       <Setter Property="Padding" Value="8,3" />
       <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
-    <Style Selector="NumericUpDown">
-      <Setter Property="MinWidth" Value="150" />
+    <!-- One width for every control, so the third column is a column and not a ragged edge. -->
+    <Style Selector="NumericUpDown.value">
+      <Setter Property="Width" Value="170" />
+    </Style>
+    <Style Selector="TextBox.value">
+      <Setter Property="Width" Value="170" />
+    </Style>
+    <Style Selector="ComboBox.value">
+      <Setter Property="Width" Value="170" />
     </Style>
   </UserControl.Styles>
 
@@ -73,13 +94,16 @@
 
           <DataTemplate DataType="vm:ToggleOptionRow">
             <Border Classes="row" IsVisible="{Binding IsVisible}">
-              <Grid ColumnDefinitions="Auto,*,Auto">
-                <CheckBox Grid.Column="0" MinWidth="170"
+              <Grid ColumnDefinitions="28,Auto,180,*,Auto">
+                <CheckBox Grid.Column="0" VerticalAlignment="Center" Padding="0"
                           IsEnabled="{Binding IsEnabled}"
-                          IsChecked="{Binding Value}"
-                          Content="{Binding Flag}" />
-                <TextBlock Grid.Column="1" Classes="help" Text="{Binding Help}" />
-                <Button Grid.Column="2" Classes="reset"
+                          IsChecked="{Binding Value}" />
+                <StackPanel Grid.Column="1" Classes="name">
+                  <TextBlock Classes="label" Text="{Binding Label}" />
+                  <TextBlock Classes="flag" Text="{Binding Flag}" />
+                </StackPanel>
+                <TextBlock Grid.Column="3" Classes="help" Text="{Binding Help}" />
+                <Button Grid.Column="4" Classes="reset"
                         IsVisible="{Binding IsChanged}"
                         Command="{Binding ResetOneCommand}"
                         Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />
@@ -89,17 +113,20 @@
 
           <DataTemplate DataType="vm:NumberOptionRow">
             <Border Classes="row" IsVisible="{Binding IsVisible}">
-              <Grid ColumnDefinitions="Auto,Auto,*,Auto">
-                <TextBlock Grid.Column="0" Classes="flag" Text="{Binding Flag}" />
-                <NumericUpDown Grid.Column="1"
+              <Grid ColumnDefinitions="28,Auto,180,*,Auto">
+                <StackPanel Grid.Column="1" Classes="name">
+                  <TextBlock Classes="label" Text="{Binding Label}" />
+                  <TextBlock Classes="flag" Text="{Binding Flag}" />
+                </StackPanel>
+                <NumericUpDown Grid.Column="2" Classes="value" VerticalAlignment="Center"
                                IsEnabled="{Binding IsEnabled}"
                                Value="{Binding Value}"
                                Minimum="{Binding Minimum}"
                                Maximum="{Binding Maximum}"
                                Increment="{Binding Increment}"
                                FormatString="{Binding Format}" />
-                <TextBlock Grid.Column="2" Classes="help" Text="{Binding Help}" />
-                <Button Grid.Column="3" Classes="reset"
+                <TextBlock Grid.Column="3" Classes="help" Text="{Binding Help}" />
+                <Button Grid.Column="4" Classes="reset"
                         IsVisible="{Binding IsChanged}"
                         Command="{Binding ResetOneCommand}"
                         Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />
@@ -109,16 +136,19 @@
 
           <DataTemplate DataType="vm:PathOptionRow">
             <Border Classes="row" IsVisible="{Binding IsVisible}">
-              <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                <TextBlock Grid.Column="0" Classes="flag" Text="{Binding Flag}" />
-                <TextBox Grid.Column="1" MinWidth="220"
+              <Grid ColumnDefinitions="28,Auto,*,Auto,Auto">
+                <StackPanel Grid.Column="1" Classes="name">
+                  <TextBlock Classes="label" Text="{Binding Label}" />
+                  <TextBlock Classes="flag" Text="{Binding Flag}" />
+                </StackPanel>
+                <TextBox Grid.Column="2" MinWidth="180" VerticalAlignment="Center"
                          IsEnabled="{Binding IsEnabled}"
                          Text="{Binding Value}"
                          PlaceholderText="{Binding Help}" />
-                <Button Grid.Column="2" Classes="reset pick" Margin="6,0,0,0"
+                <Button Grid.Column="3" Classes="reset pick" Margin="6,0,0,0"
                         IsEnabled="{Binding IsEnabled}" Tag="{Binding}"
                         Content="{Binding [UiBrowse], Source={x:Static loc:Loc.Current}}" />
-                <Button Grid.Column="3" Classes="reset"
+                <Button Grid.Column="4" Classes="reset"
                         IsVisible="{Binding IsChanged}"
                         Command="{Binding ResetOneCommand}"
                         Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />
@@ -128,14 +158,17 @@
 
           <DataTemplate DataType="vm:TextOptionRow">
             <Border Classes="row" IsVisible="{Binding IsVisible}">
-              <Grid ColumnDefinitions="Auto,Auto,*,Auto">
-                <TextBlock Grid.Column="0" Classes="flag" Text="{Binding Flag}" />
-                <TextBox Grid.Column="1" MinWidth="150"
+              <Grid ColumnDefinitions="28,Auto,180,*,Auto">
+                <StackPanel Grid.Column="1" Classes="name">
+                  <TextBlock Classes="label" Text="{Binding Label}" />
+                  <TextBlock Classes="flag" Text="{Binding Flag}" />
+                </StackPanel>
+                <TextBox Grid.Column="2" Classes="value" VerticalAlignment="Center"
                          IsEnabled="{Binding IsEnabled}"
                          Text="{Binding Value}"
                          PlaceholderText="{Binding Placeholder}" />
-                <TextBlock Grid.Column="2" Classes="help" Text="{Binding Help}" />
-                <Button Grid.Column="3" Classes="reset"
+                <TextBlock Grid.Column="3" Classes="help" Text="{Binding Help}" />
+                <Button Grid.Column="4" Classes="reset"
                         IsVisible="{Binding IsChanged}"
                         Command="{Binding ResetOneCommand}"
                         Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />
@@ -145,14 +178,17 @@
 
           <DataTemplate DataType="vm:ChoiceOptionRow">
             <Border Classes="row" IsVisible="{Binding IsVisible}">
-              <Grid ColumnDefinitions="Auto,Auto,*,Auto">
-                <TextBlock Grid.Column="0" Classes="flag" Text="{Binding Flag}" />
-                <ComboBox Grid.Column="1" MinWidth="150"
+              <Grid ColumnDefinitions="28,Auto,180,*,Auto">
+                <StackPanel Grid.Column="1" Classes="name">
+                  <TextBlock Classes="label" Text="{Binding Label}" />
+                  <TextBlock Classes="flag" Text="{Binding Flag}" />
+                </StackPanel>
+                <ComboBox Grid.Column="2" Classes="value" VerticalAlignment="Center"
                           IsEnabled="{Binding IsEnabled}"
                           ItemsSource="{Binding Choices}"
                           SelectedItem="{Binding Value}" />
-                <TextBlock Grid.Column="2" Classes="help" Text="{Binding Help}" />
-                <Button Grid.Column="3" Classes="reset"
+                <TextBlock Grid.Column="3" Classes="help" Text="{Binding Help}" />
+                <Button Grid.Column="4" Classes="reset"
                         IsVisible="{Binding IsChanged}"
                         Command="{Binding ResetOneCommand}"
                         Content="{Binding [UiReset], Source={x:Static loc:Loc.Current}}" />

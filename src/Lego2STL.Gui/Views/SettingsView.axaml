@@ -9,11 +9,20 @@
              x:DataType="vm:SettingsViewModel">
 
   <UserControl.Styles>
+    <!-- Named for a reader, with the flag kept beside it for anyone asking from a terminal. -->
+    <Style Selector="StackPanel.name">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Width" Value="170" />
+      <Setter Property="Spacing" Value="1" />
+    </Style>
+    <Style Selector="TextBlock.label">
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="Foreground" Value="{DynamicResource AppText}" />
+    </Style>
     <Style Selector="TextBlock.flag">
       <Setter Property="FontFamily" Value="Consolas, Menlo, monospace" />
-      <Setter Property="VerticalAlignment" Value="Center" />
-      <Setter Property="MinWidth" Value="110" />
-      <Setter Property="Foreground" Value="{DynamicResource AppText}" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Foreground" Value="{DynamicResource AppTextSecondary}" />
     </Style>
     <Style Selector="Border.card">
       <Setter Property="Padding" Value="14,12" />
@@ -33,7 +42,11 @@
       <!-- The window's language, and its one home. -->
       <Border Classes="card">
         <Grid ColumnDefinitions="Auto,Auto,*">
-          <TextBlock Grid.Column="0" Classes="flag" Text="--lang" />
+          <StackPanel Grid.Column="0" Classes="name">
+            <TextBlock Classes="label"
+                       Text="{Binding [LabelOptLang], Source={x:Static loc:Loc.Current}}" />
+            <TextBlock Classes="flag" Text="--lang" />
+          </StackPanel>
           <ComboBox Grid.Column="1" MinWidth="200"
                     ItemsSource="{x:Static vm:SettingsViewModel.Languages}"
                     SelectedItem="{Binding SelectedLanguage}" />
@@ -47,8 +60,13 @@
       <!-- The key for looking a set up. Named here and never printed into the shown command. -->
       <Border Classes="card">
         <Grid ColumnDefinitions="Auto,*,Auto">
-          <TextBlock Grid.Column="0" Classes="flag" Text="--api-key" />
-          <TextBox Grid.Column="1" PasswordChar="•" Text="{Binding Options.ApiKey}" />
+          <StackPanel Grid.Column="0" Classes="name">
+            <TextBlock Classes="label"
+                       Text="{Binding [LabelOptApiKey], Source={x:Static loc:Loc.Current}}" />
+            <TextBlock Classes="flag" Text="--api-key" />
+          </StackPanel>
+          <TextBox Grid.Column="1" PasswordChar="•" VerticalAlignment="Center"
+                   Text="{Binding Options.ApiKey}" />
           <TextBlock Grid.Column="2" Margin="12,0,0,0"
                      VerticalAlignment="Center" TextWrapping="Wrap" MaxWidth="320"
                      Foreground="{DynamicResource AppTextSecondary}"
@@ -59,8 +77,12 @@
       <!-- Where everything a run said is kept. -->
       <Border Classes="card">
         <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-          <TextBlock Grid.Column="0" Classes="flag" Text="--log" />
-          <TextBox Grid.Column="1" Text="{Binding Options.LogFile}" />
+          <StackPanel Grid.Column="0" Classes="name">
+            <TextBlock Classes="label"
+                       Text="{Binding [LabelOptLog], Source={x:Static loc:Loc.Current}}" />
+            <TextBlock Classes="flag" Text="--log" />
+          </StackPanel>
+          <TextBox Grid.Column="1" VerticalAlignment="Center" Text="{Binding Options.LogFile}" />
           <Button Grid.Column="2" Margin="8,0,0,0" Name="PickLog"
                   Content="{Binding [UiBrowse], Source={x:Static loc:Loc.Current}}" />
           <TextBlock Grid.Column="3" Margin="12,0,0,0"
@@ -73,8 +95,13 @@
       <!-- Whether a run says anything on screen while it happens. -->
       <Border Classes="card">
         <Grid ColumnDefinitions="Auto,Auto,*">
-          <TextBlock Grid.Column="0" Classes="flag" Text="--quiet" />
-          <CheckBox Grid.Column="1" IsChecked="{Binding Options.Quiet}" />
+          <StackPanel Grid.Column="0" Classes="name">
+            <TextBlock Classes="label"
+                       Text="{Binding [LabelOptQuiet], Source={x:Static loc:Loc.Current}}" />
+            <TextBlock Classes="flag" Text="--quiet" />
+          </StackPanel>
+          <CheckBox Grid.Column="1" VerticalAlignment="Center"
+                    IsChecked="{Binding Options.Quiet}" />
           <TextBlock Grid.Column="2" Margin="12,0,0,0"
                      VerticalAlignment="Center" TextWrapping="Wrap"
                      Foreground="{DynamicResource AppTextSecondary}"

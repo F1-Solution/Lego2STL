@@ -31,6 +31,11 @@ internal sealed class PipelineOptions
             DefaultValueFactory = _ => Core.Colors.ColorScheme.BrickLink,
         };
 
+        ElementMap = new Option<string?>("--element-map")
+        {
+            Description = words[TextKey.HelpOptElementMap],
+        };
+
         IncludeSpares = new Option<bool>("--include-spares")
         {
             Description = words[TextKey.HelpOptIncludeSpares],
@@ -137,6 +142,8 @@ internal sealed class PipelineOptions
 
     public Option<ColorScheme> ColorScheme { get; }
 
+    public Option<string?> ElementMap { get; }
+
     public Option<bool> IncludeSpares { get; }
 
     public Option<bool> CsvOnly { get; }
@@ -189,6 +196,7 @@ internal sealed class PipelineOptions
         if (includeDocumentOptions)
         {
             command.Options.Add(ColorScheme);
+            command.Options.Add(ElementMap);
         }
 
         foreach (var option in new Option[]
@@ -219,6 +227,7 @@ internal sealed class PipelineOptions
             SetNumber = kind == InputKind.SetNumber ? inputPath : null,
             Pages = pages,
             ColorScheme = parseResult.GetValue(ColorScheme),
+            ElementMap = kind == InputKind.Document ? parseResult.GetValue(ElementMap) : null,
             IncludeSpares = parseResult.GetValue(IncludeSpares),
 
             Stages = csvOnly

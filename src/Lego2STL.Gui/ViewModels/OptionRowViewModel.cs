@@ -24,18 +24,42 @@ namespace Lego2STL.Gui.ViewModels;
 /// </remarks>
 public abstract partial class OptionRowViewModel : ViewModelBase
 {
-    protected OptionRowViewModel(string flag, TextKey help)
+    protected OptionRowViewModel(string flag, TextKey label, TextKey help)
     {
         Flag = flag;
+        LabelKey = label;
         HelpKey = help;
     }
 
     /// <summary>The flag as the command line spells it, which is also what it is searched by.</summary>
     public string Flag { get; }
 
+    protected TextKey LabelKey { get; }
+
     protected TextKey HelpKey { get; }
 
-    public string Help => Loc.Current.Text(HelpKey);
+    /// <summary>
+    /// What the option is called in the reader's own language.
+    /// </summary>
+    /// <remarks>
+    /// The flag is still shown beside it rather than replaced by it: a window whose options
+    /// cannot be turned back into a command is no longer the same tool as the terminal, which
+    /// is the one promise this whole screen exists to keep.
+    /// </remarks>
+    public string Label => Loc.Current.Text(LabelKey);
+
+    /// <summary>
+    /// What a help text's placeholders are filled with, for the few that have any.
+    /// </summary>
+    /// <remarks>
+    /// The command line already fills these in when it prints its own help; the window used to
+    /// show the phrase raw, so the printer row read "...to lay plates out for: {0}."
+    /// </remarks>
+    internal object?[] HelpValues { get; init; } = [];
+
+    public string Help => HelpValues.Length == 0
+        ? Loc.Current.Text(HelpKey)
+        : Loc.Current.Format(HelpKey, HelpValues);
 
     /// <summary>Whether this row is showing. Filtering hides; it never re-materialises the list.</summary>
     [ObservableProperty]
@@ -52,10 +76,14 @@ public abstract partial class OptionRowViewModel : ViewModelBase
     /// <summary>What decides <see cref="IsEnabled"/>; always able, unless given a reason.</summary>
     internal Func<bool> Enabled { get; init; } = () => true;
 
-    /// <summary>Matches on the flag or on what the option does, so either way of looking works.</summary>
+    /// <summary>
+    /// Matches on the flag, on the name, or on what the option does, so every way of looking
+    /// for it works - including the flag, for anyone arriving from the terminal.
+    /// </summary>
     public bool Matches(string? search) =>
         string.IsNullOrWhiteSpace(search)
         || Flag.Contains(search, StringComparison.OrdinalIgnoreCase)
+        || Label.Contains(search, StringComparison.OrdinalIgnoreCase)
         || Help.Contains(search, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
@@ -67,10 +95,14 @@ public abstract partial class OptionRowViewModel : ViewModelBase
     /// </remarks>
     public void Refresh()
     {
+        OnPropertyChanged(nameof(Label));
         OnPropertyChanged(nameof(Help));
         OnPropertyChanged(nameof(IsEnabled));
         OnPropertyChanged(nameof(IsChanged));
         OnPropertyChanged("Value");
+
+        // Named as a string for the same reason "Value" is: only some of the five kinds have one.
+        OnPropertyChanged("Placeholder");
     }
 
     [RelayCommand]
@@ -83,8 +115,8 @@ public abstract partial class OptionRowViewModel : ViewModelBase
 
 /// <summary>An option that is either asked for or not.</summary>
 public sealed partial class ToggleOptionRow(
-    string flag, TextKey help, Func<bool> read, Action<bool> write, bool fresh)
-    : OptionRowViewModel(flag, help)
+    string flag, TextKey label, TextKey help, Func<bool> read, Action<bool> write, bool fresh)
+    : OptionRowViewModel(flag, label, help)
 {
     public bool Value
     {
@@ -109,8 +141,8 @@ public sealed partial class ToggleOptionRow(
 
 /// <summary>An option that takes a measurement.</summary>
 public sealed partial class NumberOptionRow(
-    string flag, TextKey help, Func<double> read, Action<double> write, double fresh)
-    : OptionRowViewModel(flag, help)
+    string flag, TextKey label, TextKey help, Func<double> read, Action<double> write, double fresh)
+    : OptionRowViewModel(flag, label, help)
 {
     public double Value
     {
@@ -143,8 +175,8 @@ public sealed partial class NumberOptionRow(
 
 /// <summary>An option that takes something typed.</summary>
 public partial class TextOptionRow(
-    string flag, TextKey help, Func<string?> read, Action<string?> write, string? fresh)
-    : OptionRowViewModel(flag, help)
+    string flag, TextKey label, TextKey help, Func<string?> read, Action<string?> write, string? fresh)
+    : OptionRowViewModel(flag, label, help)
 {
     public string? Value
     {
@@ -162,7 +194,17 @@ public partial class TextOptionRow(
         }
     }
 
-    public string? Placeholder { get; init; }
+    /// <summary>
+    /// What an empty box shows in grey.
+    /// </summary>
+    /// <remarks>
+    /// Asked for rather than stored, so a placeholder can follow another setting: the bed size
+    /// shows the bed of whichever printer is chosen, which is the size a run really would use.
+    /// A fixed "220x220" there read as the default while the default was the A1's 256x256.
+    /// </remarks>
+    internal Func<string?> WhenEmpty { get; init; } = () => null;
+
+    public string? Placeholder => WhenEmpty();
 
     public override bool IsChanged => !string.Equals(read(), fresh, StringComparison.Ordinal);
 
@@ -171,8 +213,8 @@ public partial class TextOptionRow(
 
 /// <summary>An option that names somewhere on the disk, so it can be browsed to.</summary>
 public sealed class PathOptionRow(
-    string flag, TextKey help, Func<string?> read, Action<string?> write, string? fresh)
-    : TextOptionRow(flag, help, read, write, fresh)
+    string flag, TextKey label, TextKey help, Func<string?> read, Action<string?> write, string? fresh)
+    : TextOptionRow(flag, label, help, read, write, fresh)
 {
     public bool WantsFolder { get; init; } = true;
 }
@@ -180,12 +222,13 @@ public sealed class PathOptionRow(
 /// <summary>An option that takes one of a known few.</summary>
 public sealed partial class ChoiceOptionRow(
     string flag,
+    TextKey label,
     TextKey help,
     Func<string?> read,
     Action<string?> write,
     string? fresh,
     IReadOnlyList<string> choices)
-    : OptionRowViewModel(flag, help)
+    : OptionRowViewModel(flag, label, help)
 {
     public IReadOnlyList<string> Choices { get; } = choices;
 

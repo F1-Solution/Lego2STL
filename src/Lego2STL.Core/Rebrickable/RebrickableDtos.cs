@@ -58,6 +58,16 @@ internal sealed class RbPart
     public Dictionary<string, List<string>>? ExternalIds { get; set; }
 }
 
+/// <summary>One element number, resolved: the moulding it names and the colour it is in.</summary>
+internal sealed class RbElement
+{
+    [JsonPropertyName("element_id")] public string? ElementId { get; set; }
+
+    [JsonPropertyName("part")] public RbPart? Part { get; set; }
+
+    [JsonPropertyName("color")] public RbColor? Color { get; set; }
+}
+
 internal sealed class RbSetPart
 {
     [JsonPropertyName("quantity")] public int Quantity { get; set; }

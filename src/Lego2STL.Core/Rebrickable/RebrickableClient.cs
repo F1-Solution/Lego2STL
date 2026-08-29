@@ -71,6 +71,17 @@ public sealed class RebrickableClient : IDisposable
         await GetOrNullAsync<RbPart>($"parts/{Uri.EscapeDataString(partNumber)}/", ct).ConfigureAwait(false);
 
     /// <summary>
+    /// The part and colour behind an element number, or null when Rebrickable does not know it.
+    /// </summary>
+    /// <remarks>
+    /// This is what official building instructions print. "6177114" is not a part number and
+    /// carries no colour code beside it: it names a moulding in a colour, and only a lookup
+    /// takes it apart.
+    /// </remarks>
+    internal async Task<RbElement?> GetElementAsync(string elementId, CancellationToken ct = default) =>
+        await GetOrNullAsync<RbElement>($"elements/{Uri.EscapeDataString(elementId)}/", ct).ConfigureAwait(false);
+
+    /// <summary>
     /// Adds Rebrickable's variant suffix when the caller gave a bare set number:
     /// "42100" becomes "42100-1".
     /// </summary>

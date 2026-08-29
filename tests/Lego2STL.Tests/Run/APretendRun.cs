@@ -92,8 +92,8 @@ internal static class APretendRun
         Shapes = [AClosedShape("32523"), AnOpenAndThinShape("3705"), AClosedShape("4265c")],
         Plates = new PlateBuildResult(
         [
-            new BuiltPlate("black-1.3mf", "Black", Rgb24.Parse("#05131D"), 1, 4, "60 x 40 mm"),
-            new BuiltPlate("red-1.3mf", "Red", Rgb24.Parse("#C91A09"), 1, 12, "80 x 50 mm"),
+            new BuiltPlate("black-1.3mf", "Black", 11, Rgb24.Parse("#05131D"), 1, 4, "60 x 40 mm"),
+            new BuiltPlate("red-1.3mf", "Red", 5, Rgb24.Parse("#C91A09"), 1, 12, "80 x 50 mm"),
         ],
         []),
         GeometrySource = "a made-up library",

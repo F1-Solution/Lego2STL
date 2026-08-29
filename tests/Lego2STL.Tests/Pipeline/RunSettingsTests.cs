@@ -263,24 +263,24 @@ public sealed class RunSettingsTests
     }
 
     /// <summary>
-    /// Written for whichever build is running rather than skipped on one of them: a build with
-    /// a recogniser has to let a document through, and a build without one has to refuse it
-    /// here, at the start, instead of part-way into reading the pages.
+    /// Whether a document needs a recogniser is a fact about the document, not about the
+    /// settings, so nothing here can decide it.
     /// </summary>
+    /// <remarks>
+    /// This used to refuse every document on a build without a recogniser, which was right
+    /// while pixels were the only way to read one. A book that prints its catalogue in a text
+    /// layer is read without a recogniser at all, and refusing it unseen turned the commonest
+    /// case into an error. The refusal moved into the run, where the pages are known and the
+    /// two kinds of page can be told apart, and it still happens before any page is read.
+    /// </remarks>
     [Fact]
-    public void A_document_is_refused_at_the_start_on_a_build_that_cannot_read_one()
+    public void A_document_is_not_refused_for_want_of_a_recogniser_before_it_has_been_opened()
     {
-        var document = new RunSettings { Kind = InputKind.Document, InputPath = ADocumentThatExists() };
         var refusal = Strings.For(DisplayLanguage.English)[TextKey.ErrOcrUnavailable];
 
-        if (OcrEngines.IsAvailable)
-        {
-            document.Problems().Should().BeEmpty();
-        }
-        else
-        {
-            document.Problems().Should().ContainSingle().Which.Should().Be(refusal);
-        }
+        new RunSettings { Kind = InputKind.Document, InputPath = ADocumentThatExists() }
+            .Problems()
+            .Should().BeEmpty("whether this document needs a recogniser is not yet known");
 
         new RunSettings { Kind = InputKind.PartsList, InputPath = ADocumentThatExists() }
             .Problems()

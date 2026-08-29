@@ -141,10 +141,10 @@ public sealed class WindowTests
         model.Options.Kind = InputKind.PartsList;
         model.Options.PartsListPath = "parts.csv";
         model.Options.Clearance = 0.15;
-        model.Options.FillGaps = true;
+        model.Options.NoRepair = true;
         window.CaptureRenderedFrame();
 
-        model.Options.CommandLine.Should().Contain("--clearance 0.15").And.Contain("--repair");
+        model.Options.CommandLine.Should().Contain("--clearance 0.15").And.Contain("--no-repair");
         Texts(window).Should().Contain(t => t.Contains("--clearance 0.15"));
     }
 

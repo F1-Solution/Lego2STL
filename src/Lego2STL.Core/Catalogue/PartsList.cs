@@ -46,7 +46,11 @@ public static class PartsListBuilder
 
         foreach (var reading in readings)
         {
-            if (!colors.TryGet(sourceScheme, reading.ColorCode, out var color))
+            // An entry that came from an element number knows whose numbering its colour is
+            // in; one read off the page does not, and takes the run's.
+            var scheme = reading.Scheme ?? sourceScheme;
+
+            if (!colors.TryGet(scheme, reading.ColorCode, out var color))
             {
                 throw new InvalidOperationException(
                     words.Format(
@@ -54,11 +58,11 @@ public static class PartsListBuilder
                         reading.Page,
                         reading.PartNumber,
                         reading.ColorCode,
-                        sourceScheme)
+                        scheme)
                     + " "
-                    + (sourceScheme == ColorScheme.BrickLink
+                    + (scheme == ColorScheme.BrickLink
                         ? words[TextKey.ErrColourSchemeHintBrickLink]
-                        : words.Format(TextKey.ErrColourSchemeHintOther, sourceScheme)));
+                        : words.Format(TextKey.ErrColourSchemeHintOther, scheme)));
             }
 
             if (color.BrickLinkId is not { } brickLinkId)

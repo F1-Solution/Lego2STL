@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Plates;
+using Lego2STL.Core.Rebrickable;
 using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
 using Lego2STL.Gui.Localization;
@@ -40,8 +41,14 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         {
             Language = _saved.DisplayLanguage,
             LDrawDirectory = _saved.LDrawDirectory,
+            ElementMap = _saved.ElementMap,
             OutputDirectory = _saved.OutputDirectory,
             Printer = _saved.Printer ?? PrintBeds.Default.Name,
+
+            // Found the same way the command line finds it, so a key already given to the
+            // terminal - in the file or in the environment - is one the window starts with
+            // rather than one it asks for again.
+            ApiKey = ApiKeyOrNothing(),
         };
 
         Loc.Current.Use(options.Language);
@@ -58,6 +65,22 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
         Current = Setup;
         _ = Runs.RefreshAsync();
+    }
+
+    /// <summary>
+    /// The stored key, or nothing. A file that cannot be read is treated as no key, because
+    /// starting without one and being told so beats refusing to start at all.
+    /// </summary>
+    private static string? ApiKeyOrNothing()
+    {
+        try
+        {
+            return RebrickableApiKey.Find();
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
     }
 
     public RunsViewModel Runs { get; }
@@ -186,6 +209,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     {
         _saved.Language = Options.Language.Tag();
         _saved.LDrawDirectory = Options.LDrawDirectory;
+        _saved.ElementMap = Options.ElementMap;
         _saved.OutputDirectory = Options.OutputDirectory;
         _saved.Printer = Options.Printer;
         _saved.Save();

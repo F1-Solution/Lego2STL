@@ -61,8 +61,33 @@ The whole thing, in one command:
 lego2stl extract instructions.pdf 2-5 --clearance 0.15
 ```
 
+Leave the pages off and they are worked out; `--list-pages` says what is on each one first.
+
 `lego2stl --help`, or `lego2stl build --help`, lists every option. `--lang it` switches
 language; without it the machine's own is used.
+
+### Reading a document
+
+Two kinds of document, and the tool tells them apart by itself.
+
+**Official building instructions** carry their catalogue as real text, so it is quoted rather
+than recognised: exact, quick, and no recogniser needed. The pages are found the same way — a
+building step prints counts too, but never a part number beneath one, so there is nothing to
+confuse. What such a book prints is an *element number* like `6177114`, a moulding and a
+colour in one, which needs a table to take apart. Point `--element-map` at a Rebrickable
+[`elements.csv`][dump], or leave it and one sitting beside the document is found by itself; a
+Rebrickable key does the same online, and failing both, the older six-digit numbers can still
+be read on their own.
+
+Instructions that run to **several books** print the parts list in only one of them, usually
+the last. Given one of the others, the tool says so rather than reporting hundreds of pages
+that are not the catalogue.
+
+**Scans and image-only exports** have no text to quote, and are read off the pixels by the
+system's text recogniser, then checked against the lettering learned from the document itself.
+That is the path that needs Windows.
+
+[dump]: https://rebrickable.com/downloads/
 
 ---
 
@@ -121,14 +146,17 @@ What open edges, clearance and calibration actually are, at length and in Italia
 
 | | Windows | Linux | macOS |
 |---|:---:|:---:|:---:|
-| Read a catalogue out of a document | yes | — | — |
+| Read a catalogue a document prints as text | yes | yes | yes |
+| Read a catalogue off the pixels | yes | — | — |
 | Start from a parts list or a set number | yes | yes | yes |
 | Shapes, plates, clearance, calibration | yes | yes | yes |
 | The window | yes | yes | yes |
 
-Reading a document needs text recognition, and the recogniser used is part of Windows. Asked
-to do it elsewhere, the program says so and points at what does work: read the document on a
-Windows machine once and bring the parts list over, or start from a set number.
+Only the second row needs text recognition, and the recogniser used is part of Windows. A
+document that carries its own text — which official building instructions do — is read
+anywhere. Asked to recognise one elsewhere, the program says so and points at what does work:
+read that document on a Windows machine once and bring the parts list over, or start from a
+set number.
 
 ---
 
@@ -140,8 +168,9 @@ dotnet test
 ```
 
 .NET 10 or later. Four projects: the logic, a console program, a window, and the tests.
-`PistolaLego.pdf` is a third party's copyrighted instructions and is not in the repository;
-the tests that need it skip with a clear message when it is absent.
+`PistolaLego.pdf` and the two books of set 42100 are a third party's copyrighted instructions
+and are not in the repository; the tests that need them skip with a clear message when they
+are absent.
 
 Two target frameworks are built: `net10.0-windows10.0.19041.0`, which carries the recogniser,
 and plain `net10.0`, which is everything else and runs anywhere. On Windows the Windows one is

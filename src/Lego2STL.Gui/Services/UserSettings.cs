@@ -25,6 +25,13 @@ public sealed class UserSettings
     [JsonPropertyName("ldrawDirectory")]
     public string? LDrawDirectory { get; set; }
 
+    /// <summary>
+    /// Kept between uses like the shape library, and for the same reason: it is a folder on
+    /// this machine that will be the same folder next time.
+    /// </summary>
+    [JsonPropertyName("elementMap")]
+    public string? ElementMap { get; set; }
+
     [JsonPropertyName("outputDirectory")]
     public string? OutputDirectory { get; set; }
 

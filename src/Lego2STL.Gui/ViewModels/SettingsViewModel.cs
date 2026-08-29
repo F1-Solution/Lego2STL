@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using CommunityToolkit.Mvvm.Input;
+using Lego2STL.Core.Rebrickable;
 using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
 using Lego2STL.Gui.Localization;
@@ -33,9 +34,37 @@ public sealed partial class SettingsViewModel : ViewModelBase
         Options = options;
         _saved = saved;
         _runs = runs;
+
+        options.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(RunOptionsViewModel.ApiKey))
+            {
+                RememberTheKey();
+            }
+        };
     }
 
     public RunOptionsViewModel Options { get; }
+
+    /// <summary>
+    /// Keeps the key where the command line looks for it, so it is typed once.
+    /// </summary>
+    /// <remarks>
+    /// The one setting here that is not in the window's own preferences file: the terminal
+    /// needs it too, and a key with two homes is a key that is present in one of them and
+    /// missing from the other. A file that cannot be written loses a preference, which is not
+    /// worth interrupting anyone over.
+    /// </remarks>
+    private void RememberTheKey()
+    {
+        try
+        {
+            RebrickableApiKey.Save(Options.ApiKey);
+        }
+        catch (InvalidOperationException)
+        {
+        }
+    }
 
     public static IReadOnlyList<LanguageChoice> Languages => Loc.Choices;
 

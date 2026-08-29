@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Lego2STL.Core.Pipeline;
@@ -265,7 +266,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
         void Say(string message)
         {
             log?.WriteLine(message);
-            Log.Add(message);
+            OnTheWindowsThread(() => Log.Add(message));
         }
 
         RunIndex.Record(layout);
@@ -301,14 +302,41 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
 
     private void Report(RunProgress progress)
     {
+        // Kept current here rather than in the update, because the manifest reads it as soon as
+        // the run ends and what it wants is the last step reached, not the last one drawn.
         _last = progress;
 
-        StageText = progress.Detail is { Length: > 0 }
-            ? $"{RunStageWords.For(progress.Stage)} - {progress.Detail}"
-            : RunStageWords.For(progress.Stage);
+        OnTheWindowsThread(() =>
+        {
+            StageText = progress.Detail is { Length: > 0 }
+                ? $"{RunStageWords.For(progress.Stage)} - {progress.Detail}"
+                : RunStageWords.For(progress.Stage);
 
-        OnPropertyChanged(nameof(Progress));
-        OnPropertyChanged(nameof(RailText));
+            OnPropertyChanged(nameof(Progress));
+            OnPropertyChanged(nameof(RailText));
+        });
+    }
+
+    /// <summary>
+    /// Does something to this page on the thread the window is on.
+    /// </summary>
+    /// <remarks>
+    /// The pipeline hands back its log lines and its progress on whatever thread it is on, and
+    /// it awaits without capturing a context - so from the first fetch onward that is a pool
+    /// thread, and adding to the log or naming the stage from there is what "the calling thread
+    /// cannot access this object because a different thread owns it" means. Inline when already
+    /// on the window's thread, so what a run says stays in the order it said it.
+    /// </remarks>
+    private static void OnTheWindowsThread(Action update)
+    {
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            update();
+        }
+        else
+        {
+            Dispatcher.UIThread.Post(update);
+        }
     }
 
     private void Replace(RunDocument document)

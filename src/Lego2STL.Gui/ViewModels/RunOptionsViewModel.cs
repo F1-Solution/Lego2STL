@@ -49,6 +49,10 @@ public sealed partial class RunOptionsViewModel : ViewModelBase
     [ObservableProperty]
     public partial ColorScheme ColorScheme { get; set; } = ColorScheme.BrickLink;
 
+    /// <summary>Where the element-number table is, for documents that print element numbers.</summary>
+    [ObservableProperty]
+    public partial string? ElementMap { get; set; }
+
     [ObservableProperty]
     public partial bool IncludeSpares { get; set; }
 
@@ -214,6 +218,7 @@ public sealed partial class RunOptionsViewModel : ViewModelBase
         SetNumber = SetNumber,
         Pages = Pages,
         ColorScheme = ColorScheme,
+        ElementMap = Blank(ElementMap),
         IncludeSpares = IncludeSpares,
 
         Stages = !MakeShapes

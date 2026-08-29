@@ -124,7 +124,12 @@
                      Text="{Binding [UiSetNumber], Source={x:Static loc:Loc.Current}}" />
           <TextBox HorizontalAlignment="Left" MinWidth="220"
                    Text="{Binding Options.SetNumber}" PlaceholderText="42100-1" />
-          <CheckBox IsChecked="{Binding Options.IncludeSpares}" Content="--include-spares" />
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <CheckBox IsChecked="{Binding Options.IncludeSpares}"
+                      Content="{Binding [LabelOptIncludeSpares], Source={x:Static loc:Loc.Current}}" />
+            <!-- Named, not merely described: the flag is how this is asked for from a terminal. -->
+            <TextBlock Classes="hint" VerticalAlignment="Center" Text="--include-spares" />
+          </StackPanel>
         </StackPanel>
 
       </StackPanel>

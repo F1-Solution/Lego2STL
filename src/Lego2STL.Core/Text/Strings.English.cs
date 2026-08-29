@@ -108,6 +108,12 @@ public sealed partial class Strings
             // Running.
             [TextKey.MsgPagesInDocument] = "{0}: {1} pages.",
             [TextKey.MsgReadingPages] = "Reading pages {0} using {1} colour numbering.",
+            [TextKey.MsgReadingPrintedPages] =
+                "Reading pages {0} from the text the document itself carries.",
+            [TextKey.MsgLookingUpElements] =
+                "No element table to hand, so {0} element numbers will be looked up online, "
+                + "about a second each. A local elements.csv given with --element-map does "
+                + "the same instantly.",
             [TextKey.MsgNoPageRange] =
                 "no page range given. Pass one, e.g. \"2-5\", or use --list-pages to see what is on " +
                 "each page.",
@@ -116,6 +122,10 @@ public sealed partial class Strings
             [TextKey.MsgPageIsCatalogueOne] = "page {0}  catalogue, {1} entry",
             [TextKey.MsgPageIsCatalogueMany] = "page {0}  catalogue, {1} entries",
             [TextKey.MsgNoCataloguePages] = "No catalogue pages found.",
+            [TextKey.MsgNoCatalogueInThisBook] =
+                "This document prints no parts catalogue. Official instructions that run to "
+                + "several books carry the parts list in only one of them, usually the last; "
+                + "try the others.",
             [TextKey.MsgCataloguePagesFound] = "Catalogue pages: {0}",
             [TextKey.MsgShapeClosed] = "closed",
             [TextKey.MsgShapeOpenEdges] = "{0} open edge(s)",
@@ -133,6 +143,8 @@ public sealed partial class Strings
                 "could not read the part number and colour",
             [TextKey.ReasonCouldNotReadEither] =
                 "could not read the quantity or the part number and colour",
+            [TextKey.ReasonUnknownElement] =
+                "element {0} could not be matched to a part and a colour",
             [TextKey.ReasonShapeHasNoSurfaces] = "the shape file contains no surfaces",
             [TextKey.ReasonNoShapeFile] = "no shape file for this part number",
             [TextKey.MsgWrittenWithoutThem] =
@@ -225,7 +237,6 @@ public sealed partial class Strings
             [TextKey.ErrTypeSetNumber] = "Type a set number, for example 42100-1.",
             [TextKey.ErrNoFileAt] = "There is no file at {0}.",
             [TextKey.ErrScaleNotPositive] = "A scale has to be greater than zero.",
-            [TextKey.ErrPlateSpacingNegative] = "The gap between parts cannot be negative.",
             [TextKey.ErrNotABedSize] =
                 "'{0}' is not a bed size. One looks like 220x220 or 300x300x400.",
 
@@ -368,6 +379,9 @@ public sealed partial class Strings
             [TextKey.HelpOptListPages] =
                 "Report what is on each page and stop, without reading anything.",
             [TextKey.HelpOptColorScheme] = "Whose colour numbering the document prints.",
+            [TextKey.HelpOptElementMap] =
+                "A Rebrickable elements.csv, or a folder holding one, for documents that print "
+                + "element numbers. Found by itself beside the document when not given.",
             [TextKey.HelpOptSet] =
                 "A set number to look up instead of reading a parts list, e.g. 42100-1.",
             [TextKey.HelpOptIncludeSpares] =
@@ -415,8 +429,42 @@ public sealed partial class Strings
             [TextKey.HelpOptRebrickableDump] =
                 "A folder holding Rebrickable's downloadable tables, used instead of the API.",
 
+            // What the window calls each option.
+            [TextKey.LabelOptCsvOnly] = "Parts list only",
+            [TextKey.LabelOptNoPlates] = "No print plates",
+            [TextKey.LabelOptAscii] = "Readable STL",
+            [TextKey.LabelOptKeepOrigin] = "Keep each part's own origin",
+            [TextKey.LabelOptNoRepair] = "Leave gaps in the surface",
+            [TextKey.LabelOptNoSeamRepair] = "Leave seams open",
+            [TextKey.LabelOptOffline] = "Work without the network",
+            [TextKey.LabelOptNoUnofficial] = "Official library only",
+            [TextKey.LabelOptScale] = "Scale",
+            [TextKey.LabelOptClearance] = "Clearance",
+            [TextKey.LabelOptWeldTolerance] = "Corner merging",
+            [TextKey.LabelOptPlateSpacing] = "Gap between parts",
+            [TextKey.LabelOptOutputDir] = "Run folder",
+            [TextKey.LabelOptElementMap] = "Element table",
+            [TextKey.LabelOptLDrawDir] = "Shape library",
+            [TextKey.LabelOptLDrawCache] = "Downloaded shapes",
+            [TextKey.LabelOptPlateSize] = "Bed size",
+            [TextKey.LabelOptDelimiter] = "Parts list separator",
+            [TextKey.LabelOptPrinter] = "Printer",
+            [TextKey.LabelOptLang] = "Language",
+            [TextKey.LabelOptApiKey] = "Rebrickable key",
+            [TextKey.LabelOptLog] = "Log file",
+            [TextKey.LabelOptQuiet] = "Say only what matters",
+            [TextKey.LabelOptIncludeSpares] = "Include spare pieces",
+
             // Remarks a run makes about what it found along the way.
             [TextKey.NoteEntriesFound] = "Page {0}: {1} entries found.",
+            [TextKey.NoteElementTable] = "Element table: {0} numbers, from {1}.",
+            [TextKey.NoteNoElementTable] =
+                "No element table found. Point --element-map at a Rebrickable elements.csv, or "
+                + "give an API key, to have element numbers looked up rather than inferred.",
+            [TextKey.NoteElementsResolved] = "Element numbers resolved: {0}.",
+            [TextKey.NoteElementsFromTable] = "{0} from the table",
+            [TextKey.NoteElementsFromRebrickable] = "{0} from Rebrickable",
+            [TextKey.NoteElementsFromNumber] = "{0} inferred from the number itself",
             [TextKey.NoteLearnedLettering] =
                 "Learned this document's lettering from {0} part line(s){1}. Shapes known: {2}.",
             [TextKey.NoteLearnedSkipped] =

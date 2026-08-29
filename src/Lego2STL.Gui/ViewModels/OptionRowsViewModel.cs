@@ -107,8 +107,12 @@ public sealed partial class OptionRowsViewModel : ViewModelBase
         OnPropertyChanged(nameof(HiddenLabel));
     }
 
+    /// <summary>The chosen printer's bed, falling back to the default rather than throwing.</summary>
+    private static PrintBed BedOf(string? printer) =>
+        PrintBeds.TryGetByName(printer, out var bed) ? bed : PrintBeds.Default;
+
     /// <summary>
-    /// The eighteen, in five kinds. A fresh instance supplies every default, so a default is
+    /// The nineteen, in five kinds. A fresh instance supplies every default, so a default is
     /// never written down twice and cannot drift from the one a run would really use.
     /// </summary>
     private static List<OptionRowViewModel> Build(RunOptionsViewModel o)
@@ -117,82 +121,88 @@ public sealed partial class OptionRowsViewModel : ViewModelBase
 
         return
         [
-            new ToggleOptionRow("--csv-only", TextKey.HelpOptCsvOnly,
+            new ToggleOptionRow("--csv-only", TextKey.LabelOptCsvOnly, TextKey.HelpOptCsvOnly,
                 () => o.CsvOnly, v => o.CsvOnly = v, fresh.CsvOnly),
 
-            new ToggleOptionRow("--no-plates", TextKey.HelpOptNoPlates,
+            new ToggleOptionRow("--no-plates", TextKey.LabelOptNoPlates, TextKey.HelpOptNoPlates,
                 () => o.NoPlates, v => o.NoPlates = v, fresh.NoPlates)
             {
                 Enabled = () => !o.CsvOnly,
             },
 
-            new ToggleOptionRow("--ascii", TextKey.HelpOptAscii,
+            new ToggleOptionRow("--ascii", TextKey.LabelOptAscii, TextKey.HelpOptAscii,
                 () => o.AsciiStl, v => o.AsciiStl = v, fresh.AsciiStl),
 
-            new ToggleOptionRow("--keep-origin", TextKey.HelpOptKeepOrigin,
+            new ToggleOptionRow("--keep-origin", TextKey.LabelOptKeepOrigin, TextKey.HelpOptKeepOrigin,
                 () => o.KeepOrigin, v => o.KeepOrigin = v, fresh.KeepOrigin),
 
-            new ToggleOptionRow("--repair", TextKey.HelpOptRepair,
-                () => o.FillGaps, v => o.FillGaps = v, fresh.FillGaps),
+            new ToggleOptionRow("--no-repair", TextKey.LabelOptNoRepair, TextKey.HelpOptNoRepair,
+                () => o.NoRepair, v => o.NoRepair = v, fresh.NoRepair),
 
-            new ToggleOptionRow("--no-seam-repair", TextKey.HelpOptNoSeamRepair,
+            new ToggleOptionRow("--no-seam-repair", TextKey.LabelOptNoSeamRepair, TextKey.HelpOptNoSeamRepair,
                 () => o.NoSeamRepair, v => o.NoSeamRepair = v, fresh.NoSeamRepair),
 
-            new ToggleOptionRow("--offline", TextKey.HelpOptOffline,
+            new ToggleOptionRow("--offline", TextKey.LabelOptOffline, TextKey.HelpOptOffline,
                 () => o.Offline, v => o.Offline = v, fresh.Offline),
 
-            new ToggleOptionRow("--no-unofficial", TextKey.HelpOptNoUnofficial,
+            new ToggleOptionRow("--no-unofficial", TextKey.LabelOptNoUnofficial, TextKey.HelpOptNoUnofficial,
                 () => o.NoUnofficial, v => o.NoUnofficial = v, fresh.NoUnofficial),
 
-            new NumberOptionRow("--scale", TextKey.HelpOptScale,
+            new NumberOptionRow("--scale", TextKey.LabelOptScale, TextKey.HelpOptScale,
                 () => o.ScalePercent, v => o.ScalePercent = v, fresh.ScalePercent)
             {
                 Minimum = 1, Maximum = 1000, Increment = 1, Format = "0.##",
             },
 
-            new NumberOptionRow("--clearance", TextKey.HelpOptClearance,
+            new NumberOptionRow("--clearance", TextKey.LabelOptClearance, TextKey.HelpOptClearance,
                 () => o.Clearance, v => o.Clearance = v, fresh.Clearance)
             {
                 Minimum = 0, Maximum = 5, Increment = 0.01, Format = "0.000",
             },
 
-            new NumberOptionRow("--weld-tolerance", TextKey.HelpOptWeldTolerance,
+            new NumberOptionRow("--weld-tolerance", TextKey.LabelOptWeldTolerance, TextKey.HelpOptWeldTolerance,
                 () => o.WeldTolerance, v => o.WeldTolerance = v, fresh.WeldTolerance)
             {
                 Minimum = 0, Maximum = 5, Increment = 0.001, Format = "0.000",
             },
 
-            new NumberOptionRow("--plate-spacing", TextKey.HelpOptPlateSpacing,
+            new NumberOptionRow("--plate-spacing", TextKey.LabelOptPlateSpacing, TextKey.HelpOptPlateSpacing,
                 () => o.PlateSpacing, v => o.PlateSpacing = v, fresh.PlateSpacing)
             {
                 Minimum = 0, Maximum = 50, Increment = 0.5, Format = "0.##",
                 Enabled = () => !o.CsvOnly && !o.NoPlates,
             },
 
-            new PathOptionRow("--output-dir", TextKey.HelpOptOutputDir,
+            new PathOptionRow("--output-dir", TextKey.LabelOptOutputDir, TextKey.HelpOptOutputDir,
                 () => o.OutputDirectory, v => o.OutputDirectory = v, fresh.OutputDirectory),
 
-            new PathOptionRow("--ldraw-dir", TextKey.HelpOptLDrawDir,
+            new PathOptionRow("--element-map", TextKey.LabelOptElementMap, TextKey.HelpOptElementMap,
+                () => o.ElementMap, v => o.ElementMap = v, fresh.ElementMap),
+
+            new PathOptionRow("--ldraw-dir", TextKey.LabelOptLDrawDir, TextKey.HelpOptLDrawDir,
                 () => o.LDrawDirectory, v => o.LDrawDirectory = v, fresh.LDrawDirectory),
 
-            new PathOptionRow("--ldraw-cache", TextKey.HelpOptLDrawCache,
+            new PathOptionRow("--ldraw-cache", TextKey.LabelOptLDrawCache, TextKey.HelpOptLDrawCache,
                 () => o.LDrawCache, v => o.LDrawCache = v, fresh.LDrawCache),
 
-            new TextOptionRow("--plate-size", TextKey.HelpOptPlateSize,
+            new TextOptionRow("--plate-size", TextKey.LabelOptPlateSize, TextKey.HelpOptPlateSize,
                 () => o.PlateSize, v => o.PlateSize = v, fresh.PlateSize)
             {
-                Placeholder = "220x220",
+                // The bed of whichever printer is chosen, so an untouched box says what the run
+                // would really use rather than a size no default ever had.
+                WhenEmpty = () => BedOf(o.Printer).AsSize,
                 Enabled = () => !o.CsvOnly && !o.NoPlates,
             },
 
-            new ChoiceOptionRow("--delimiter", TextKey.HelpOptDelimiter,
+            new ChoiceOptionRow("--delimiter", TextKey.LabelOptDelimiter, TextKey.HelpOptDelimiter,
                 () => o.Delimiter, v => o.Delimiter = v ?? fresh.Delimiter, fresh.Delimiter,
                 RunOptionsViewModel.Delimiters),
 
-            new ChoiceOptionRow("--printer", TextKey.HelpOptPrinter,
+            new ChoiceOptionRow("--printer", TextKey.LabelOptPrinter, TextKey.HelpOptPrinter,
                 () => o.Printer, v => o.Printer = v ?? fresh.Printer, fresh.Printer,
                 RunOptionsViewModel.Printers)
             {
+                HelpValues = [string.Join(", ", RunOptionsViewModel.Printers)],
                 Enabled = () => !o.CsvOnly && !o.NoPlates,
             },
         ];

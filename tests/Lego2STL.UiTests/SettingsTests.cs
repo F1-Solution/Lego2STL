@@ -7,6 +7,7 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.LogicalTree;
 using FluentAssertions;
+using Lego2STL.Core.Rebrickable;
 using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
 using Lego2STL.Gui.Localization;
@@ -50,6 +51,34 @@ public sealed class SettingsTests
         settings.Options.ApiKey = "secret-value";
 
         options.CommandLine.Should().NotContain("secret-value").And.Contain("--api-key");
+    }
+
+    /// <summary>
+    /// The defect this ends: the key had a box on this screen and no home on the disk, so it was
+    /// typed, used once, and gone again at the next start.
+    /// </summary>
+    [AvaloniaFact]
+    public void A_key_typed_here_is_still_here_at_the_next_start()
+    {
+        var settings = ASettingsScreen(out _);
+
+        settings.Options.ApiKey = "secret-value";
+
+        // The file the command line already reads, so one key serves both halves of the tool.
+        File.Exists(RebrickableApiKey.ConfigFilePath).Should().BeTrue();
+        File.ReadAllText(RebrickableApiKey.ConfigFilePath)
+            .Should().Contain("rebrickableApiKey").And.Contain("secret-value");
+    }
+
+    [AvaloniaFact]
+    public void Clearing_the_key_takes_it_off_the_disk_rather_than_leaving_it_behind()
+    {
+        var settings = ASettingsScreen(out _);
+
+        settings.Options.ApiKey = "secret-value";
+        settings.Options.ApiKey = null;
+
+        File.ReadAllText(RebrickableApiKey.ConfigFilePath).Should().NotContain("secret-value");
     }
 
     [AvaloniaFact]

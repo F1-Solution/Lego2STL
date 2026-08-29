@@ -68,9 +68,50 @@ public sealed class PdfPageImageSource : IDisposable
         }
     }
 
+    /// <summary>
+    /// What one page's text says: whether it has any, and which catalogue entries it prints.
+    /// </summary>
+    /// <remarks>
+    /// The two answers come together because they are both read from one parse of the page,
+    /// and because a caller needs both: entries say "the catalogue is here", and text-but-no-
+    /// entries says "and it is not here", which is a real answer rather than a reason to go
+    /// looking at the pixels.
+    /// </remarks>
+    /// <param name="pageNumber">1-based page number.</param>
+    public PageText ReadText(int pageNumber)
+    {
+        RequireInRange(pageNumber);
+
+        try
+        {
+            var page = _document.GetPage(pageNumber);
+            return new PageText(page.Letters.Count > 0, PrintedCatalogue.Read(page));
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException)
+        {
+            // A page whose text layer cannot be parsed is a page with nothing to offer here,
+            // not a reason to abandon a document the other path could still read.
+            return new PageText(false, []);
+        }
+    }
+
+    /// <summary>The catalogue entries one page prints, empty when it prints none.</summary>
+    public IReadOnlyList<PrintedEntry> ReadPrintedCatalogue(int pageNumber) =>
+        ReadText(pageNumber).Entries;
+
     /// <summary>Gets one page's pixels. The caller owns the returned object.</summary>
     /// <param name="pageNumber">1-based page number.</param>
     public PageImage GetPage(int pageNumber)
+    {
+        RequireInRange(pageNumber);
+
+        var embedded = TryDecodeEmbeddedImage(pageNumber);
+        return embedded is not null
+            ? new PageImage(pageNumber, embedded, PageImageOrigin.EmbeddedImage)
+            : new PageImage(pageNumber, Render(pageNumber), PageImageOrigin.Rendered);
+    }
+
+    private void RequireInRange(int pageNumber)
     {
         if (pageNumber < 1 || pageNumber > PageCount)
         {
@@ -79,11 +120,6 @@ public sealed class PdfPageImageSource : IDisposable
                 pageNumber,
                 $"The document has {PageCount} page{(PageCount == 1 ? "" : "s")}.");
         }
-
-        var embedded = TryDecodeEmbeddedImage(pageNumber);
-        return embedded is not null
-            ? new PageImage(pageNumber, embedded, PageImageOrigin.EmbeddedImage)
-            : new PageImage(pageNumber, Render(pageNumber), PageImageOrigin.Rendered);
     }
 
     /// <summary>

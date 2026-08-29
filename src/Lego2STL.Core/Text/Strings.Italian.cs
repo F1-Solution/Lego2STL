@@ -110,6 +110,12 @@ public sealed partial class Strings
             // Esecuzione.
             [TextKey.MsgPagesInDocument] = "{0}: {1} pagine.",
             [TextKey.MsgReadingPages] = "Lettura delle pagine {0} con la numerazione colori {1}.",
+            [TextKey.MsgReadingPrintedPages] =
+                "Lettura delle pagine {0} dal testo che il documento stesso contiene.",
+            [TextKey.MsgLookingUpElements] =
+                "Nessuna tabella degli elementi disponibile: {0} numeri di elemento verranno "
+                + "cercati online, circa un secondo ciascuno. Un file elements.csv locale "
+                + "indicato con --element-map fa lo stesso all'istante.",
             [TextKey.MsgNoPageRange] =
                 "manca l'intervallo di pagine. Indicarlo, ad esempio \"2-5\", oppure usare " +
                 "--list-pages per vedere che cosa c'è su ogni pagina.",
@@ -118,6 +124,10 @@ public sealed partial class Strings
             [TextKey.MsgPageIsCatalogueOne] = "pagina {0}  catalogo, {1} voce",
             [TextKey.MsgPageIsCatalogueMany] = "pagina {0}  catalogo, {1} voci",
             [TextKey.MsgNoCataloguePages] = "Nessuna pagina di catalogo trovata.",
+            [TextKey.MsgNoCatalogueInThisBook] =
+                "Questo documento non contiene il catalogo dei pezzi. Le istruzioni "
+                + "ufficiali divise in più libretti riportano l'elenco dei pezzi in uno solo, "
+                + "di solito l'ultimo: provare gli altri.",
             [TextKey.MsgCataloguePagesFound] = "Pagine del catalogo: {0}",
             [TextKey.MsgShapeClosed] = "chiusa",
             [TextKey.MsgShapeOpenEdges] = "{0} spigoli aperti",
@@ -136,6 +146,8 @@ public sealed partial class Strings
                 "non è stato possibile leggere il codice pezzo e il colore",
             [TextKey.ReasonCouldNotReadEither] =
                 "non è stato possibile leggere né la quantità né il codice pezzo e il colore",
+            [TextKey.ReasonUnknownElement] =
+                "non è stato possibile ricondurre l'elemento {0} a un pezzo e a un colore",
             [TextKey.ReasonShapeHasNoSurfaces] = "il file della forma non contiene superfici",
             [TextKey.ReasonNoShapeFile] = "nessun file di forma per questo codice pezzo",
             [TextKey.MsgWrittenWithoutThem] =
@@ -235,8 +247,6 @@ public sealed partial class Strings
             [TextKey.ErrTypeSetNumber] = "Scrivere un numero di set, ad esempio 42100-1.",
             [TextKey.ErrNoFileAt] = "Non c'è nessun file in {0}.",
             [TextKey.ErrScaleNotPositive] = "La scala deve essere maggiore di zero.",
-            [TextKey.ErrPlateSpacingNegative] =
-                "Lo spazio fra un pezzo e l'altro non può essere negativo.",
             [TextKey.ErrNotABedSize] =
                 "'{0}' non è una dimensione del piano. Una si scrive 220x220 oppure 300x300x400.",
 
@@ -382,6 +392,10 @@ public sealed partial class Strings
                 "Indica che cosa c'è su ogni pagina e si ferma, senza leggere nulla.",
             [TextKey.HelpOptColorScheme] =
                 "Di chi è la numerazione dei colori stampata nel documento.",
+            [TextKey.HelpOptElementMap] =
+                "Un file elements.csv di Rebrickable, o una cartella che lo contiene, per i "
+                + "documenti che stampano numeri di elemento. Se non indicato viene cercato "
+                + "accanto al documento.",
             [TextKey.HelpOptSet] =
                 "Un numero di set da cercare invece di leggere un elenco pezzi, ad esempio 42100-1.",
             [TextKey.HelpOptIncludeSpares] =
@@ -434,8 +448,43 @@ public sealed partial class Strings
             [TextKey.HelpOptRebrickableDump] =
                 "Una cartella con le tabelle scaricabili di Rebrickable, da usare al posto dell'API.",
 
+            // Come la finestra chiama ogni opzione.
+            [TextKey.LabelOptCsvOnly] = "Solo elenco pezzi",
+            [TextKey.LabelOptNoPlates] = "Nessun piano di stampa",
+            [TextKey.LabelOptAscii] = "STL leggibile",
+            [TextKey.LabelOptKeepOrigin] = "Mantieni l'origine di ogni pezzo",
+            [TextKey.LabelOptNoRepair] = "Lascia i buchi nella superficie",
+            [TextKey.LabelOptNoSeamRepair] = "Lascia aperte le giunzioni",
+            [TextKey.LabelOptOffline] = "Lavora senza rete",
+            [TextKey.LabelOptNoUnofficial] = "Solo libreria ufficiale",
+            [TextKey.LabelOptScale] = "Scala",
+            [TextKey.LabelOptClearance] = "Gioco",
+            [TextKey.LabelOptWeldTolerance] = "Fusione dei vertici",
+            [TextKey.LabelOptPlateSpacing] = "Spazio fra i pezzi",
+            [TextKey.LabelOptOutputDir] = "Cartella dei risultati",
+            [TextKey.LabelOptElementMap] = "Tabella degli elementi",
+            [TextKey.LabelOptLDrawDir] = "Libreria delle forme",
+            [TextKey.LabelOptLDrawCache] = "Forme scaricate",
+            [TextKey.LabelOptPlateSize] = "Dimensione del piano",
+            [TextKey.LabelOptDelimiter] = "Separatore dell'elenco pezzi",
+            [TextKey.LabelOptPrinter] = "Stampante",
+            [TextKey.LabelOptLang] = "Lingua",
+            [TextKey.LabelOptApiKey] = "Chiave Rebrickable",
+            [TextKey.LabelOptLog] = "File di registro",
+            [TextKey.LabelOptQuiet] = "Solo l'essenziale",
+            [TextKey.LabelOptIncludeSpares] = "Includi i pezzi di scorta",
+
             // Remarks a run makes about what it found along the way.
             [TextKey.NoteEntriesFound] = "Pagina {0}: {1} voci trovate.",
+            [TextKey.NoteElementTable] = "Tabella degli elementi: {0} numeri, da {1}.",
+            [TextKey.NoteNoElementTable] =
+                "Nessuna tabella degli elementi trovata. Indicare con --element-map un file "
+                + "elements.csv di Rebrickable, oppure fornire una chiave API, per cercare i numeri "
+                + "di elemento invece di dedurli.",
+            [TextKey.NoteElementsResolved] = "Numeri di elemento risolti: {0}.",
+            [TextKey.NoteElementsFromTable] = "{0} dalla tabella",
+            [TextKey.NoteElementsFromRebrickable] = "{0} da Rebrickable",
+            [TextKey.NoteElementsFromNumber] = "{0} dedotti dal numero stesso",
             [TextKey.NoteLearnedLettering] =
                 "Caratteri del documento appresi da {0} righe di codice pezzo{1}. Forme conosciute: {2}.",
             [TextKey.NoteLearnedSkipped] =

@@ -15,6 +15,41 @@ public sealed class PartsListBuilderTests
     private static PartsList Build(ColorScheme scheme, params CatalogueReading[] readings) =>
         PartsListBuilder.Build(readings, ColorReference.Table, scheme);
 
+    /// <summary>
+    /// An entry that came from an element number brings its own numbering, and mixing the two
+    /// kinds in one list has to work: a document can print its catalogue on one page and have
+    /// it read off the pixels on another.
+    /// </summary>
+    [Fact]
+    public void An_entry_that_knows_its_own_numbering_is_not_read_in_the_run_s()
+    {
+        var readOffThePage = Reading("6628", 11, 1);                       // BrickLink black
+        var fromAnElement = Reading("3707", 26, 2) with                     // LEGO black
+        {
+            Scheme = ColorScheme.Lego,
+            QuantitySource = ReadingSource.PrintedText,
+            PartSource = ReadingSource.PrintedText,
+        };
+
+        var list = PartsListBuilder.Build(
+            [readOffThePage, fromAnElement], ColorReference.Table, ColorScheme.BrickLink);
+
+        list.Entries.Should().OnlyContain(e => e.ColorName == "Black")
+            .And.OnlyContain(e => e.BrickLinkColorCode == 11);
+    }
+
+    /// <summary>
+    /// The run's numbering is still what an entry that does not know its own is read in, which
+    /// is every entry read off the pixels.
+    /// </summary>
+    [Fact]
+    public void An_entry_that_names_no_numbering_takes_the_run_s()
+    {
+        var list = Build(ColorScheme.Lego, Reading("3707", 26, 1));
+
+        list.Entries.Single().ColorName.Should().Be("Black");
+    }
+
     [Fact]
     public void Ids_run_from_one_in_the_order_the_entries_arrived()
     {

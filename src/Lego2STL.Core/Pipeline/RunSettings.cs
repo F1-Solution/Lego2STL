@@ -66,8 +66,28 @@ public sealed record RunSettings
     /// <summary>Which pages hold the catalogue, e.g. "2-5" or "2-5,8,11-13".</summary>
     public string? Pages { get; init; }
 
-    /// <summary>Whose colour numbering the document prints.</summary>
+    /// <summary>
+    /// Whose colour numbering the document prints.
+    /// </summary>
+    /// <remarks>
+    /// Applies to pages read off the pixels, where a colour code is printed beside the part
+    /// number. Pages that print element numbers instead carry their colour inside the number,
+    /// so this has nothing to say about them.
+    /// </remarks>
     public ColorScheme ColorScheme { get; init; } = ColorScheme.BrickLink;
+
+    /// <summary>
+    /// A Rebrickable <c>elements.csv</c>, or a folder holding one, for turning the element
+    /// numbers official instructions print into parts and colours.
+    /// </summary>
+    /// <remarks>
+    /// Optional in every direction. Left empty, the document's folder and the working folder
+    /// are searched for one - a level down as well, so an unpacked dump sitting beside the
+    /// documents is found by itself. Failing that a Rebrickable key answers the same question
+    /// online, and failing that the older six-digit numbers can still be taken apart on their
+    /// own. See <see cref="Catalogue.ElementLookup"/>.
+    /// </remarks>
+    public string? ElementMap { get; init; }
 
     /// <summary>Include a set's spare pieces as well as the ones the model uses.</summary>
     public bool IncludeSpares { get; init; }
@@ -93,12 +113,19 @@ public sealed record RunSettings
 
     public double Clearance { get; init; }
 
-    /// <summary>Cover over the gaps in a shape's surface, turning it into a solid.</summary>
-    public bool FillGaps { get; init; }
+    /// <summary>
+    /// Cover over the gaps in a shape's surface, turning it into a solid.
+    /// </summary>
+    /// <remarks>
+    /// On unless asked otherwise, which is the same way round the command line and the window
+    /// have it: a shape with holes in its surface is the common case, and covering them is what
+    /// makes a clearance applicable to it at all.
+    /// </remarks>
+    public bool FillGaps { get; init; } = true;
 
     public bool NoSeamRepair { get; init; }
 
-    public double WeldTolerance { get; init; } = VertexWelder.DefaultToleranceMillimetres;
+    public double WeldTolerance { get; init; } = VertexWelder.DefaultToleranceUnits;
 
     // ---- Shape library -----------------------------------------------------------------
 
@@ -211,12 +238,11 @@ public sealed record RunSettings
                 break;
         }
 
-        // Refused here rather than part-way into reading the pages, which is where a build with
-        // no recogniser used to give up on a document it had already opened.
-        if (Kind == InputKind.Document && !OcrEngines.IsAvailable)
-        {
-            problems.Add(words[TextKey.ErrOcrUnavailable]);
-        }
+        // A missing recogniser is no longer refused here. Whether a document needs one is a
+        // fact about the document: a book that prints its catalogue in a text layer is read
+        // without one, and refusing it unseen turned the commonest case - official building
+        // instructions - into an error on a build that could have read it. The refusal now
+        // happens in the run, once the pages are known and still before any is read.
 
         if (Clearance < 0)
         {
@@ -292,6 +318,12 @@ public sealed record RunSettings
             parts.Add(ColorScheme.ToString());
         }
 
+        if (Kind == InputKind.Document && !string.IsNullOrWhiteSpace(ElementMap))
+        {
+            parts.Add("--element-map");
+            parts.Add(Quote(ElementMap));
+        }
+
         if (Kind == InputKind.SetNumber && IncludeSpares)
         {
             parts.Add("--include-spares");
@@ -342,9 +374,9 @@ public sealed record RunSettings
             parts.Add(Format(Clearance));
         }
 
-        if (FillGaps)
+        if (!FillGaps)
         {
-            parts.Add("--repair");
+            parts.Add("--no-repair");
         }
 
         if (NoSeamRepair)

@@ -1,3 +1,4 @@
+using Lego2STL.Core.Colors;
 using Lego2STL.Core.Extraction;
 using Lego2STL.Core.Pdf;
 using Lego2STL.Core.Text;
@@ -12,9 +13,19 @@ public enum ReadingSource
 
     /// <summary>The character shapes learned from this document read it.</summary>
     LearnedShapes,
+
+    /// <summary>The document's own text layer, which is not a reading at all but a quotation.</summary>
+    PrintedText,
 }
 
 /// <summary>One catalogue entry, read.</summary>
+/// <param name="Scheme">
+/// Whose colour numbering <paramref name="ColorCode"/> belongs to, when this entry knows -
+/// which it does when it came from an element number, because looking one up yields a
+/// specific catalogue's colour rather than whatever the document happened to print. Null
+/// means the run's own <c>--color-scheme</c> applies, as it does for everything read off the
+/// pixels.
+/// </param>
 public sealed record CatalogueReading(
     int Page,
     PixelBounds Bounds,
@@ -22,7 +33,8 @@ public sealed record CatalogueReading(
     string PartNumber,
     int ColorCode,
     ReadingSource QuantitySource,
-    ReadingSource PartSource)
+    ReadingSource PartSource,
+    ColorScheme? Scheme = null)
 {
     public override string ToString() => $"p{Page} {Quantity}x {PartNumber},{ColorCode}";
 }
