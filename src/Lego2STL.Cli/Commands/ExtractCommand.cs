@@ -1,5 +1,4 @@
-using System.CommandLine;
-using Lego2STL.Core.Extraction;
+﻿using System.CommandLine;
 using Lego2STL.Core.Pdf;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Text;
@@ -79,56 +78,22 @@ internal static class ExtractCommand
         Console.WriteLine(words.Format(TextKey.MsgPagesInDocument, file.Name, document.PageCount));
         Console.WriteLine();
 
-        var locator = new LabelLocator();
-        var candidates = new List<int>();
+        // The same search a run makes, so this listing describes what will really happen
+        // rather than a second search of its own.
+        var search = CataloguePages.Find(document, cancellationToken: cancellationToken);
 
-        // The document's own text first, page by page, exactly as a run would: a book that
-        // prints its catalogue is classified without rasterising anything, and this listing
-        // then agrees with what the run will do rather than describing a different search.
-        var printed = new int[document.PageCount + 1];
-        var typeset = false;
-
-        for (var pageNumber = 1; pageNumber <= document.PageCount; pageNumber++)
+        foreach (var page in search.Pages)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var text = document.ReadText(pageNumber);
-            printed[pageNumber] = text.Entries.Count;
-            typeset |= text.HasText;
-        }
-
-        for (var pageNumber = 1; pageNumber <= document.PageCount; pageNumber++)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            int count;
-
-            if (typeset)
-            {
-                count = printed[pageNumber];
-            }
-            else
-            {
-                using var page = document.GetPage(pageNumber);
-                count = locator.Locate(page).Count;
-            }
-
-            if (count == 0)
-            {
-                continue;
-            }
-
-            candidates.Add(pageNumber);
             Console.WriteLine("  " + words.Format(
-                count == 1 ? TextKey.MsgPageIsCatalogueOne : TextKey.MsgPageIsCatalogueMany,
-                pageNumber,
-                count));
+                page.EntryCount == 1 ? TextKey.MsgPageIsCatalogueOne : TextKey.MsgPageIsCatalogueMany,
+                page.Number,
+                page.EntryCount));
         }
 
         Console.WriteLine();
-        Console.WriteLine(candidates.Count > 0
-            ? words.Format(TextKey.MsgSuggestedRange, PageRange.Format(candidates))
-            : words[typeset ? TextKey.MsgNoCatalogueInThisBook : TextKey.MsgNoCataloguePages]);
+        Console.WriteLine(search.Pages.Count > 0
+            ? words.Format(TextKey.MsgSuggestedRange, PageRange.Format(search.Numbers))
+            : words[search.Typeset ? TextKey.MsgNoCatalogueInThisBook : TextKey.MsgNoCataloguePages]);
 
         return Program.ExitOk;
     }

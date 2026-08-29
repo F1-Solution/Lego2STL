@@ -1,4 +1,4 @@
-using Lego2STL.Core.Catalogue;
+﻿using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Geometry;
 using Lego2STL.Core.LDraw;
@@ -583,23 +583,12 @@ public sealed class PipelineRunner
     }
 
     /// <summary>
-    /// Which pages hold a catalogue, when no range was given: the ones with entries on them.
+    /// Which pages hold a catalogue, when no range was given.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// The text layer is asked first, and for a document that has one the answer is both exact
-    /// and quick - a building step prints counts too, but never an element number beneath one,
-    /// so the two cannot be confused. It also spares rasterising a book that may run to a
-    /// thousand pages.
-    /// </para>
-    /// <para>
-    /// A document that has a text layer is believed even when it says there is no catalogue,
-    /// and that matters: official instructions come in several books and only one of them
-    /// carries the parts list. Asked to look at the pixels of a book that has none, the
-    /// pixel-reading path finds a "2x" on nearly every building step and reports hundreds of
-    /// catalogue pages that are not there. Falling back is right for a scan, which has no text
-    /// on any page and nothing else to go on, and wrong for a book that has already answered.
-    /// </para>
+    /// The search itself lives in <see cref="CataloguePages"/>, because the window and the
+    /// listing command ask the same question and an answer worked out twice is an answer that
+    /// will eventually differ.
     /// </remarks>
     /// <returns>The pages, and whether the document carries a text layer at all.</returns>
     private (List<int> Pages, bool Typeset) DetectCataloguePages(
@@ -609,63 +598,19 @@ public sealed class PipelineRunner
     {
         Report(RunStage.ReadingDocument, 0, document.PageCount, "looking for the catalogue");
 
-        var (found, hasText) = FindPrintedCataloguePages(document, cancellationToken);
+        var search = CataloguePages.Find(
+            document,
+            (page, total) => Report(RunStage.ReadingDocument, page, total, "looking for the catalogue"),
+            cancellationToken);
 
-        if (found.Count == 0 && !hasText)
-        {
-            found = FindDrawnCataloguePages(document, cancellationToken);
-        }
+        var found = search.Numbers.ToList();
 
         if (found.Count > 0)
         {
             _log(words.Format(TextKey.MsgCataloguePagesFound, PageRange.Format(found)));
         }
 
-        return (found, hasText);
-    }
-
-    private static (List<int> Found, bool HasText) FindPrintedCataloguePages(
-        PdfPageImageSource document,
-        CancellationToken cancellationToken)
-    {
-        var found = new List<int>();
-        var hasText = false;
-
-        for (var pageNumber = 1; pageNumber <= document.PageCount; pageNumber++)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var text = document.ReadText(pageNumber);
-            hasText |= text.HasText;
-
-            if (text.Entries.Count > 0)
-            {
-                found.Add(pageNumber);
-            }
-        }
-
-        return (found, hasText);
-    }
-
-    private List<int> FindDrawnCataloguePages(
-        PdfPageImageSource document,
-        CancellationToken cancellationToken)
-    {
-        var locator = new Extraction.LabelLocator();
-        var found = new List<int>();
-
-        for (var pageNumber = 1; pageNumber <= document.PageCount; pageNumber++)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            using var page = document.GetPage(pageNumber);
-            if (locator.Locate(page).Count > 0)
-            {
-                found.Add(pageNumber);
-            }
-        }
-
-        return found;
+        return (found, search.Typeset);
     }
 
     /// <summary>Where a set's run folder goes, given its number.</summary>

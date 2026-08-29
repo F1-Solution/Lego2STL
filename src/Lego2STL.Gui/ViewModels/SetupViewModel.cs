@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Lego2STL.Core.Extraction;
 using Lego2STL.Core.Pdf;
 using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
@@ -110,6 +109,10 @@ public sealed partial class SetupViewModel : ViewModelBase
     /// <summary>
     /// Which pages hold a catalogue, so a page range does not have to be found by eye.
     /// </summary>
+    /// <remarks>
+    /// The same search the run itself makes. Looking straight at the pixels here, as this
+    /// used to, offered 74 pages of a book that prints two and 67 of a book that prints none.
+    /// </remarks>
     [RelayCommand]
     private async Task ScanPagesAsync()
     {
@@ -125,20 +128,7 @@ public sealed partial class SetupViewModel : ViewModelBase
             var found = await Task.Run(() =>
             {
                 using var document = PdfPageImageSource.Open(Options.DocumentPath!);
-                var locator = new LabelLocator();
-                var pages = new List<int>();
-
-                for (var page = 1; page <= document.PageCount; page++)
-                {
-                    using var image = document.GetPage(page);
-
-                    if (locator.Locate(image).Count > 0)
-                    {
-                        pages.Add(page);
-                    }
-                }
-
-                return pages;
+                return CataloguePages.Find(document).Numbers;
             }).ConfigureAwait(true);
 
             Options.Pages = found.Count > 0 ? PageRange.Format(found) : string.Empty;
