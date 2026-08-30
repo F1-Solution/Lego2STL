@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -94,7 +94,11 @@ public sealed class RunDocumentViewTests
         using var page = RunDocumentViewModel.Of(ADocument() with
         {
             Status = RunStatus.NeedsDecision,
-            Unread = ["page 4 at (10,20): the quantity could not be read"],
+            Unread =
+            [
+                new ManifestUnread(
+                    4, "(10,20)-(60,40)", "4x", null, null, null, "the quantity could not be read"),
+            ],
         });
 
         page.HasProblem.Should().BeTrue();

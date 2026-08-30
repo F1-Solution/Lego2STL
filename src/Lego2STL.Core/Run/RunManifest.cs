@@ -6,7 +6,6 @@ using Lego2STL.Core.Geometry;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Plates;
 using Lego2STL.Core.Rebrickable;
-using Lego2STL.Core.Text;
 
 namespace Lego2STL.Core.Run;
 
@@ -38,6 +37,22 @@ public sealed record ManifestStage(RunStage Stage, int Completed, int Total);
 
 /// <summary>A part that produced no shape, and why.</summary>
 public sealed record ManifestFailure(string Part, string Reason);
+
+/// <summary>
+/// An entry the reader could not make out, with enough to ask a person about it.
+/// </summary>
+/// <param name="Bounds">
+/// The region on the page, as the same text the extraction prints, so the file stays readable
+/// by eye and the shape of <c>PixelBounds</c> is not frozen into it.
+/// </param>
+public sealed record ManifestUnread(
+    int Page,
+    string Bounds,
+    string RawText,
+    int? Quantity,
+    string? PartNumber,
+    int? ColorCode,
+    string Reason);
 
 /// <summary>
 /// A plate the run wrote, and the colour that went on it.
@@ -131,7 +146,8 @@ public sealed record RunManifest
     /// <summary>Every plate written, in the order they were written.</summary>
     public IReadOnlyList<ManifestPlate> Plates { get; init; } = [];
 
-    public IReadOnlyList<string> Unread { get; init; } = [];
+    /// <summary>Entries the reader could not make out, each with where it was.</summary>
+    public IReadOnlyList<ManifestUnread> Unread { get; init; } = [];
 
     public IReadOnlyList<ManifestFailure> Failed { get; init; } = [];
 
@@ -183,10 +199,6 @@ public sealed record RunManifest
         var shapes = outcome.Shapes.ToDictionary(s => s.PartNumber, StringComparer.OrdinalIgnoreCase);
         var entries = outcome.PartsList?.Entries ?? [];
 
-        // The run's own language, because everything else it records is already in it: a lone
-        // English sentence among Italian findings is the odd one out, not the norm.
-        var words = Strings.For(outcome.Settings.Language);
-
         return new RunManifest
         {
             Status = outcome.Result switch
@@ -226,8 +238,14 @@ public sealed record RunManifest
 
             Unread =
             [
-                .. outcome.Unread.Select(u =>
-                    words.Format(TextKey.MsgUnreadEntryAt, u.Page, u.Bounds, u.Reason)),
+                .. outcome.Unread.Select(u => new ManifestUnread(
+                    u.Page,
+                    u.Bounds.ToString(),
+                    u.RawText,
+                    u.Quantity,
+                    u.PartNumber,
+                    u.ColorCode,
+                    u.Reason)),
             ],
             Failed = [.. outcome.Failed.Select(f => new ManifestFailure(f.PartNumber, f.Reason))],
             Notes = [.. outcome.Notes],

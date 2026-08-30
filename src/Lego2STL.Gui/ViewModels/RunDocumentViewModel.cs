@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -141,7 +141,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
                 lines.Add(error);
             }
 
-            lines.AddRange(Document.Unread);
+            lines.AddRange(Document.UnreadTextIn(Loc.Current.Words));
             lines.AddRange(Document.Failed.Select(f => $"{f.Part}: {f.Reason}"));
 
             return string.Join(Environment.NewLine, lines);

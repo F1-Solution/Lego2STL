@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Globalization;
+using FluentAssertions;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Rebrickable;
 using Lego2STL.Core.Run;
@@ -34,20 +35,46 @@ public sealed class RunManifestTests
     }
 
     /// <summary>
-    /// An entry that could not be read is recorded in the language the run was made in.
+    /// An entry that could not be read is worded when it is shown, not when it is recorded.
     /// </summary>
     /// <remarks>
-    /// It used to be built by hand as "page {0} at {1}: {2}" and so arrived in English however
-    /// the run had been asked to speak, which is what put a lone English sentence in the middle
-    /// of an Italian window. The wording already existed in both languages; nothing was using it.
+    /// It used to be a finished sentence, built in whatever language the run spoke, which put a
+    /// lone English sentence in the middle of an Italian window - and left nothing for anything
+    /// to ask a question about. A run recorded in one language now shows in the other, which is
+    /// the same bug made impossible rather than fixed.
     /// </remarks>
     [Theory]
     [InlineData(DisplayLanguage.Italian, "pagina 372 in")]
     [InlineData(DisplayLanguage.English, "page 372 at")]
-    public void An_unread_entry_is_worded_in_the_language_of_the_run(
+    public void An_unread_entry_is_worded_when_it_is_shown(
         DisplayLanguage language, string expected)
     {
         var layout = ARunFolder();
+
+        var manifest = RunManifest.From(
+            APretendRun.WithAnUnreadEntry(layout, DisplayLanguage.English),
+            APretendRun.Started,
+            APretendRun.Finished,
+            null);
+
+        RunDocument.From(manifest, layout)
+            .UnreadTextIn(Strings.For(language))
+            .Should().ContainSingle().Which.Should().StartWith(expected);
+    }
+
+    /// <summary>
+    /// An entry that could not be read is kept with its page and its region, not as a sentence.
+    /// </summary>
+    /// <remarks>
+    /// Kept as a sentence, nothing could show the piece of page in question or ask about it -
+    /// and the sentence was formatted in whatever language the run spoke, so a window switched
+    /// to the other one showed the old words for ever.
+    /// </remarks>
+    [Fact]
+    public void An_entry_that_could_not_be_read_keeps_its_page_and_its_region()
+    {
+        var layout = ARunFolder();
+        var language = DisplayLanguage.Italian;
 
         var manifest = RunManifest.From(
             APretendRun.WithAnUnreadEntry(layout, language),
@@ -55,7 +82,17 @@ public sealed class RunManifestTests
             APretendRun.Finished,
             null);
 
-        manifest.Unread.Should().ContainSingle().Which.Should().StartWith(expected);
+        var unread = manifest.Unread.Should().ContainSingle().Subject;
+
+        unread.Page.Should().BePositive();
+        unread.Bounds.Should().NotBeNullOrWhiteSpace();
+        unread.RawText.Should().NotBeNull();
+
+        var document = RunDocument.From(manifest, layout);
+
+        document.Unread.Should().ContainSingle();
+        document.UnreadText.Should().ContainSingle().Which.Should()
+            .Contain(unread.Page.ToString(CultureInfo.InvariantCulture));
     }
 
     /// <summary>Every plate is recorded with its colour code, which is what finds it again.</summary>

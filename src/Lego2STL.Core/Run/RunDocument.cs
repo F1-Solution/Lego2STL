@@ -2,6 +2,7 @@
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Plates;
+using Lego2STL.Core.Text;
 
 namespace Lego2STL.Core.Run;
 
@@ -147,7 +148,25 @@ public sealed record RunDocument
     /// <summary>Every plate the run wrote, so a colour can be matched to its file by code.</summary>
     public IReadOnlyList<ManifestPlate> Plates { get; init; } = [];
 
-    public IReadOnlyList<string> Unread { get; init; } = [];
+    /// <summary>Entries the reader could not make out, each with where it was.</summary>
+    public IReadOnlyList<ManifestUnread> Unread { get; init; } = [];
+
+    /// <summary>
+    /// The same entries as sentences, for the places that only show them.
+    /// </summary>
+    /// <remarks>
+    /// Worded on demand rather than when the run ended, so a window switched to the other
+    /// language re-words them instead of leaving the old ones in place for ever.
+    /// </remarks>
+    public IReadOnlyList<string> UnreadText => UnreadTextIn(Strings.For(DisplayLanguages.Fallback));
+
+    /// <summary>The same entries as sentences, in the language the caller is speaking.</summary>
+    public IReadOnlyList<string> UnreadTextIn(Strings words)
+    {
+        ArgumentNullException.ThrowIfNull(words);
+
+        return [.. Unread.Select(u => words.Format(TextKey.MsgUnreadEntryAt, u.Page, u.Bounds, u.Reason))];
+    }
 
     public IReadOnlyList<ManifestFailure> Failed { get; init; } = [];
 
