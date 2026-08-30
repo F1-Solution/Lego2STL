@@ -194,6 +194,21 @@ public enum TextKey
     UiColourScheme,
     UiLanguage,
     UiSettings,
+
+    /// <summary>The settings card holding the list of shops.</summary>
+    UiShops,
+
+    /// <summary>The button that adds a row to it.</summary>
+    UiAddShop,
+
+    /// <summary>The button that takes one away.</summary>
+    UiRemoveShop,
+
+    /// <summary>Marks the shop whose button the catalogue shows.</summary>
+    UiPreferredShop,
+
+    /// <summary>Explains what a shop's address may contain.</summary>
+    UiShopHelp,
     UiEquivalentCommand,
     UiCopyCommand,
     UiCopied,

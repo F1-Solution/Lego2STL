@@ -121,6 +121,38 @@
         </StackPanel>
       </Border>
 
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <TextBlock Classes="label"
+                     Text="{Binding [UiShops], Source={x:Static loc:Loc.Current}}" />
+          <TextBlock Classes="flag" TextWrapping="Wrap"
+                     Text="{Binding [UiShopHelp], Source={x:Static loc:Loc.Current}}" />
+
+          <ItemsControl ItemsSource="{Binding ShopRows}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ShopRowViewModel">
+                <Grid ColumnDefinitions="Auto,150,*,Auto" Margin="0,0,0,6">
+                  <RadioButton Grid.Column="0" GroupName="PreferredShop" VerticalAlignment="Center"
+                               Margin="0,0,8,0"
+                               ToolTip.Tip="{Binding [UiPreferredShop], Source={x:Static loc:Loc.Current}}"
+                               IsChecked="{Binding IsPreferred, Mode=TwoWay}" />
+                  <TextBox Grid.Column="1" Margin="0,0,6,0" Text="{Binding Name}" />
+                  <TextBox Grid.Column="2" Margin="0,0,6,0" Text="{Binding Url}" />
+                  <Button Grid.Column="3"
+                          Content="{Binding [UiRemoveShop], Source={x:Static loc:Loc.Current}}"
+                          Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).RemoveShopCommand}"
+                          CommandParameter="{Binding}" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <Button HorizontalAlignment="Left"
+                  Content="{Binding [UiAddShop], Source={x:Static loc:Loc.Current}}"
+                  Command="{Binding AddShopCommand}" />
+        </StackPanel>
+      </Border>
+
     </StackPanel>
   </ScrollViewer>
 </UserControl>

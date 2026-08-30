@@ -195,4 +195,82 @@ public sealed class SettingsTests
 
     private static string AFolder(string name) => Path.Combine(
         Path.GetTempPath(), "lego2stl-settings-" + Guid.NewGuid().ToString("N"), name);
+
+    private static SettingsViewModel ASettingsScreen(UserSettings saved) =>
+        new(new RunOptionsViewModel(), saved, null);
+
+    /// <summary>The list starts at the three shops rather than empty.</summary>
+    [AvaloniaFact]
+    public void The_shops_start_at_the_three_offered()
+    {
+        var settings = ASettingsScreen(new UserSettings());
+
+        settings.ShopRows.Should().HaveCount(3);
+        settings.ShopRows.Should().ContainSingle(row => row.IsPreferred);
+    }
+
+    /// <summary>A list already chosen is the one shown, not the offered three.</summary>
+    [AvaloniaFact]
+    public void A_list_already_saved_is_the_one_shown()
+    {
+        var saved = new UserSettings
+        {
+            Shops = [new Shop("Mine", "https://mine/{part}", null)],
+            PreferredShop = "Mine",
+        };
+
+        var settings = ASettingsScreen(saved);
+
+        settings.ShopRows.Should().ContainSingle().Which.Name.Should().Be("Mine");
+        settings.ShopRows[0].IsPreferred.Should().BeTrue();
+    }
+
+    [AvaloniaFact]
+    public void A_shop_can_be_added_and_taken_away_again()
+    {
+        var settings = ASettingsScreen(new UserSettings());
+        var before = settings.ShopRows.Count;
+
+        settings.AddShopCommand.Execute(null);
+        settings.ShopRows.Should().HaveCount(before + 1);
+
+        settings.RemoveShopCommand.Execute(settings.ShopRows[^1]);
+        settings.ShopRows.Should().HaveCount(before);
+    }
+
+    /// <summary>Taking away the preferred shop leaves a preference that still means something.</summary>
+    [AvaloniaFact]
+    public void Taking_away_the_preferred_shop_promotes_another()
+    {
+        var settings = ASettingsScreen(new UserSettings());
+
+        settings.RemoveShopCommand.Execute(settings.ShopRows.First(row => row.IsPreferred));
+
+        settings.ShopRows.Should().ContainSingle(row => row.IsPreferred);
+    }
+
+    /// <summary>Only ever one preferred shop, however many are asked for.</summary>
+    [AvaloniaFact]
+    public void Choosing_one_shop_unchooses_the_others()
+    {
+        var settings = ASettingsScreen(new UserSettings());
+
+        settings.ShopRows[2].IsPreferred = true;
+
+        settings.ShopRows.Should().ContainSingle(row => row.IsPreferred);
+        settings.ShopRows[2].IsPreferred.Should().BeTrue();
+    }
+
+    /// <summary>An edit is kept the moment it is made, as every other setting here is.</summary>
+    [AvaloniaFact]
+    public void An_edited_shop_is_written_down_at_once()
+    {
+        var saved = new UserSettings();
+        var settings = ASettingsScreen(saved);
+
+        settings.ShopRows[0].Name = "My shop";
+
+        saved.Shops[0].Name.Should().Be("My shop");
+        saved.PreferredShop.Should().Be(settings.ShopRows.First(row => row.IsPreferred).Name);
+    }
 }

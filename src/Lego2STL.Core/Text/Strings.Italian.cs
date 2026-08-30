@@ -278,6 +278,12 @@ public sealed partial class Strings
             [TextKey.UiColourScheme] = "Numerazione colori usata nel documento",
             [TextKey.UiLanguage] = "Lingua",
             [TextKey.UiSettings] = "Impostazioni",
+            [TextKey.UiShops] = "Dove comprare un pezzo",
+            [TextKey.UiAddShop] = "Aggiungi un negozio",
+            [TextKey.UiRemoveShop] = "Togli",
+            [TextKey.UiPreferredShop] = "Preferito",
+            [TextKey.UiShopHelp] =
+                "In un indirizzo, {part} è il codice pezzo, {element} il numero elemento LEGO e {color} il codice colore.",
             [TextKey.UiEquivalentCommand] = "Lo stesso comando da terminale",
             [TextKey.UiCopyCommand] = "Copia comando",
             [TextKey.UiCopied] = "Copiato",
