@@ -1,4 +1,4 @@
-using Lego2STL.Core.Ocr;
+﻿using Lego2STL.Core.Ocr;
 using SkiaSharp;
 
 namespace Lego2STL.Core.Extraction;
@@ -104,6 +104,39 @@ public static class PartPicture
                                        or InvalidOperationException)
         {
             return false;
+        }
+    }
+
+    /// <summary>
+    /// Saves the region an entry could not be read from, and gives back the file's name.
+    /// </summary>
+    /// <remarks>
+    /// Named after the page and the corner it came from, so the same region read again lands on
+    /// the same file rather than filling the folder with copies.
+    /// </remarks>
+    public static string? WriteReviewCrop(
+        SKBitmap page, PixelBounds region, string directory, int pageNumber)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+        ArgumentException.ThrowIfNullOrWhiteSpace(directory);
+
+        var name = FormattableString.Invariant($"p{pageNumber}-{region.Left}-{region.Top}.png");
+
+        try
+        {
+            // The white margin RowCrop adds by default is wanted here: a person reads a crop
+            // better with space around it, for the same reason the recogniser did.
+            using var crop = RowCrop.Extract(page, region);
+
+            Directory.CreateDirectory(directory);
+            File.WriteAllBytes(Path.Combine(directory, name), RowCrop.ToPng(crop));
+            return name;
+        }
+        catch (Exception ex) when (ex is IOException
+                                       or UnauthorizedAccessException
+                                       or InvalidOperationException)
+        {
+            return null;
         }
     }
 

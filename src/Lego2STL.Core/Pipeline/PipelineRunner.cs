@@ -279,6 +279,8 @@ public sealed class PipelineRunner
             read.AddRange(recognised.Notes);
         }
 
+        var unread = KeepPicturesOf(unresolved, document, layout, cancellationToken);
+
         Report(RunStage.ReadingDocument, pages.Count, pages.Count);
 
         notes.AddRange(read);
@@ -292,7 +294,45 @@ public sealed class PipelineRunner
 
         layout.CreateDirectories();
 
-        return (list, layout, unresolved);
+        return (list, layout, unread);
+    }
+
+    /// <summary>
+    /// Keeps a picture of every region the reader could not make out, to be asked about later.
+    /// </summary>
+    /// <remarks>
+    /// One pass over what is left, rather than a call at each of the two places a reading can
+    /// fail: neither of them still has the page in hand, and this way each page is opened once.
+    /// </remarks>
+    private static IReadOnlyList<UnresolvedReading> KeepPicturesOf(
+        IReadOnlyList<UnresolvedReading> unresolved,
+        PdfPageImageSource document,
+        RunLayout layout,
+        CancellationToken cancellationToken)
+    {
+        var pictures = new Dictionary<(int Page, PixelBounds Bounds), string>();
+
+        foreach (var page in unresolved.Select(u => u.Page).Distinct())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            using var image = document.GetPage(page);
+
+            foreach (var reading in unresolved.Where(u => u.Page == page))
+            {
+                if (PartPicture.WriteReviewCrop(
+                        image.Bitmap, reading.Bounds, layout.ReviewDirectory, page) is { } name)
+                {
+                    pictures[(page, reading.Bounds)] = name;
+                }
+            }
+        }
+
+        return
+        [
+            .. unresolved.Select(u =>
+                pictures.TryGetValue((u.Page, u.Bounds), out var name) ? u with { Picture = name } : u),
+        ];
     }
 
     /// <summary>

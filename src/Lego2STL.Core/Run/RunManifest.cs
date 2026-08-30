@@ -52,7 +52,8 @@ public sealed record ManifestUnread(
     int? Quantity,
     string? PartNumber,
     int? ColorCode,
-    string Reason);
+    string Reason,
+    string? Picture = null);
 
 /// <summary>
 /// A plate the run wrote, and the colour that went on it.
@@ -245,7 +246,8 @@ public sealed record RunManifest
                     u.Quantity,
                     u.PartNumber,
                     u.ColorCode,
-                    u.Reason)),
+                    u.Reason,
+                    u.Picture)),
             ],
             Failed = [.. outcome.Failed.Select(f => new ManifestFailure(f.PartNumber, f.Reason))],
             Notes = [.. outcome.Notes],

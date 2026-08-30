@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Lego2STL.Core.Extraction;
 using SkiaSharp;
 
@@ -99,5 +99,30 @@ public sealed class PartPictureTests : IDisposable
         var write = () => PartPicture.TryWrite(page, ALabel(), _folder, "3/4:5");
 
         write.Should().NotThrow();
+    }
+
+    /// <summary>What could not be read is kept as a picture, to be looked at afterwards.</summary>
+    [Fact]
+    public void A_region_that_could_not_be_read_is_saved_to_be_looked_at()
+    {
+        using var page = APage();
+
+        var name = PartPicture.WriteReviewCrop(page, new PixelBounds(160, 200, 240, 230), _folder, 370);
+
+        name.Should().NotBeNull();
+        File.Exists(Path.Combine(_folder, name!)).Should().BeTrue();
+        name.Should().Contain("370", "the page it came from is part of how it is found again");
+    }
+
+    /// <summary>Two regions on one page do not overwrite each other.</summary>
+    [Fact]
+    public void Two_regions_on_the_same_page_are_kept_apart()
+    {
+        using var page = APage();
+
+        var first = PartPicture.WriteReviewCrop(page, new PixelBounds(10, 10, 40, 30), _folder, 370);
+        var second = PartPicture.WriteReviewCrop(page, new PixelBounds(60, 10, 90, 30), _folder, 370);
+
+        second.Should().NotBe(first);
     }
 }

@@ -1,4 +1,4 @@
-using Lego2STL.Core.Colors;
+﻿using Lego2STL.Core.Colors;
 using Lego2STL.Core.Extraction;
 using Lego2STL.Core.Pdf;
 using Lego2STL.Core.Text;
@@ -48,7 +48,8 @@ public sealed record UnresolvedReading(
     int? Quantity,
     string? PartNumber,
     int? ColorCode,
-    string Reason);
+    string Reason,
+    string? Picture = null);
 
 /// <summary>Everything one run of the reader produced.</summary>
 public sealed record CatalogueReadResult(
