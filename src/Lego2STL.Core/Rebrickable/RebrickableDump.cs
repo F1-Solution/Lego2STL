@@ -2,6 +2,9 @@ using System.Globalization;
 
 namespace Lego2STL.Core.Rebrickable;
 
+/// <summary>What the dump says a part is: the kind of thing, and what it is made of.</summary>
+public sealed record PartFact(string Category, string Material);
+
 /// <summary>
 /// Reads the CSV files from a Rebrickable bulk download, when one is available locally.
 /// </summary>
@@ -75,6 +78,145 @@ public static class RebrickableDump
 
     /// <summary>The file in a dump that maps element numbers to parts and colours.</summary>
     public const string ElementsFileName = "elements.csv";
+
+    /// <summary>The file in a dump that lists every part.</summary>
+    public const string PartsFileName = "parts.csv";
+
+    /// <summary>The file in a dump that names the categories the parts file refers to.</summary>
+    public const string CategoriesFileName = "part_categories.csv";
+
+    /// <summary>
+    /// Reads <c>parts.csv</c> and <c>part_categories.csv</c> into part number to kind and
+    /// material.
+    /// </summary>
+    /// <param name="candidates">
+    /// Places to look, best first: the setting, then the document's own folder, then wherever
+    /// the command was run from. The first that answers is used.
+    /// </param>
+    /// <returns>An empty map when there is no readable dump. Never throws.</returns>
+    public static IReadOnlyDictionary<string, PartFact> TryReadPartFacts(params string?[]? candidates)
+    {
+        var empty = new Dictionary<string, PartFact>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var candidate in candidates ?? [])
+        {
+            var facts = ReadPartFacts(candidate);
+            if (facts.Count > 0)
+            {
+                return facts;
+            }
+        }
+
+        return empty;
+    }
+
+    private static Dictionary<string, PartFact> ReadPartFacts(string? path)
+    {
+        var empty = new Dictionary<string, PartFact>(StringComparer.OrdinalIgnoreCase);
+
+        var partsFile = TryFindFile(path, PartsFileName);
+        if (partsFile is null)
+        {
+            return empty;
+        }
+
+        try
+        {
+            var categories = ReadCategoryNames(TryFindFile(path, CategoriesFileName));
+
+            var lines = File.ReadAllLines(partsFile);
+            if (lines.Length == 0)
+            {
+                return empty;
+            }
+
+            var header = SplitCsvLine(lines[0]);
+            var numberIndex = IndexOf(header, "part_num");
+            var categoryIndex = IndexOf(header, "part_cat_id");
+            var materialIndex = IndexOf(header, "part_material");
+
+            if (numberIndex < 0 || categoryIndex < 0 || materialIndex < 0)
+            {
+                return empty;
+            }
+
+            var facts = new Dictionary<string, PartFact>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var line in lines.Skip(1))
+            {
+                if (line.Length == 0)
+                {
+                    continue;
+                }
+
+                var f = SplitCsvLine(line);
+                if (f.Length <= Math.Max(numberIndex, Math.Max(categoryIndex, materialIndex)))
+                {
+                    continue;
+                }
+
+                facts[f[numberIndex]] = new PartFact(
+                    categories.GetValueOrDefault(f[categoryIndex], string.Empty),
+                    f[materialIndex]);
+            }
+
+            return facts;
+        }
+        catch (IOException)
+        {
+            return empty;   // optional input: never fail the run because of it
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return empty;
+        }
+    }
+
+    private static Dictionary<string, string> ReadCategoryNames(string? categoriesFile)
+    {
+        var names = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (categoriesFile is null)
+        {
+            return names;
+        }
+
+        try
+        {
+            var lines = File.ReadAllLines(categoriesFile);
+            if (lines.Length == 0)
+            {
+                return names;
+            }
+
+            var header = SplitCsvLine(lines[0]);
+            var idIndex = IndexOf(header, "id");
+            var nameIndex = IndexOf(header, "name");
+
+            if (idIndex < 0 || nameIndex < 0)
+            {
+                return names;
+            }
+
+            foreach (var line in lines.Skip(1))
+            {
+                var f = SplitCsvLine(line);
+                if (f.Length > Math.Max(idIndex, nameIndex))
+                {
+                    names[f[idIndex]] = f[nameIndex];
+                }
+            }
+
+            return names;
+        }
+        catch (IOException)
+        {
+            return names;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return names;
+        }
+    }
 
     /// <summary>
     /// Reads <c>elements.csv</c> and returns element number to part number and Rebrickable
@@ -151,7 +293,17 @@ public static class RebrickableDump
     /// The <c>elements.csv</c> a path points at, whether it names the file, the folder holding
     /// it, or a folder holding the folder.
     /// </summary>
-    public static string? TryFindElementsFile(string? path)
+    public static string? TryFindElementsFile(string? path) => TryFindFile(path, ElementsFileName);
+
+    /// <summary>
+    /// One named file of a dump, from a path that names it, the folder holding it, or a folder
+    /// holding that folder.
+    /// </summary>
+    /// <remarks>
+    /// A path naming one file of the dump names the folder for all the others, because the
+    /// setting that carries it was written when only <c>elements.csv</c> was wanted.
+    /// </remarks>
+    public static string? TryFindFile(string? path, string fileName)
     {
         if (string.IsNullOrWhiteSpace(path))
         {
@@ -160,7 +312,15 @@ public static class RebrickableDump
 
         if (File.Exists(path))
         {
-            return path;
+            if (string.Equals(Path.GetFileName(path), fileName, StringComparison.OrdinalIgnoreCase))
+            {
+                return path;
+            }
+
+            var beside = Path.Combine(
+                Path.GetDirectoryName(Path.GetFullPath(path)) ?? ".", fileName);
+
+            return File.Exists(beside) ? beside : null;
         }
 
         if (!Directory.Exists(path))
@@ -168,7 +328,7 @@ public static class RebrickableDump
             return null;
         }
 
-        var here = Path.Combine(path, ElementsFileName);
+        var here = Path.Combine(path, fileName);
         if (File.Exists(here))
         {
             return here;
@@ -180,7 +340,7 @@ public static class RebrickableDump
             // is found without anyone having to name it.
             return Directory
                 .EnumerateDirectories(path)
-                .Select(d => Path.Combine(d, ElementsFileName))
+                .Select(d => Path.Combine(d, fileName))
                 .FirstOrDefault(File.Exists);
         }
         catch (IOException)
