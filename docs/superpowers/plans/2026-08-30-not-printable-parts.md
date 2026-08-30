@@ -1377,6 +1377,11 @@ stands:**
   between one label's top and the next (page 4, around x=791), leaving 93 px - just over two
   label heights - of clear page above a label, and four label heights would routinely reach into
   the entry above.
+- Height alone is still not enough on a book that prints its catalogue as text: the instruction
+  book's two catalogue pages set their labels 24-25 px tall with a median of 51 clear rows above
+  each, and as few as 23, so three label heights photographed the label above on more than half
+  of them. The band therefore also stops under the nearest entry printed above it, which is what
+  Step 3's `CeilingAbove` gives it.
 
 ```csharp
 using Lego2STL.Core.Ocr;

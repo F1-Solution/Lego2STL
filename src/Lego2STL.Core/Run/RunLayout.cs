@@ -42,6 +42,9 @@ public sealed class RunLayout
 
     public string StlDirectory => Path.Combine(Root, "stl");
 
+    /// <summary>A picture of each part, cut from the document it was read from.</summary>
+    public string ImageDirectory => Path.Combine(Root, "images");
+
     public string PlateDirectory => Path.Combine(Root, "3mf");
 
     /// <summary>Answers given during review, so the same question is not asked twice.</summary>

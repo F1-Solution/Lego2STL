@@ -1,5 +1,6 @@
 ﻿using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Colors;
+using Lego2STL.Core.Extraction;
 using Lego2STL.Core.Geometry;
 using Lego2STL.Core.LDraw;
 using Lego2STL.Core.Ocr;
@@ -246,6 +247,11 @@ public sealed class PipelineRunner
         var unresolved = new List<UnresolvedReading>();
         var read = new List<string>();
 
+        // Worked out before the reading rather than after it, because a page's picture of a
+        // part has to be filed while the page is in hand. The folder itself is still made
+        // only when there is something to put in it.
+        var layout = RunLayout.Plan(settings)!;
+
         Report(RunStage.ReadingDocument, 0, pages.Count);
 
         if (printed.Count > 0)
@@ -253,7 +259,7 @@ public sealed class PipelineRunner
             _log(words.Format(TextKey.MsgReadingPrintedPages, PageRange.Format(printed)));
 
             var (found, missed) = await ReadPrintedPagesAsync(
-                settings, document, printed, read, cancellationToken).ConfigureAwait(false);
+                settings, document, layout, printed, read, cancellationToken).ConfigureAwait(false);
 
             entries.AddRange(found);
             unresolved.AddRange(missed);
@@ -265,7 +271,7 @@ public sealed class PipelineRunner
 
             var reader = new CatalogueReader(OcrEngines.Create(null, words), null, words);
             var recognised = await ReadPagesAsync(
-                    reader, document, toRecognise, printed.Count, pages.Count, cancellationToken)
+                    reader, document, layout, toRecognise, printed.Count, pages.Count, cancellationToken)
                 .ConfigureAwait(false);
 
             entries.AddRange(recognised.Entries);
@@ -284,7 +290,6 @@ public sealed class PipelineRunner
         var list = PartsListBuilder.Build(entries, ColorReference.Table, settings.ColorScheme, words);
         notes.AddRange(list.Notes);
 
-        var layout = RunLayout.Plan(settings)!;
         layout.CreateDirectories();
 
         return (list, layout, unresolved);
@@ -298,6 +303,7 @@ public sealed class PipelineRunner
         ReadPrintedPagesAsync(
             RunSettings settings,
             PdfPageImageSource document,
+            RunLayout layout,
             IReadOnlyList<int> pages,
             List<string> notes,
             CancellationToken cancellationToken)
@@ -323,6 +329,22 @@ public sealed class PipelineRunner
             var onPage = document.ReadPrintedCatalogue(pageNumber);
             notes.Add(words.Format(TextKey.NoteEntriesFound, pageNumber, onPage.Count));
             printed.AddRange(onPage.Select(e => (pageNumber, e)));
+
+            if (onPage.Count > 0)
+            {
+                using var image = document.GetPage(pageNumber);
+                var everyLabel = onPage.Select(e => e.Bounds).ToList();
+
+                foreach (var entry in onPage)
+                {
+                    PartPicture.TryWrite(
+                        image.Bitmap,
+                        entry.Bounds,
+                        layout.ImageDirectory,
+                        entry.ElementId,
+                        PartPicture.CeilingAbove(entry.Bounds, everyLabel, image.Width));
+                }
+            }
         }
 
         var distinct = printed.Select(p => p.Entry.ElementId).Distinct(StringComparer.OrdinalIgnoreCase).Count();
@@ -358,6 +380,8 @@ public sealed class PipelineRunner
                 continue;
             }
 
+            PartPicture.Rename(layout.ImageDirectory, entry.ElementId, resolved.PartNumber);
+
             entries.Add(new CatalogueReading(
                 pageNumber,
                 entry.Bounds,
@@ -381,6 +405,7 @@ public sealed class PipelineRunner
     private async Task<CatalogueReadResult> ReadPagesAsync(
         CatalogueReader reader,
         PdfPageImageSource document,
+        RunLayout layout,
         IReadOnlyList<int> pages,
         int alreadyDone,
         int total,
@@ -399,6 +424,22 @@ public sealed class PipelineRunner
             Report(RunStage.ReadingDocument, alreadyDone + i, total, $"page {pages[i]}");
 
             var one = await reader.ReadAsync(document, [pages[i]], cancellationToken).ConfigureAwait(false);
+
+            if (one.Entries.Count > 0)
+            {
+                using var image = document.GetPage(pages[i]);
+                var everyLabel = one.Entries.Select(e => e.Bounds).ToList();
+
+                foreach (var reading in one.Entries)
+                {
+                    PartPicture.TryWrite(
+                        image.Bitmap,
+                        reading.Bounds,
+                        layout.ImageDirectory,
+                        reading.PartNumber,
+                        PartPicture.CeilingAbove(reading.Bounds, everyLabel, image.Width));
+                }
+            }
 
             entries.AddRange(one.Entries);
             unresolved.AddRange(one.Unresolved);
