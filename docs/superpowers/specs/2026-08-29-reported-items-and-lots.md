@@ -1,7 +1,7 @@
 # The reported items, and the lots they were split into
 
 **Date:** 2026-08-29
-**Status:** the record. Lots A and B are merged; C is being designed; D is untouched.
+**Status:** the record. Lots A and B are merged; C and D are designed and planned, not built.
 
 The fourteen items below are the user's report, quoted as written. The work was split into four
 lots, and this file is the only place that mapping is written down — it was reconstructed on
@@ -16,8 +16,8 @@ it cannot be lost again.
 |---|---|---|
 | **A** | 1, 3, 4, 5, 6 (the Italian wording only), 7, 8 | merged — `3ad05ea`, `bb12cc2`, `f798a53` |
 | **B** | 2, 11, 13 | merged — `00ddbaa` (nine tasks, `980f006`..`53e8c55`) |
-| **C** | 9, 14 | designed in `2026-08-30-not-printable-parts-design.md`; not yet built |
-| **D** | 6 (the popup), 10, 12 | recorded in `2026-08-30-lot-d-what-is-left.md`; not designed |
+| **C** | 9, 14 | planned in `plans/2026-08-30-not-printable-parts.md`; not yet built |
+| **D** | 6 (the popup), 10, 12 | one plan each, listed in `2026-08-30-lot-d-what-is-left.md`; not yet built |
 
 Lot B reversed part of item 2 on the strength of measurement: no *Repair* button, because after
 the two repair corrections there is nothing left to ask of a part the run has not already tried.
@@ -76,8 +76,14 @@ hollow shells.
 
 ## Lot D — where the record lives
 
-Recorded on 2026-08-30 in `2026-08-30-lot-d-what-is-left.md`: item 6 (the dialogue that asks a
-person about a region the reader could not make out), item 10 (turning a part to need fewer
-supports, still a spike) and item 12 (the application icon). That file also lists what the code
-already holds for each — notably that `ReviewDirectory` and `OverridesPath` were designed for
-item 6 and never wired up. None of the three is designed yet.
+Recorded on 2026-08-30 in `2026-08-30-lot-d-what-is-left.md`, which holds the decisions taken for
+each and what the code already provides — notably that `ReviewDirectory` and `OverridesPath` were
+declared for item 6 years-of-commits ago and wired to nothing, and that `RunManifest.Unread`
+keeps its entries as finished sentences, the same defect Lot B fixed for the parts that did not
+fit. Three plans, one per item:
+
+| Item | Plan |
+|---|---|
+| 6 — asking a person about a region the reader could not make out | `plans/2026-08-30-answering-what-was-not-read.md` |
+| 10 — turning a part to need fewer supports | `plans/2026-08-30-turning-a-part-spike.md` (a spike: the output is an answer, not a feature) |
+| 12 — the application icon | `plans/2026-08-30-the-application-icon.md` |

@@ -1,8 +1,10 @@
 # Lot D — what is left, and what is already known about it
 
 **Date:** 2026-08-30
-**Status:** a record, not a design. Each of the three items needs its own brainstorming before it
-is built.
+**Status:** the decisions for all three were taken on 2026-08-30 and each now has its own plan:
+`plans/2026-08-30-answering-what-was-not-read.md` (item 6),
+`plans/2026-08-30-turning-a-part-spike.md` (item 10) and
+`plans/2026-08-30-the-application-icon.md` (item 12).
 **Covers:** items 6, 10 and 12 of the reported list — see
 `2026-08-29-reported-items-and-lots.md`.
 
@@ -38,11 +40,30 @@ So the shape of the answer was designed once and left unbuilt. Whoever picks thi
 those three declarations first: they are the intended design, written by the person who saw the
 problem.
 
-**Open questions.** When is the question asked — during the run, which blocks a long run on a
-person, or afterwards over a finished run's record, which is what `OverridesPath` implies? What
-does *"Not a LEGO code"* record, so the same region is never offered again? Does answering
-re-run anything, or only correct the parts list? Does the CLI get a way to answer too, or is this
-the window's alone?
+**One thing more, found on 2026-08-30.** A run's record keeps its unread entries as
+`IReadOnlyList<string>` of finished sentences — `RunManifest.Unread`, formatted at the moment the
+manifest is built — so nothing downstream can say which page, which region, or what was read. It
+is the same defect Lot B found in the list of parts too big for the plate and fixed by turning
+strings into data. Item 6 has to do that first; the dialogue cannot be built over a sentence.
+
+**Decisions, taken 2026-08-30.**
+
+- **Asked afterwards, over the finished run.** The run never stops for a person: a run of several
+  hours left going overnight has to finish on its own. The catalogue shows the unread entries
+  with their crops and they are answered one at a time. This is what `OverridesPath` was declared
+  for.
+- **"Not a LEGO code" marks a region, not a run.** Page and bounds are recorded as "not an
+  entry", so the same document read again — and a second run over the same pages — does not
+  ask again. It does not touch the parts list, because nothing was ever added to it.
+- **Answering corrects the parts list and nothing else.** The way back to shapes and plates is
+  the road that already exists: *continue from the parts list*, which lands in the same folder.
+  No new kind of run, and no partial re-run.
+- **The window's alone.** The command line already reports what it could not read; answering a
+  question is a conversation, and a report is a file.
+
+**Still open, for its plan to settle.** How a corrected entry reaches the parts list when the run
+folder has been reopened weeks later, and what the dialogue does with an entry whose part number
+reads cleanly but whose colour does not.
 
 ---
 
@@ -85,9 +106,9 @@ the built executable carries the framework's icon too.
 own icon, the assets folder, and the installers under `packaging/` — a shortcut with the default
 Avalonia logo is the most visible place the old icon would survive.
 
-**Open questions.** What the icon should say — a brick, a printed layer, both — and whether it is
-drawn as an SVG and rendered down to the four sizes, or drawn separately at 16 px, where an
-outline that works at 128 px turns to mud.
+**Decision, taken 2026-08-30.** Two or three proposals are drawn as SVG, rendered to all four
+sizes, and looked at before one is chosen — an icon is judged by eye at 16 px, not by argument.
+The plan therefore has a gate in the middle rather than a subject settled up front.
 
 ---
 
