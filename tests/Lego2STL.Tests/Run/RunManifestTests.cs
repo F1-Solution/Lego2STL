@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Lego2STL.Core.Pipeline;
+using Lego2STL.Core.Rebrickable;
 using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
 
@@ -264,5 +265,36 @@ public sealed class RunManifestTests
         measured.Should().NotBeEmpty();
         measured.Should().OnlyContain(part => part.OverusedEdgeCount != null,
             "a shape that was measured was measured for both");
+    }
+
+    /// <summary>
+    /// Why a part was not built is kept on the record, so a run reopened later says the same
+    /// thing without the parts database being present.
+    /// </summary>
+    [Fact]
+    public void A_part_that_was_not_built_says_why_on_the_record()
+    {
+        var layout = ARunFolder();
+
+        var outcome = APretendRun.Complete(layout) with
+        {
+            PartFacts = new Dictionary<string, PartFact>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["32523"] = new("Tubes and Hoses", "Rubber"),
+            },
+            NotPrinted = ["32523"],
+        };
+
+        var manifest = RunManifest.From(outcome, APretendRun.Started, APretendRun.Finished, null);
+        var document = RunDocument.From(manifest, layout);
+
+        var hose = document.Parts.Single(p => p.PartNumber == "32523");
+
+        hose.Printability.Should().Be("material");
+        hose.NotPrinted.Should().BeTrue();
+        hose.NotPrintedForMaterial.Should().BeTrue();
+
+        document.Parts.Where(p => p.PartNumber != "32523")
+            .Should().OnlyContain(p => p.NotPrinted == false);
     }
 }

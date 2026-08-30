@@ -5,6 +5,7 @@ using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Geometry;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Plates;
+using Lego2STL.Core.Rebrickable;
 using Lego2STL.Core.Text;
 
 namespace Lego2STL.Core.Run;
@@ -72,7 +73,8 @@ public sealed record ManifestPart(
     double? ThinnestSpanMm,
     int? OverusedEdgeCount = null,
     float? ClosedAtTolerance = null,
-    string? ElementId = null);
+    string? ElementId = null,
+    string? Printability = null);
 
 /// <summary>
 /// What a run records about itself, in its own folder.
@@ -231,11 +233,14 @@ public sealed record RunManifest
             Notes = [.. outcome.Notes],
             Error = outcome.Error,
 
-            Parts = [.. entries.Select(entry => Part(entry, shapes))],
+            Parts = [.. entries.Select(entry => Part(entry, shapes, outcome.PartFacts))],
         };
     }
 
-    private static ManifestPart Part(PartEntry entry, Dictionary<string, PreparedMesh> shapes)
+    private static ManifestPart Part(
+        PartEntry entry,
+        Dictionary<string, PreparedMesh> shapes,
+        IReadOnlyDictionary<string, PartFact> facts)
     {
         shapes.TryGetValue(entry.PartNumber, out var shape);
 
@@ -253,7 +258,8 @@ public sealed record RunManifest
             shape is null ? null : ClearanceOffset.ThinnestSpan(shape.Mesh),
             shape?.Quality.OverusedEdgeCount,
             shape?.ClosedAtTolerance,
-            entry.ElementId);
+            entry.ElementId,
+            Core.Catalogue.Printability.Of(facts.GetValueOrDefault(entry.PartNumber)).Token());
     }
 
     private static ManifestStage? Stage(RunProgress? progress) =>

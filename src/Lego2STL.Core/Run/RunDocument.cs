@@ -28,7 +28,8 @@ public sealed record RunDocumentPart(
     double? ThinnestSpanMm,
     int? OverusedEdgeCount = null,
     float? ClosedAtTolerance = null,
-    string? ElementId = null)
+    string? ElementId = null,
+    string? Printability = null)
 {
     /// <summary>
     /// Below this, in millimetres, a wall is thinner than a common nozzle can lay down and the
@@ -53,6 +54,25 @@ public sealed record RunDocumentPart(
     public bool HasSelfIntersection =>
         OverusedEdgeCount > 0
         || (OverusedEdgeCount is null && IsClosed == false && OpenEdgeCount == 0);
+
+    /// <summary>True when the run deliberately did not build this part.</summary>
+    public bool NotPrinted =>
+        !Core.Catalogue.Printability.FromToken(Printability).IsPrinted();
+
+    /// <summary>True when what it is made of is what ruled it out, rather than what it is.</summary>
+    public bool NotPrintedForMaterial =>
+        Core.Catalogue.Printability.FromToken(Printability) is Printable.NotItsMaterial;
+
+    /// <summary>
+    /// True when the parts database has never heard of this code.
+    /// </summary>
+    /// <remarks>
+    /// Also true of every part of a run recorded before the database was consulted, which is why
+    /// nothing is refused on this alone - it only chooses which sentence a card that has nothing
+    /// else to show puts on itself.
+    /// </remarks>
+    public bool IsUnknownPart =>
+        Core.Catalogue.Printability.FromToken(Printability) is Printable.Unknown;
 
     public bool HasThinFeatures =>
         ThinnestSpanMm is { } span && span < ThinnestPrintableMillimetres;
@@ -215,7 +235,8 @@ public sealed record RunDocument
                     part.ThinnestSpanMm,
                     part.OverusedEdgeCount,
                     part.ClosedAtTolerance,
-                    part.ElementId)),
+                    part.ElementId,
+                    part.Printability)),
             ],
         };
     }
