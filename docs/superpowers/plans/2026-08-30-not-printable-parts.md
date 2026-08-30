@@ -1362,8 +1362,21 @@ Expected: FAIL to compile — `PartPicture` does not exist.
 
 - [ ] **Step 3: Write it**
 
-Create `src/Lego2STL.Core/Extraction/PartPicture.cs`. **The band's rule and the numbers in it
-come from Task 5; the values below are the fallback, to be replaced by what was measured:**
+Create `src/Lego2STL.Core/Extraction/PartPicture.cs`. **Task 5 measured the reference document's
+53 labels on pages 2-5 and found no clean gap, so the fallback rule below is the one that
+stands:**
+
+- Every label is 44-45 px tall, and in 51 of the 53 the ink above it resumes within 1-9 px, so a
+  label and the drawing it belongs to are not separated by white at all.
+- "Up to the first run of N white rows" is unstable in N: the median band it produces is 0.02
+  label heights at N=3, 0.02 at N=5, 1.98 at N=8, 2.53 at N=12 and 2.56 at N=16, with individual
+  labels ranging from 0.02 to 10.9 label heights - at N>=8 it sometimes swallows the entry above.
+- The drawings themselves measure about 2.5 label heights on average and 3.5 at the ninetieth
+  percentile, so three label heights is the band that covers most of a drawing.
+- Three is also the most that is safe: the tightest column on the reference pages puts 138 px
+  between one label's top and the next (page 4, around x=791), leaving 93 px - just over two
+  label heights - of clear page above a label, and four label heights would routinely reach into
+  the entry above.
 
 ```csharp
 using Lego2STL.Core.Ocr;
