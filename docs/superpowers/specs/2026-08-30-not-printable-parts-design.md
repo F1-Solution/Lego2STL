@@ -110,12 +110,17 @@ While the pages are being read, the run crops the part's drawing — the band ab
 and writes it to a new `images/` folder in the run, one PNG per part number. The catalogue looks
 for it the way it already looks for `stl/<part>.stl`, so nothing new goes on the manifest.
 
+One picture per part number, not per part and colour, for the same reason the shapes are: the
+drawing shows the shape, and the card already carries its own colour. Where a document prints the
+same part in two colours, the first one read is kept and the second is not written.
+
 **The one thing this design does not yet know is how tall that band is.** The run knows where the
 label's *text* is, not where the drawing above it ends. Implementation begins by measuring it on
-the reference document: first by following the ink upward with the connected components the
-extraction already computes, stopping at the vertical gap that separates one entry from the row
-above; failing that, by a fixed multiple of the label's height. The measurement decides; no
-constant is invented here.
+the reference document: by following the ink upward with the connected components the extraction
+already computes, stopping at the vertical gap that separates one entry from the row above. If
+that proves unreliable, the fallback is the label's own width, extended upward by three times the
+label's height and clipped to the page — a starting point the measurement is free to overturn,
+not a constant to be trusted on sight.
 
 ### 2.2 When there is no document
 
@@ -152,6 +157,10 @@ for runs read from a document, which is where Lot B put it.
 
 The existing warnings — open edges, surfaces that pass through each other, features thinner than
 the nozzle, too big for the plate — are unaffected and keep their place.
+
+The command line goes as far as saying it. The report names every part left out and why, and the
+counts it prints are counts of what the run actually built. Choosing a shop and opening it is the
+window's, because a shop is a preference and the report is a file.
 
 ## Testing
 
