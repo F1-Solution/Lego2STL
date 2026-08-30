@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -41,6 +42,14 @@ public sealed class UserSettings
     /// <summary>Which numbering the catalogue last showed.</summary>
     [JsonPropertyName("partNumbering")]
     public string? PartNumbering { get; set; }
+
+    /// <summary>Where parts can be bought, in the order they are offered.</summary>
+    [JsonPropertyName("shops")]
+    public List<Shop> Shops { get; set; } = [];
+
+    /// <summary>The name of the shop whose button the catalogue shows.</summary>
+    [JsonPropertyName("preferredShop")]
+    public string? PreferredShop { get; set; }
 
     [JsonIgnore]
     public DisplayLanguage DisplayLanguage =>
