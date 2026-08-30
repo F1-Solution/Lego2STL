@@ -16,8 +16,8 @@ it cannot be lost again.
 |---|---|---|
 | **A** | 1, 3, 4, 5, 6 (the Italian wording only), 7, 8 | merged — `3ad05ea`, `bb12cc2`, `f798a53` |
 | **B** | 2, 11, 13 | merged — `00ddbaa` (nine tasks, `980f006`..`53e8c55`) |
-| **C** | 9, 14 | designed here; not yet built |
-| **D** | 6 (the popup), 10, 12 | not started |
+| **C** | 9, 14 | designed in `2026-08-30-not-printable-parts-design.md`; not yet built |
+| **D** | 6 (the popup), 10, 12 | recorded in `2026-08-30-lot-d-what-is-left.md`; not designed |
 
 Lot B reversed part of item 2 on the strength of measurement: no *Repair* button, because after
 the two repair corrections there is nothing left to ask of a part the run has not already tried.
@@ -65,34 +65,19 @@ See `2026-08-29-catalogue-actions-design.md`.
 
 ---
 
-## Lot C — decisions taken so far
+## Lot C — where the design lives
 
-Being brainstormed on 2026-08-29. The design document will supersede this section; until it
-exists, these are the answers already given.
+Designed on 2026-08-30 in `2026-08-30-not-printable-parts-design.md`. In short: the run asks a
+local Rebrickable dump whether a part is printed at all, refuses to build the ones that are not —
+rubber, cloth, card, foam, flexible plastic and metal by material; electronics and stickers by
+kind — and the catalogue shows a picture of each and offers to buy it from a shop chosen in the
+settings. Measured on run `6324712`, that stops three Powered Up components being printed as
+hollow shells.
 
-- **Two faults, not one.** The material says "this cannot be printed at all" (item 9); the
-  absence of a shape says "this could not be built" (item 14). Different messages on the card and
-  different offers. Measured on run `6324712`: of the four parts that produced nothing,
-  `5102c13/17/21` are rubber hoses and `40918` is a plastic linear actuator that LDraw has no
-  file for — the same symptom from two different causes.
-- **The material comes from the local dump.** `DB Lego/parts.csv` carries `part_material`
-  (Plastic, Cardboard/Paper, Cloth, Rubber, Foam, Flexible Plastic, Metal) and no code reads it
-  today. Rebrickable's API does not expose it. Reading the dump works offline.
-- **The picture comes from two places.** A crop from the PDF when the run came from one — it
-  works offline and is the very part the book shows — and Rebrickable's `part_img_url` for runs
-  from a CSV or a set number, and as a fallback. Note that the run today knows where the label's
-  *text* is, not where the drawing above it is, so the crop is new work.
+## Lot D — where the record lives
 
-Still open: which shops the settings list offers, and what the card does for a part that is
-neither printable nor buyable.
-
----
-
-## Lot D — what is left
-
-- **Item 6, the popup.** Lot A fixed only the wording ("page 372 at" appearing in English in an
-  Italian run). The dialogue that shows the unread crop and asks for part, colour and quantity —
-  with *Ok*, *Skip* and *Not a LEGO code* — was never built.
-- **Item 10, turning a part to need fewer supports.** Still a spike: nobody has measured whether
-  it can be decided from the geometry the pipeline already has.
-- **Item 12, the application icon.** 16, 32, 64 and 128 px, as `.ico`, `.png` and `.svg`.
+Recorded on 2026-08-30 in `2026-08-30-lot-d-what-is-left.md`: item 6 (the dialogue that asks a
+person about a region the reader could not make out), item 10 (turning a part to need fewer
+supports, still a spike) and item 12 (the application icon). That file also lists what the code
+already holds for each — notably that `ReviewDirectory` and `OverridesPath` were designed for
+item 6 and never wired up. None of the three is designed yet.
