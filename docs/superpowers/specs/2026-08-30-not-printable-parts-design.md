@@ -175,6 +175,37 @@ window's, because a shop is a preference and the report is a file.
 - The shop list surviving a save and a re-read, including a file that cannot be parsed.
 - The four states of the card, in both languages.
 
+## What it actually did
+
+Measured on run `6324712` (223 entries, 179 distinct parts, `--scale 200`), built with the
+finished work and compared with the run this design was written from.
+
+| | Before | After |
+|---|---|---|
+| Shapes written | 175 | 172 |
+| Plates written | 124 | 120 |
+| Parts reported as producing nothing | 4 | 1 |
+
+Six parts are left out, and they are the six the design named:
+
+| Part | What it is | Why |
+|---|---|---|
+| `5102c13`, `5102c17`, `5102c21` | pneumatic hoses | rubber |
+| `22127` | Powered Up 4-port hub | electronics |
+| `22169` | Powered Up large motor | electronics |
+| `22172` | Powered Up XL motor | electronics |
+
+The three hoses used to fail loudly and count against the run; they are now left out on purpose,
+which is why the failure list falls from four entries to one. The three Powered Up components
+used to be printed as hollow shells, which is the three shapes and the four plates saved. The one
+part still reported as producing nothing is `40918`, a plastic linear actuator with no shape file
+— unchanged, and correctly so.
+
+Nothing was left out that should have been printed: every remaining part of the run is either
+known to the database as printable or unknown to it, and an unknown part is built exactly as
+before. The closed-shape count also rises, from 123 to 145, but that is Lot B's mesh repair
+rather than this work: the recorded run predates it.
+
 ## What this design does not do
 
 - It does not turn a part to need fewer supports. That is item 10, still a spike, in Lot D.
