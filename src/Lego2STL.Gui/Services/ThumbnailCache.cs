@@ -29,6 +29,8 @@ public sealed class ThumbnailCache : IDisposable
 {
     private const string UrlPattern = "https://cdn.rebrickable.com/media/parts/ldraw/{0}/{1}.png";
 
+    private const string PhotoUrlPattern = "https://cdn.rebrickable.com/media/parts/photos/{0}.jpg";
+
     private readonly HttpClient _http;
     private readonly string _directory;
     private readonly SemaphoreSlim _atOnce = new(4, 4);
@@ -79,6 +81,71 @@ public sealed class ThumbnailCache : IDisposable
             {
                 var url = string.Format(
                     System.Globalization.CultureInfo.InvariantCulture, UrlPattern, ldrawColor, partNumber);
+
+                using var response = await _http.GetAsync(url, cancellationToken).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+
+                Directory.CreateDirectory(_directory);
+                var bytes = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+                await File.WriteAllBytesAsync(path, bytes, cancellationToken).ConfigureAwait(false);
+
+                return Load(path);
+            }
+            finally
+            {
+                _atOnce.Release();
+            }
+        }
+        catch (Exception ex) when (ex is HttpRequestException
+                                       or IOException
+                                       or TaskCanceledException
+                                       or UnauthorizedAccessException
+                                       or ArgumentException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// A photograph of the part itself, for the ones no render exists for.
+    /// </summary>
+    /// <remarks>
+    /// The renders the catalogue normally shows are drawn from the shape library, so the parts
+    /// this is for - electronics, hoses, anything with no shape file - have no render at all.
+    /// A photograph has no colour of its own to choose, which is why this one is not asked for
+    /// one.
+    /// </remarks>
+    public async Task<Bitmap?> TryGetPhotoAsync(
+        string partNumber,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(partNumber))
+        {
+            return null;
+        }
+
+        var path = Path.Combine(_directory, $"photo-{Safe(partNumber)}.png");
+
+        try
+        {
+            if (File.Exists(path))
+            {
+                return Load(path);
+            }
+
+            if (Offline)
+            {
+                return null;
+            }
+
+            await _atOnce.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                var url = string.Format(
+                    System.Globalization.CultureInfo.InvariantCulture, PhotoUrlPattern, partNumber);
 
                 using var response = await _http.GetAsync(url, cancellationToken).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
