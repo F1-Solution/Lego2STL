@@ -95,3 +95,11 @@ PHASE:LOT-C WAVE:11 STATUS:complete TS:2026-08-30T20:11:22Z
 # each and offers to buy it. On run 6324712 that is six parts, three shapes and four plates.
 PHASE:LOT-C WAVE:0 STATUS:complete TS:2026-08-30T20:11:47Z
 PHASE:LOT-D WAVE:6.1 STATUS:complete TS:2026-08-30T22:32:58Z
+PHASE:LOT-D WAVE:6.2 STATUS:complete TS:2026-08-30T22:42:18Z
+PHASE:LOT-D WAVE:6.3 STATUS:complete TS:2026-08-30T22:44:08Z
+PHASE:LOT-D WAVE:6.4 STATUS:complete TS:2026-08-30T22:46:51Z
+PHASE:LOT-D WAVE:6.5 STATUS:complete TS:2026-08-30T22:58:39Z
+# Item 6: unread entries are data, the run crops them, and the catalogue asks - three
+# buttons, the answer corrects the parts list in the folder. Driving the real window by
+# hand against pages 370-372 is left for a person; everything headless is covered.
+PHASE:LOT-D WAVE:6 STATUS:complete TS:2026-08-30T22:59:50Z
