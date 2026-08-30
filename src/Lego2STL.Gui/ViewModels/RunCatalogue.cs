@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Media.Imaging;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Plates;
 using Lego2STL.Core.Run;
@@ -22,12 +23,16 @@ namespace Lego2STL.Gui.ViewModels;
 /// </remarks>
 internal static class RunCatalogue
 {
-    public static IReadOnlyList<CataloguePartViewModel> Build(RunDocument document)
+    public static IReadOnlyList<CataloguePartViewModel> Build(RunDocument document, Shop? shop = null)
     {
         var plates = PlatesIn(document.PlateDirectory);
 
         var tooBig = document.DidNotFit
             .Select(part => part.PartNumber)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var noShape = document.Failed
+            .Select(failure => failure.Part)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         return
@@ -40,7 +45,9 @@ internal static class RunCatalogue
                     part,
                     File.Exists(shape) ? shape : null,
                     PlateFor(document, plates, part),
-                    tooBig.Contains(part.PartNumber));
+                    tooBig.Contains(part.PartNumber),
+                    noShape.Contains(part.PartNumber),
+                    shop);
             }),
         ];
     }
@@ -60,18 +67,41 @@ internal static class RunCatalogue
     public static async Task LoadPicturesAsync(
         ThumbnailCache thumbnails,
         IReadOnlyList<CataloguePartViewModel> parts,
+        string imageDirectory,
         bool offline)
     {
         thumbnails.Offline = offline;
 
         foreach (var part in parts)
         {
-            if (!ColorReference.Table.TryGet(ColorScheme.BrickLink, part.BrickLinkColorCode, out var colour))
+            var cut = Path.Combine(imageDirectory, part.PartNumber + ".png");
+
+            if (File.Exists(cut))
             {
+                part.Picture = Load(cut);
                 continue;
             }
 
-            part.Picture = await thumbnails.TryGetAsync(part.PartNumber, colour).ConfigureAwait(true);
+            if (ColorReference.Table.TryGet(ColorScheme.BrickLink, part.BrickLinkColorCode, out var colour))
+            {
+                part.Picture = await thumbnails.TryGetAsync(part.PartNumber, colour).ConfigureAwait(true);
+            }
+
+            part.Picture ??= await thumbnails.TryGetPhotoAsync(part.PartNumber).ConfigureAwait(true);
+        }
+    }
+
+    /// <summary>A picture already on the disk, or nothing when it cannot be read.</summary>
+    private static Bitmap? Load(string path)
+    {
+        try
+        {
+            using var stream = File.OpenRead(path);
+            return new Bitmap(stream);
+        }
+        catch (Exception ex) when (ex is IOException or ArgumentException)
+        {
+            return null;
         }
     }
 

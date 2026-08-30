@@ -314,6 +314,12 @@ public sealed partial class Strings
             [TextKey.UiWarningThinFeature] =
                 "Questo pezzo ha dettagli più sottili di un ugello da 0,4 mm.",
             [TextKey.UiDoesNotFitThePlate] = "Troppo grande per il piano, quindi non è su nessuno.",
+            [TextKey.UiNotPrintedMaterial] = "Questo pezzo non si può stampare; va comprato.",
+            [TextKey.UiNotPrintedKind] = "Questo è un pezzo da comprare, non da stampare.",
+            [TextKey.UiNoShapeWasBuilt] = "Non è stato possibile costruire la forma di questo pezzo.",
+            [TextKey.UiPartNotRecognised] = "Questo codice non è stato riconosciuto, quindi non è stato costruito nulla.",
+            [TextKey.UiBuy] = "Compralo",
+            [TextKey.UiSearchForIt] = "Cercalo",
             [TextKey.UiSomePartsDoNotFit] =
                 "{0} pezzo/i non entrano nel piano. Alla scala {1}% entra tutto.",
             [TextKey.UiTryASmallerScale] = "Riparti al {0}%",

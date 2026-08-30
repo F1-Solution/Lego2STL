@@ -302,6 +302,12 @@ public sealed partial class Strings
                 "Some of this shape's surfaces pass through each other; a slicer will still print it.",
             [TextKey.UiWarningThinFeature] = "This part has features thinner than a 0.4 mm nozzle.",
             [TextKey.UiDoesNotFitThePlate] = "Too big for the plate, so it is on none.",
+            [TextKey.UiNotPrintedMaterial] = "This part cannot be printed; it has to be bought.",
+            [TextKey.UiNotPrintedKind] = "This is a part to buy rather than print.",
+            [TextKey.UiNoShapeWasBuilt] = "No shape could be built for this part.",
+            [TextKey.UiPartNotRecognised] = "This code was not recognised, so nothing was built for it.",
+            [TextKey.UiBuy] = "Buy it",
+            [TextKey.UiSearchForIt] = "Search for it",
             [TextKey.UiSomePartsDoNotFit] =
                 "{0} part(s) do not fit the plate. Everything fits at {1}%.",
             [TextKey.UiTryASmallerScale] = "Start again at {0}%",

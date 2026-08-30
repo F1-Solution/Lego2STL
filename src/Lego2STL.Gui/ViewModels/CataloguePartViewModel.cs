@@ -50,15 +50,24 @@ public sealed partial class CataloguePartViewModel : ViewModelBase
     /// disagree with what the run itself reported.
     /// </remarks>
     public CataloguePartViewModel(
-        RunDocumentPart part, string? shapePath, string? platePath, bool doesNotFitThePlate = false)
+        RunDocumentPart part,
+        string? shapePath,
+        string? platePath,
+        bool doesNotFitThePlate = false,
+        bool noShapeWasBuilt = false,
+        Shop? shop = null)
     {
         Part = part;
         ShapePath = shapePath;
         PlatePath = platePath;
         DoesNotFitThePlate = doesNotFitThePlate;
+        NoShapeWasBuilt = noShapeWasBuilt;
+        _shop = shop;
 
         Swatch = new SolidColorBrush(Color.FromRgb(part.Rgb.R, part.Rgb.G, part.Rgb.B));
     }
+
+    private readonly Shop? _shop;
 
     public RunDocumentPart Part { get; }
 
@@ -114,7 +123,31 @@ public sealed partial class CataloguePartViewModel : ViewModelBase
     /// <summary>True when no plate could take this part at the scale the run used.</summary>
     public bool DoesNotFitThePlate { get; }
 
-    public bool HasWarning => Part.HasWarning || DoesNotFitThePlate;
+    /// <summary>True when the run tried to build this part's shape and could not.</summary>
+    public bool NoShapeWasBuilt { get; }
+
+    /// <summary>Where this part can be bought, or null when nothing honest can be offered.</summary>
+    public string? BuyAddress => _shop is null
+        ? null
+        : Shops.AddressOf(_shop, PartNumber, Part.ElementId, BrickLinkColorCode);
+
+    public bool CanBuy => BuyAddress is not null && (Part.NotPrinted || NoShapeWasBuilt);
+
+    /// <summary>Searching is all that can be offered for a code nothing recognised.</summary>
+    public string BuyText => Localization.Loc.Current.Text(
+        Part.IsUnknownPart ? Core.Text.TextKey.UiSearchForIt : Core.Text.TextKey.UiBuy);
+
+    [RelayCommand]
+    private void Buy()
+    {
+        if (BuyAddress is { } address)
+        {
+            Desktop.Open(address);
+        }
+    }
+
+    public bool HasWarning =>
+        Part.HasWarning || DoesNotFitThePlate || Part.NotPrinted || NoShapeWasBuilt;
 
     public IReadOnlyList<string> Warnings
     {
@@ -140,6 +173,20 @@ public sealed partial class CataloguePartViewModel : ViewModelBase
             if (DoesNotFitThePlate)
             {
                 warnings.Add(Localization.Loc.Current.Text(Core.Text.TextKey.UiDoesNotFitThePlate));
+            }
+
+            if (Part.NotPrinted)
+            {
+                warnings.Add(Localization.Loc.Current.Text(Part.NotPrintedForMaterial
+                    ? Core.Text.TextKey.UiNotPrintedMaterial
+                    : Core.Text.TextKey.UiNotPrintedKind));
+            }
+
+            if (NoShapeWasBuilt)
+            {
+                warnings.Add(Localization.Loc.Current.Text(Part.IsUnknownPart
+                    ? Core.Text.TextKey.UiPartNotRecognised
+                    : Core.Text.TextKey.UiNoShapeWasBuilt));
             }
 
             return warnings;

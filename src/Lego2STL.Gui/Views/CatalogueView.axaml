@@ -112,6 +112,13 @@
                           Content="{Binding [UiOpenPlate], Source={x:Static loc:Loc.Current}}" />
                 </Grid>
 
+                <!-- Only on a part the run did not build: the one card with something to buy. -->
+                <Button FontSize="11" Padding="6,4"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        IsVisible="{Binding CanBuy}"
+                        Command="{Binding BuyCommand}"
+                        Content="{Binding BuyText}" />
+
               </StackPanel>
             </Border>
 

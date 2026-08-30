@@ -12,6 +12,7 @@ using Lego2STL.Core.Plates;
 using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
 using Lego2STL.Gui.Localization;
+using Lego2STL.Gui.Services;
 using Lego2STL.Gui.ViewModels;
 using Lego2STL.Gui.Views;
 
@@ -380,5 +381,59 @@ public sealed class CatalogueTests
 
         return RunDocumentViewModel.Of(RunDocument.From(
             RunManifest.From(outcome, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, null), layout));
+    }
+
+    /// <summary>A part that was not printed says so and offers to be bought.</summary>
+    [AvaloniaFact]
+    public void A_part_that_cannot_be_printed_offers_to_be_bought()
+    {
+        var part = new RunDocumentPart(
+            1, "5102c13", 11, "Black", Rgb24.Parse("#05131D"), 3,
+            Title: null, Size: null,
+            IsClosed: null, OpenEdgeCount: null, ThinnestSpanMm: null,
+            OverusedEdgeCount: null, ClosedAtTolerance: null,
+            ElementId: "6177114", Printability: "material");
+
+        var card = new CataloguePartViewModel(
+            part, null, null, doesNotFitThePlate: false, shop: Shops.Defaults[0]);
+
+        card.HasWarning.Should().BeTrue();
+        card.CanBuy.Should().BeTrue();
+        card.WarningText.Should().Contain(Loc.Current.Text(TextKey.UiNotPrintedMaterial));
+    }
+
+    /// <summary>An ordinary part is not offered for sale; it was printed.</summary>
+    [AvaloniaFact]
+    public void A_part_that_was_printed_is_not_offered_for_sale()
+    {
+        var part = new RunDocumentPart(
+            1, "32523", 11, "Black", Rgb24.Parse("#05131D"), 4,
+            Title: "a beam", Size: "32 x 16 x 8 mm",
+            IsClosed: true, OpenEdgeCount: 0, ThinnestSpanMm: 8,
+            OverusedEdgeCount: 0, ClosedAtTolerance: null,
+            ElementId: null, Printability: "yes");
+
+        var card = new CataloguePartViewModel(
+            part, null, null, doesNotFitThePlate: false, shop: Shops.Defaults[0]);
+
+        card.CanBuy.Should().BeFalse();
+        card.HasWarning.Should().BeFalse();
+    }
+
+    /// <summary>With no shop there is nothing to press, and the card still stands.</summary>
+    [AvaloniaFact]
+    public void With_no_shop_chosen_nothing_is_offered()
+    {
+        var part = new RunDocumentPart(
+            1, "5102c13", 11, "Black", Rgb24.Parse("#05131D"), 3,
+            Title: null, Size: null,
+            IsClosed: null, OpenEdgeCount: null, ThinnestSpanMm: null,
+            OverusedEdgeCount: null, ClosedAtTolerance: null,
+            ElementId: null, Printability: "material");
+
+        var card = new CataloguePartViewModel(part, null, null, false, shop: null);
+
+        card.CanBuy.Should().BeFalse();
+        card.HasWarning.Should().BeTrue("it still has to say why there is no shape");
     }
 }

@@ -241,6 +241,24 @@ public enum TextKey
     /// <summary>Said of a part no plate could take.</summary>
     UiDoesNotFitThePlate,
 
+    /// <summary>Said of a part left unbuilt because of what it is made of.</summary>
+    UiNotPrintedMaterial,
+
+    /// <summary>Said of a part left unbuilt because of the kind of thing it is.</summary>
+    UiNotPrintedKind,
+
+    /// <summary>Said of a part whose shape the run could not build.</summary>
+    UiNoShapeWasBuilt,
+
+    /// <summary>Said of a code neither the parts database nor the shape library knows.</summary>
+    UiPartNotRecognised,
+
+    /// <summary>The button that opens a shop at this part.</summary>
+    UiBuy,
+
+    /// <summary>The same button when all it can do is search.</summary>
+    UiSearchForIt,
+
     /// <summary>The band offering a scale at which everything would fit.</summary>
     UiSomePartsDoNotFit,
 

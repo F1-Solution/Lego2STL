@@ -205,6 +205,9 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     public partial PartNumbering Numbering { get; set; } = PartNumbering.BrickLink;
 
+    /// <summary>Where the buy button leads. Set by the window, which owns the preference.</summary>
+    public Shop? Shop { get; set; }
+
     /// <summary>
     /// The two numberings, for the menu that chooses between them.
     /// </summary>
@@ -435,7 +438,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
         Parts.Clear();
         Colours.Clear();
 
-        foreach (var part in RunCatalogue.Build(Document))
+        foreach (var part in RunCatalogue.Build(Document, Shop))
         {
             part.Numbering = Numbering;
             Parts.Add(part);
@@ -449,7 +452,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(VisibleParts));
 
         _ = RunCatalogue.LoadPicturesAsync(
-            _thumbnails, [.. Parts], Document.Settings?.Offline ?? true);
+            _thumbnails, [.. Parts], Document.ImageDirectory, Document.Settings?.Offline ?? true);
     }
 
     /// <summary>Re-reads everything worded, after the language has been changed.</summary>

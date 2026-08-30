@@ -196,7 +196,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
     private void Open(RunDocumentViewModel run)
     {
-        RememberNumbering(run);
+        RememberChoices(run);
 
         OpenRun?.Dispose();
         OpenRun = run;
@@ -214,8 +214,13 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     /// Here rather than on the page, because a run document is about one run and this is about
     /// every run. The parse is forgiving: an unreadable preference is one worth losing.
     /// </remarks>
-    private void RememberNumbering(RunDocumentViewModel page)
+    private void RememberChoices(RunDocumentViewModel page)
     {
+        page.Shop = _saved.Shops.Count > 0
+            ? _saved.Shops.Find(s => string.Equals(s.Name, _saved.PreferredShop, StringComparison.Ordinal))
+              ?? _saved.Shops[0]
+            : Shops.Defaults[0];
+
         page.Numbering = Enum.TryParse<PartNumbering>(_saved.PartNumbering, out var saved)
             ? saved
             : PartNumbering.BrickLink;

@@ -161,6 +161,9 @@ public sealed record RunDocument
 
     public required string StlDirectory { get; init; }
 
+    /// <summary>Where the pictures cut from the document live.</summary>
+    public string ImageDirectory { get; init; } = string.Empty;
+
     public required string PlateDirectory { get; init; }
 
     public required string ReportPath { get; init; }
@@ -291,6 +294,7 @@ public sealed record RunDocument
         Status = RunStatus.Running,
         PartsListPath = layout.PartsListPath,
         StlDirectory = layout.StlDirectory,
+            ImageDirectory = layout.ImageDirectory,
         PlateDirectory = layout.PlateDirectory,
         ReportPath = layout.ReportPath,
         LogPath = layout.LogPath,
