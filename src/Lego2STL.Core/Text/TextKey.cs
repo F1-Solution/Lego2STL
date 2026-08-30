@@ -264,6 +264,27 @@ public enum TextKey
 
     /// <summary>The button on that band.</summary>
     UiTryASmallerScale,
+
+    /// <summary>The panel that asks about an entry the reader could not make out.</summary>
+    UiCouldNotRead,
+
+    /// <summary>Asks for the part number of the piece in the picture.</summary>
+    UiWhichPart,
+
+    /// <summary>Asks for its colour code.</summary>
+    UiWhichColour,
+
+    /// <summary>Asks how many.</summary>
+    UiHowMany,
+
+    /// <summary>Accepts the answer.</summary>
+    UiAnswerOk,
+
+    /// <summary>Leaves the question for later.</summary>
+    UiAnswerSkip,
+
+    /// <summary>Says the region was never an entry at all.</summary>
+    UiAnswerNotALegoCode,
     /// <summary>The catalogue's choice of which numbering to show.</summary>
     UiNumbering,
 

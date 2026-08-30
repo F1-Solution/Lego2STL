@@ -1,4 +1,4 @@
-<UserControl xmlns="https://github.com/avaloniaui"
+﻿<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Lego2STL.Gui.ViewModels"
              xmlns:loc="using:Lego2STL.Gui.Localization"
@@ -27,6 +27,64 @@
         <ComboBox MinWidth="200" SelectedItem="{Binding SelectedNumbering}"
                   ItemsSource="{Binding Numberings}" />
       </StackPanel>
+
+      <!-- Asked above the cards, one at a time, over a run that has already finished. -->
+      <Border Padding="12,10" CornerRadius="4"
+              Background="{DynamicResource AppWarningBand}"
+              BorderBrush="{DynamicResource AppWarningBorder}"
+              BorderThickness="1"
+              IsVisible="{Binding HasQuestions}">
+        <StackPanel Spacing="8">
+
+          <TextBlock FontWeight="SemiBold" TextWrapping="Wrap"
+                     Foreground="{DynamicResource AppWarningText}"
+                     Text="{Binding [UiCouldNotRead], Source={x:Static loc:Loc.Current}}" />
+
+          <!-- The piece of page itself, which is the whole of what is being asked about. -->
+          <Border Background="White" CornerRadius="3" Padding="4" HorizontalAlignment="Left"
+                  IsVisible="{Binding CurrentQuestion.HasPicture}">
+            <Image Source="{Binding CurrentQuestion.Picture}" Stretch="Uniform"
+                   MaxHeight="140" MaxWidth="760" />
+          </Border>
+
+          <!-- What the recogniser did return, which is often half the answer already. -->
+          <TextBlock Classes="hint" TextWrapping="Wrap" FontFamily="monospace"
+                     Text="{Binding CurrentQuestion.RawText}" />
+
+          <Grid ColumnDefinitions="Auto,*,Auto,*,Auto,*" ColumnSpacing="8">
+            <TextBlock Grid.Column="0" Classes="label" VerticalAlignment="Center"
+                       Text="{Binding [UiWhichPart], Source={x:Static loc:Loc.Current}}" />
+            <TextBox Grid.Column="1" Name="AnswerPart" PlaceholderText="32523"
+                     Text="{Binding CurrentQuestion.PartNumber, Mode=TwoWay}" />
+            <TextBlock Grid.Column="2" Classes="label" VerticalAlignment="Center"
+                       Text="{Binding [UiWhichColour], Source={x:Static loc:Loc.Current}}" />
+            <TextBox Grid.Column="3" Name="AnswerColour" PlaceholderText="11"
+                     Text="{Binding CurrentQuestion.ColorCode, Mode=TwoWay}" />
+            <TextBlock Grid.Column="4" Classes="label" VerticalAlignment="Center"
+                       Text="{Binding [UiHowMany], Source={x:Static loc:Loc.Current}}" />
+            <TextBox Grid.Column="5" Name="AnswerQuantity" PlaceholderText="4"
+                     Text="{Binding CurrentQuestion.Quantity, Mode=TwoWay}" />
+          </Grid>
+
+          <!-- Three equal thirds, so a longer wording in another language still fits. -->
+          <Grid ColumnDefinitions="*,6,*,6,*">
+            <Button Grid.Column="0" Name="AnswerOk"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                    Command="{Binding CurrentQuestion.AcceptCommand}"
+                    IsEnabled="{Binding CurrentQuestion.CanAccept}"
+                    Content="{Binding [UiAnswerOk], Source={x:Static loc:Loc.Current}}" />
+            <Button Grid.Column="2" Name="AnswerSkip"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                    Command="{Binding CurrentQuestion.SkipCommand}"
+                    Content="{Binding [UiAnswerSkip], Source={x:Static loc:Loc.Current}}" />
+            <Button Grid.Column="4" Name="AnswerNotALegoCode"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                    Command="{Binding CurrentQuestion.NotAnEntryCommand}"
+                    Content="{Binding [UiAnswerNotALegoCode], Source={x:Static loc:Loc.Current}}" />
+          </Grid>
+
+        </StackPanel>
+      </Border>
 
       <!-- Said once, above the cards, because it is about the run rather than about one part. -->
       <Border Padding="12,10" CornerRadius="4"

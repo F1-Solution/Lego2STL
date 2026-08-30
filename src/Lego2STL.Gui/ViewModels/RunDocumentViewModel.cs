@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
@@ -43,6 +44,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
         Document = document;
         Log.CollectionChanged += (_, _) => OnPropertyChanged(nameof(ShowLog));
         Fill();
+        Ask();
     }
 
     /// <summary>A page for a document that already exists, however it was arrived at.</summary>
@@ -188,6 +190,166 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
     /// nothing gets no empty black strip along the foot of its page.
     /// </remarks>
     public bool ShowLog => !Quiet && (Busy || Log.Count > 0);
+
+    // ---- What the reader could not make out ---------------------------------------------------
+
+    private int _at;
+
+    /// <summary>The entries still to be asked about, in the order they were read.</summary>
+    public ObservableCollection<ReviewQuestionViewModel> Questions { get; } = [];
+
+    /// <summary>The one being asked now, or nothing when there is no more to ask.</summary>
+    public ReviewQuestionViewModel? CurrentQuestion =>
+        _at >= 0 && _at < Questions.Count ? Questions[_at] : null;
+
+    public bool HasQuestions => CurrentQuestion is not null;
+
+    /// <summary>
+    /// Builds the questions from the record, less the ones already answered.
+    /// </summary>
+    /// <remarks>
+    /// The answers live in the run's own folder, so a second run over the same pages lands on
+    /// the same file and stays quiet about a region someone has already settled.
+    /// </remarks>
+    private void Ask()
+    {
+        foreach (var question in Questions)
+        {
+            question.Answered -= OnAnswered;
+            question.Skipped -= OnSkipped;
+        }
+
+        Questions.Clear();
+        _at = 0;
+
+        var settled = Document.OverridesPath is { Length: > 0 } path
+            ? ReviewAnswers.Read(path).Select(a => ReviewAnswers.Key(a.Page, a.Bounds)).ToHashSet(StringComparer.Ordinal)
+            : [];
+
+        foreach (var entry in Document.Unread)
+        {
+            if (settled.Contains(ReviewAnswers.Key(entry.Page, entry.Bounds)))
+            {
+                continue;
+            }
+
+            var question = new ReviewQuestionViewModel(
+                entry, Document.ReviewDirectory, Document.OverridesPath);
+
+            question.Answered += OnAnswered;
+            question.Skipped += OnSkipped;
+            Questions.Add(question);
+        }
+
+        Asked();
+    }
+
+    private void Asked()
+    {
+        OnPropertyChanged(nameof(CurrentQuestion));
+        OnPropertyChanged(nameof(HasQuestions));
+    }
+
+    private void OnSkipped(object? sender, EventArgs e)
+    {
+        _at++;
+        Asked();
+    }
+
+    private void OnAnswered(object? sender, ReviewAnswer answer)
+    {
+        if (sender is not ReviewQuestionViewModel question)
+        {
+            return;
+        }
+
+        question.Answered -= OnAnswered;
+        question.Skipped -= OnSkipped;
+        Questions.Remove(question);
+        _at = Math.Min(_at, Questions.Count);
+
+        Correct(answer);
+        Asked();
+    }
+
+    /// <summary>
+    /// Puts an answer on the parts list, on the screen and in the file.
+    /// </summary>
+    /// <remarks>
+    /// The file as well as the screen, because the way back to shapes and plates is the road
+    /// that already exists - continue from the parts list - and it reads the file.
+    /// </remarks>
+    private void Correct(ReviewAnswer answer)
+    {
+        var before = AsPartsList();
+        var after = PartsListCorrection.Apply(before, [answer]);
+
+        if (ReferenceEquals(after, before))
+        {
+            return;
+        }
+
+        Document = Document with { Parts = Rebuilt(after) };
+        Fill();
+
+        try
+        {
+            PartsListCsv.WriteFile(
+                Document.PartsListPath,
+                after,
+                Document.Settings?.Delimiter ?? PartsListCsv.DefaultDelimiter,
+                Document.Settings?.Language ?? DisplayLanguages.Fallback);
+        }
+        catch (Exception ex) when (ex is IOException
+                                       or UnauthorizedAccessException
+                                       or ArgumentException
+                                       or NotSupportedException)
+        {
+            // The catalogue still shows the correction; only the file it would be continued
+            // from is unchanged, and the run says where it is so it can be corrected by hand.
+        }
+
+        OnPropertyChanged(nameof(CanContinue));
+    }
+
+    /// <summary>The catalogue as a parts list, which is what a correction is applied to.</summary>
+    private PartsList AsPartsList() => new(
+        [
+            .. Document.Parts.Select(p => new PartEntry(
+                p.Id, p.PartNumber, p.BrickLinkColorCode, p.ColorName, p.Rgb, p.Quantity, p.ElementId)),
+        ],
+        Document.Notes);
+
+    /// <summary>
+    /// The corrected list back as the record holds it.
+    /// </summary>
+    /// <remarks>
+    /// A part already there keeps what the run measured of it; an answer's part has none of
+    /// that, because no shape was ever built for something the reader never read.
+    /// </remarks>
+    private IReadOnlyList<RunDocumentPart> Rebuilt(PartsList list)
+    {
+        var known = Document.Parts.ToDictionary(
+            p => (p.PartNumber.ToLowerInvariant(), p.BrickLinkColorCode));
+
+        return
+        [
+            .. list.Entries.Select(e => known.TryGetValue(e.Key, out var was)
+                ? was with { Id = e.Id, Quantity = e.Quantity }
+                : new RunDocumentPart(
+                    e.Id,
+                    e.PartNumber,
+                    e.BrickLinkColorCode,
+                    e.ColorName,
+                    e.Rgb,
+                    e.Quantity,
+                    Title: null,
+                    Size: null,
+                    IsClosed: null,
+                    OpenEdgeCount: null,
+                    ThinnestSpanMm: null)),
+        ];
+    }
 
     // ---- The catalogue -----------------------------------------------------------------------
 
@@ -418,6 +580,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
     {
         Document = document;
         Fill();
+        Ask();
 
         foreach (var name in new[]
                  {

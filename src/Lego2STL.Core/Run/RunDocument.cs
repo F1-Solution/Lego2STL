@@ -183,6 +183,12 @@ public sealed record RunDocument
     /// <summary>Where the pictures cut from the document live.</summary>
     public string ImageDirectory { get; init; } = string.Empty;
 
+    /// <summary>Where the crops of what could not be read live.</summary>
+    public string ReviewDirectory { get; init; } = string.Empty;
+
+    /// <summary>Where the answers given about those crops are kept.</summary>
+    public string OverridesPath { get; init; } = string.Empty;
+
     public required string PlateDirectory { get; init; }
 
     public required string ReportPath { get; init; }
@@ -313,7 +319,9 @@ public sealed record RunDocument
         Status = RunStatus.Running,
         PartsListPath = layout.PartsListPath,
         StlDirectory = layout.StlDirectory,
-            ImageDirectory = layout.ImageDirectory,
+        ImageDirectory = layout.ImageDirectory,
+        ReviewDirectory = layout.ReviewDirectory,
+        OverridesPath = layout.OverridesPath,
         PlateDirectory = layout.PlateDirectory,
         ReportPath = layout.ReportPath,
         LogPath = layout.LogPath,

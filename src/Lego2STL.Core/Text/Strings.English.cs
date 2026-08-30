@@ -311,6 +311,13 @@ public sealed partial class Strings
             [TextKey.UiSomePartsDoNotFit] =
                 "{0} part(s) do not fit the plate. Everything fits at {1}%.",
             [TextKey.UiTryASmallerScale] = "Start again at {0}%",
+            [TextKey.UiCouldNotRead] = "This could not be read. What is it?",
+            [TextKey.UiWhichPart] = "Part number",
+            [TextKey.UiWhichColour] = "Colour code",
+            [TextKey.UiHowMany] = "How many",
+            [TextKey.UiAnswerOk] = "Ok",
+            [TextKey.UiAnswerSkip] = "Skip",
+            [TextKey.UiAnswerNotALegoCode] = "Not a LEGO code",
             [TextKey.UiNumbering] = "Numbering",
             [TextKey.UiNoElementNumber] = "no element number",
             [TextKey.UiNumberingBrickLink] = "BrickLink part number",

@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Text;
@@ -112,6 +112,19 @@ public static class PartsListCsv
                 new UTF8Encoding(true),
                 cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    /// <summary>The same file, written where waiting is not on offer - inside a button.</summary>
+    public static void WriteFile(
+        string path,
+        PartsList list,
+        char delimiter = DefaultDelimiter,
+        DisplayLanguage language = DisplayLanguages.Fallback)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
+        File.WriteAllText(path, Write(list, delimiter, language), new UTF8Encoding(true));
     }
 
     public static async Task<PartsList> ReadFileAsync(
