@@ -5,6 +5,7 @@ using Lego2STL.Core.LDraw;
 using Lego2STL.Core.Ocr;
 using Lego2STL.Core.Pdf;
 using Lego2STL.Core.Plates;
+using Lego2STL.Core.Rebrickable;
 using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
 
@@ -467,7 +468,24 @@ public sealed class PipelineRunner
         var prepared = new List<PreparedMesh>();
         var failed = new List<FailedPart>();
 
-        var parts = list.DistinctPartNumbers;
+        // Asked once for the whole run: the answer is the same for every copy of a part. Read
+        // even when everything is to be printed, so the record still says what each part is.
+        var facts = RebrickableDump.TryReadPartFacts(
+            settings.ElementMap,
+            Path.GetDirectoryName(Path.GetFullPath(settings.InputPath ?? ".")),
+            Directory.GetCurrentDirectory());
+
+        var (parts, notPrinted) = Printability.Choose(
+            list.DistinctPartNumbers, facts, settings.PrintEverything);
+
+        foreach (var partNumber in notPrinted)
+        {
+            var fact = facts.GetValueOrDefault(partNumber);
+
+            _log("  " + (Printability.Of(fact) is Printable.NotItsMaterial
+                ? words.Format(TextKey.MsgNotPrintedMaterial, partNumber, fact!.Material)
+                : words.Format(TextKey.MsgNotPrintedKind, partNumber)));
+        }
 
         for (var i = 0; i < parts.Count; i++)
         {
@@ -526,6 +544,8 @@ public sealed class PipelineRunner
             Shapes = prepared,
             ShapesByPart = shapes,
             Failed = failed,
+            PartFacts = facts,
+            NotPrinted = notPrinted,
             Plates = plates,
             GeometrySource = library.Description,
             Notes = notes,

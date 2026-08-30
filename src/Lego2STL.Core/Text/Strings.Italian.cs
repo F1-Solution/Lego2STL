@@ -155,6 +155,9 @@ public sealed partial class Strings
                 "finché non sono risolte.",
             [TextKey.MsgEntriesAndParts] = "{0} voci, {1} codici pezzo distinti.",
             [TextKey.MsgWroteShapes] = "Scritte {0} forme in {1}",
+            [TextKey.MsgNotPrintedMaterial] = "{0} è in {1}, quindi non è stato costruito; va comprato.",
+            [TextKey.MsgNotPrintedKind] = "{0} è un pezzo da comprare, non da stampare, quindi non è stato costruito.",
+            [TextKey.ReportNotPrintedTitle] = "Non stampati:",
             [TextKey.MsgClosedAndOpen] =
                 "{0} chiuse, {1} con spigoli aperti (uno slicer le ripara, e il resoconto le elenca).",
             [TextKey.MsgProducedNothing] = "{0} pezzi non hanno prodotto nulla:",
@@ -423,6 +426,8 @@ public sealed partial class Strings
                 "Lascia i buchi con cui arriva la superficie di una forma, invece di coprirli. La copertura è attiva di default, perché una forma con buchi non è un solido e non può ricevere nessun gioco.",
             [TextKey.HelpOptNoSeamRepair] =
                 "Non chiude le giunzioni dove un vertice cade a metà dello spigolo di un altro.",
+            [TextKey.HelpOptPrintEverything] =
+                "Costruisce ogni pezzo, compresi quelli non stampabili come l'elettronica.",
             [TextKey.HelpOptWeldTolerance] =
                 "Quanto devono essere vicini due vertici per contare come lo stesso punto, in unità sorgente dove un'unità vale 0,4 mm. Non millimetri: i vertici vengono fusi prima che la forma sia convertita.",
             [TextKey.HelpOptLDrawCache] =
@@ -465,6 +470,7 @@ public sealed partial class Strings
             [TextKey.LabelOptKeepOrigin] = "Mantieni l'origine di ogni pezzo",
             [TextKey.LabelOptNoRepair] = "Lascia i buchi nella superficie",
             [TextKey.LabelOptNoSeamRepair] = "Lascia aperte le giunzioni",
+            [TextKey.LabelOptPrintEverything] = "Stampa tutto",
             [TextKey.LabelOptOffline] = "Lavora senza rete",
             [TextKey.LabelOptNoUnofficial] = "Solo libreria ufficiale",
             [TextKey.LabelOptScale] = "Scala",

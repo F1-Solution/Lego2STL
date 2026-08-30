@@ -87,6 +87,11 @@ internal sealed class PipelineOptions
             Description = words[TextKey.HelpOptNoSeamRepair],
         };
 
+        PrintEverything = new Option<bool>("--print-everything")
+        {
+            Description = words[TextKey.HelpOptPrintEverything],
+        };
+
         WeldTolerance = new Option<double>("--weld-tolerance")
         {
             Description = words[TextKey.HelpOptWeldTolerance],
@@ -166,6 +171,8 @@ internal sealed class PipelineOptions
 
     public Option<bool> NoSeamRepair { get; }
 
+    public Option<bool> PrintEverything { get; }
+
     public Option<double> WeldTolerance { get; }
 
     public Option<DirectoryInfo?> LDrawDirectory { get; }
@@ -203,6 +210,7 @@ internal sealed class PipelineOptions
         {
             IncludeSpares, CsvOnly, NoPlates, OutputDirectory, Delimiter, Ascii,
             KeepOrigin, Scale, Clearance, NoRepair, NoSeamRepair, WeldTolerance,
+            PrintEverything,
             LDrawDirectory, LDrawCache, Offline, NoUnofficial,
             Printer, PlateSize, PlateSpacing,
             ApiKey, Quiet, LogFile,
@@ -245,6 +253,7 @@ internal sealed class PipelineOptions
             Clearance = parseResult.GetValue(Clearance),
             FillGaps = !parseResult.GetValue(NoRepair),
             NoSeamRepair = parseResult.GetValue(NoSeamRepair),
+            PrintEverything = parseResult.GetValue(PrintEverything),
             WeldTolerance = parseResult.GetValue(WeldTolerance),
 
             LDrawDirectory = parseResult.GetValue(LDrawDirectory)?.FullName,

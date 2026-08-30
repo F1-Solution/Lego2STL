@@ -135,6 +135,9 @@ public sealed partial class OptionRowsViewModel : ViewModelBase
 
             new ToggleOptionRow("--no-seam-repair", TextKey.LabelOptNoSeamRepair, TextKey.HelpOptNoSeamRepair,
                 () => o.NoSeamRepair, v => o.NoSeamRepair = v, fresh.NoSeamRepair),
+            new ToggleOptionRow("--print-everything", TextKey.LabelOptPrintEverything,
+                TextKey.HelpOptPrintEverything,
+                () => o.PrintEverything, v => o.PrintEverything = v, fresh.PrintEverything),
 
             new ToggleOptionRow("--offline", TextKey.LabelOptOffline, TextKey.HelpOptOffline,
                 () => o.Offline, v => o.Offline = v, fresh.Offline),

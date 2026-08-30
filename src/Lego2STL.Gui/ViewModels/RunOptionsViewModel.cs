@@ -93,6 +93,9 @@ public sealed partial class RunOptionsViewModel : ViewModelBase
     public partial bool NoSeamRepair { get; set; }
 
     [ObservableProperty]
+    public partial bool PrintEverything { get; set; }
+
+    [ObservableProperty]
     public partial double WeldTolerance { get; set; } = VertexWelder.DefaultToleranceUnits;
 
     // ---- Shape library -----------------------------------------------------------------
@@ -236,6 +239,7 @@ public sealed partial class RunOptionsViewModel : ViewModelBase
         Clearance = Clearance,
         FillGaps = FillGaps,
         NoSeamRepair = NoSeamRepair,
+        PrintEverything = PrintEverything,
         WeldTolerance = WeldTolerance,
 
         LDrawDirectory = Blank(LDrawDirectory),

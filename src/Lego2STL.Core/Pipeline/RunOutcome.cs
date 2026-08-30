@@ -2,6 +2,7 @@ using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Geometry;
 using Lego2STL.Core.Ocr;
 using Lego2STL.Core.Plates;
+using Lego2STL.Core.Rebrickable;
 using Lego2STL.Core.Run;
 
 namespace Lego2STL.Core.Pipeline;
@@ -46,6 +47,13 @@ public sealed record RunOutcome
     public IReadOnlyList<PreparedMesh> Shapes { get; init; } = [];
 
     public IReadOnlyList<FailedPart> Failed { get; init; } = [];
+
+    /// <summary>What the parts database says about each part, when there is a database.</summary>
+    public IReadOnlyDictionary<string, PartFact> PartFacts { get; init; } =
+        new Dictionary<string, PartFact>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Parts deliberately not built, because they cannot be printed.</summary>
+    public IReadOnlyList<string> NotPrinted { get; init; } = [];
 
     public PlateBuildResult? Plates { get; init; }
 

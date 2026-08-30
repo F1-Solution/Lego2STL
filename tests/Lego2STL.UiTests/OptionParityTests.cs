@@ -57,7 +57,7 @@ public sealed class OptionParityTests
     [Fact]
     public void The_command_line_registers_the_options_this_test_expects_to_find()
     {
-        EveryFlag().Should().HaveCount(25)
+        EveryFlag().Should().HaveCount(26)
             .And.Contain("--quiet")
             .And.Contain("--element-map")
             .And.Contain("--include-spares")

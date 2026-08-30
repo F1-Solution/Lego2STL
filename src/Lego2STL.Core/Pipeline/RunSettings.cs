@@ -125,6 +125,11 @@ public sealed record RunSettings
 
     public bool NoSeamRepair { get; init; }
 
+    /// <summary>
+    /// Build every part, including the ones the parts database says cannot be printed.
+    /// </summary>
+    public bool PrintEverything { get; init; }
+
     public double WeldTolerance { get; init; } = VertexWelder.DefaultToleranceUnits;
 
     // ---- Shape library -----------------------------------------------------------------
@@ -382,6 +387,11 @@ public sealed record RunSettings
         if (NoSeamRepair)
         {
             parts.Add("--no-seam-repair");
+        }
+
+        if (PrintEverything)
+        {
+            parts.Add("--print-everything");
         }
 
         if (Math.Abs(WeldTolerance - defaults.WeldTolerance) > 1e-9)

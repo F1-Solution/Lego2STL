@@ -11,7 +11,7 @@ using Lego2STL.Gui.ViewModels;
 namespace Lego2STL.UiTests;
 
 /// <summary>
-/// The eighteen options a run is shaped by, as rows that can be found again.
+/// The twenty options a run is shaped by, as rows that can be found again.
 /// </summary>
 /// <remarks>
 /// The last test here is the one the whole indirection exists for. Rows read and write the one
@@ -21,10 +21,10 @@ namespace Lego2STL.UiTests;
 /// </remarks>
 public sealed class OptionRowTests
 {
-    private static readonly string[] TheNineteen =
+    private static readonly string[] TheTwenty =
     [
         "--csv-only", "--no-plates", "--ascii", "--keep-origin",
-        "--no-repair", "--no-seam-repair", "--offline", "--no-unofficial",
+        "--no-repair", "--no-seam-repair", "--print-everything", "--offline", "--no-unofficial",
         "--scale", "--clearance", "--weld-tolerance", "--plate-spacing",
         "--output-dir", "--element-map", "--ldraw-dir", "--ldraw-cache",
         "--plate-size",
@@ -36,8 +36,8 @@ public sealed class OptionRowTests
     {
         var rows = new OptionRowsViewModel(new RunOptionsViewModel());
 
-        rows.Rows.Should().HaveCount(19);
-        rows.Rows.Select(row => row.Flag).Should().BeEquivalentTo(TheNineteen);
+        rows.Rows.Should().HaveCount(20);
+        rows.Rows.Select(row => row.Flag).Should().BeEquivalentTo(TheTwenty);
         rows.Rows.Select(row => row.Flag).Should().OnlyHaveUniqueItems();
     }
 
@@ -142,7 +142,7 @@ public sealed class OptionRowTests
         var rows = new OptionRowsViewModel(options) { ChangedOnly = true };
 
         rows.Rows.Where(row => row.IsVisible).Select(row => row.Flag).Should().Equal("--clearance");
-        rows.HiddenCount.Should().Be(18, "an option set three runs ago must not sit invisible in silence");
+        rows.HiddenCount.Should().Be(19, "an option set three runs ago must not sit invisible in silence");
     }
 
     /// <summary>
@@ -165,7 +165,7 @@ public sealed class OptionRowTests
     {
         var rows = new OptionRowsViewModel(new RunOptionsViewModel()) { ChangedOnly = true };
 
-        rows.Rows.Should().HaveCount(19, "filtering hides rows; it does not throw them away");
+        rows.Rows.Should().HaveCount(20, "filtering hides rows; it does not throw them away");
         rows.Rows.Should().OnlyContain(row => row.IsVisible == false);
     }
 

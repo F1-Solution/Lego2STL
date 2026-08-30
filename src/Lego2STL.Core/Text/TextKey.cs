@@ -121,6 +121,16 @@ public enum TextKey
     MsgWrittenWithoutThem,
     MsgEntriesAndParts,
     MsgWroteShapes,
+
+    /// <summary>Said of a part left unbuilt because of what it is made of.</summary>
+    MsgNotPrintedMaterial,
+
+    /// <summary>Said of a part left unbuilt because of the kind of thing it is.</summary>
+    MsgNotPrintedKind,
+
+    /// <summary>Heading of the report's list of parts that were not built.</summary>
+    ReportNotPrintedTitle,
+
     MsgClosedAndOpen,
     MsgProducedNothing,
     MsgWrotePlates,
@@ -334,6 +344,7 @@ public enum TextKey
     HelpOptClearance,
     HelpOptNoRepair,
     HelpOptNoSeamRepair,
+    HelpOptPrintEverything,
     HelpOptWeldTolerance,
     HelpOptLDrawCache,
     HelpOptNoUnofficial,
@@ -362,6 +373,7 @@ public enum TextKey
     LabelOptKeepOrigin,
     LabelOptNoRepair,
     LabelOptNoSeamRepair,
+    LabelOptPrintEverything,
     LabelOptOffline,
     LabelOptNoUnofficial,
     LabelOptScale,

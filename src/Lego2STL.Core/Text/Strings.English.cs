@@ -151,6 +151,9 @@ public sealed partial class Strings
                 "The parts list was written without them. Later stages are refused until they are settled.",
             [TextKey.MsgEntriesAndParts] = "{0} entries, {1} distinct parts.",
             [TextKey.MsgWroteShapes] = "Wrote {0} shape file(s) to {1}",
+            [TextKey.MsgNotPrintedMaterial] = "{0} is {1}, so it was not built; buy it instead.",
+            [TextKey.MsgNotPrintedKind] = "{0} is a part to buy rather than print, so it was not built.",
+            [TextKey.ReportNotPrintedTitle] = "Not printed:",
             [TextKey.MsgClosedAndOpen] =
                 "{0} closed, {1} with open edges (a slicer will repair those, and the report lists them).",
             [TextKey.MsgProducedNothing] = "{0} part(s) produced nothing:",
@@ -409,6 +412,8 @@ public sealed partial class Strings
                 "Leave the gaps a shape's surface arrives with, instead of covering them over. Covering is on by default, because a shape with gaps is not a solid and no clearance can be applied to it.",
             [TextKey.HelpOptNoSeamRepair] =
                 "Skip closing seams where a corner lies part-way along another edge.",
+            [TextKey.HelpOptPrintEverything] =
+                "Build every part, including the ones that cannot be printed, such as electronics.",
             [TextKey.HelpOptWeldTolerance] =
                 "How close two corners have to be to count as the same point, in source units where one unit is 0.4 mm. Not millimetres: corners are merged before the shape is converted.",
             [TextKey.HelpOptLDrawCache] = "Where to keep fetched shape files between runs.",
@@ -446,6 +451,7 @@ public sealed partial class Strings
             [TextKey.LabelOptKeepOrigin] = "Keep each part's own origin",
             [TextKey.LabelOptNoRepair] = "Leave gaps in the surface",
             [TextKey.LabelOptNoSeamRepair] = "Leave seams open",
+            [TextKey.LabelOptPrintEverything] = "Print everything",
             [TextKey.LabelOptOffline] = "Work without the network",
             [TextKey.LabelOptNoUnofficial] = "Official library only",
             [TextKey.LabelOptScale] = "Scale",

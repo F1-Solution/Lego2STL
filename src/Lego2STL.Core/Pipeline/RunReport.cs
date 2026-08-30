@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Geometry;
 using Lego2STL.Core.Plates;
 using Lego2STL.Core.Run;
@@ -41,6 +42,7 @@ public static class RunReport
         Totals(sb, words, outcome);
         Unread(sb, words, outcome);
         Shapes(sb, words, outcome);
+        NotPrinted(sb, words, outcome);
         Notes(sb, words, outcome);
         Plates(sb, words, outcome);
         PrintingNote(sb, words, outcome.Settings);
@@ -244,6 +246,28 @@ public static class RunReport
 
             sb.AppendLine();
         }
+    }
+
+    /// <summary>The parts left unbuilt on purpose, each with what ruled it out.</summary>
+    private static void NotPrinted(StringBuilder sb, Strings words, RunOutcome outcome)
+    {
+        if (outcome.NotPrinted.Count == 0)
+        {
+            return;
+        }
+
+        sb.AppendLine(words[TextKey.ReportNotPrintedTitle]);
+
+        foreach (var part in outcome.NotPrinted)
+        {
+            var fact = outcome.PartFacts.GetValueOrDefault(part);
+
+            sb.AppendLine("  " + (Printability.Of(fact) is Printable.NotItsMaterial
+                ? words.Format(TextKey.MsgNotPrintedMaterial, part, fact!.Material)
+                : words.Format(TextKey.MsgNotPrintedKind, part)));
+        }
+
+        sb.AppendLine();
     }
 
     private static void Plates(StringBuilder sb, Strings words, RunOutcome outcome)
