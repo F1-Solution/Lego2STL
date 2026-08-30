@@ -94,3 +94,4 @@ PHASE:LOT-C WAVE:11 STATUS:complete TS:2026-08-30T20:11:22Z
 # Lot C: the run refuses what no printer can lay down, the catalogue shows a picture of
 # each and offers to buy it. On run 6324712 that is six parts, three shapes and four plates.
 PHASE:LOT-C WAVE:0 STATUS:complete TS:2026-08-30T20:11:47Z
+PHASE:LOT-D WAVE:6.1 STATUS:complete TS:2026-08-30T22:32:58Z
