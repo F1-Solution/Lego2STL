@@ -1437,16 +1437,23 @@ Expected: PASS.
 - [ ] **Step 7: Do it for real**
 
 ```
-dotnet run --project src/Lego2STL.Cli -- build 6324712/6324712.csv --printer A1 --lang it
+dotnet run --project src/Lego2STL.Cli -- build 6324712/6324712.csv --printer A1 --lang it --output-dir <scratchpad>
 ```
 
-Then, by hand, and this is the part no test reaches:
+**Use `--output-dir`.** Without it the run lands back in `6324712/`, whose `run.json` and `run.log`
+are committed as a reference and would be overwritten by the smaller run — recoverable from git, but
+only if someone notices.
 
-1. Open `6324712/3mf/how-to-print.txt` and read it as a person who has never used this tool.
-2. Import `6324712/3mf/Lego2STL.json` into Bambu Studio. It must appear as a process preset and
-   select without complaint. If it fails to import, a key name from Task 6 Step 1 is wrong.
+Then, by hand, in `<scratchpad>/6324712/3mf/`, and this is the part no test reaches:
+
+1. Open `how-to-print.txt` and read it as a person who has never used this tool.
+2. Import `Lego2STL.json` into Bambu Studio. It must appear as a process preset and select without
+   complaint. If it fails to import, a key name from Task 6 Step 1 is wrong.
 3. Open one plate with the preset selected and check that supports are off.
 4. Look at an axle on the plate: it should be resting on one arm of its cross, not flat.
+
+Steps 2 to 4 need a person at the screen. Stop here and hand them over rather than reporting the
+task done.
 
 - [ ] **Step 8: Commit**
 
