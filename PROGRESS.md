@@ -107,3 +107,9 @@ PHASE:LOT-D WAVE:6 STATUS:complete TS:2026-08-30T22:59:50Z
 # rendered 32 to 1024 - 16 px dropped at the user's request - and carried by the window,
 # the executable, the MSI, the bootstrapper, the Linux menu entry and the Mac bundle.
 PHASE:LOT-D WAVE:12 STATUS:complete TS:2026-08-31T10:07:46Z
+# Item 10: measured, and the answer is no. Enough overhangs and turning does reduce it, but
+# minimising overhang area stands half the improved parts on end. Recommendation and numbers
+# in the lot D record; the probe is deleted.
+PHASE:LOT-D WAVE:10 STATUS:complete TS:2026-08-31T10:14:36Z
+# All three items of lot D are settled: two built, one measured and declined.
+PHASE:LOT-D WAVE:0 STATUS:complete TS:2026-08-31T10:14:37Z
