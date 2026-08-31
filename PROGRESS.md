@@ -103,3 +103,7 @@ PHASE:LOT-D WAVE:6.5 STATUS:complete TS:2026-08-30T22:58:39Z
 # buttons, the answer corrects the parts list in the folder. Driving the real window by
 # hand against pages 370-372 is left for a person; everything headless is covered.
 PHASE:LOT-D WAVE:6 STATUS:complete TS:2026-08-30T22:59:50Z
+# Item 12: a nozzle printing a layered brick, chosen from four candidates. Drawn as SVG,
+# rendered 32 to 1024 - 16 px dropped at the user's request - and carried by the window,
+# the executable, the MSI, the bootstrapper, the Linux menu entry and the Mac bundle.
+PHASE:LOT-D WAVE:12 STATUS:complete TS:2026-08-31T10:07:46Z
