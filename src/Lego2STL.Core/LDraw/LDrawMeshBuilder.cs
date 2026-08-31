@@ -72,9 +72,19 @@ public sealed class LDrawMeshBuilder
         await AddAsync(reference, Matrix4x4.Identity, invert: false, 0, state, cancellationToken)
             .ConfigureAwait(false);
 
+        // A redirection describes itself as a redirection. What the caller wants to know is what
+        // the part it points at is, which is also the shape that was just built.
+        var title = root.Title;
+
+        if (root.MovedTo is { Length: > 0 } replacement)
+        {
+            var target = await ReadAsync(replacement + ".dat", cancellationToken).ConfigureAwait(false);
+            title = target?.Title ?? title;
+        }
+
         return new PartMesh(
             partNumber,
-            root.Title,
+            title,
             state.Triangles,
             root.MovedTo,
             state.FilesUsed.Count,

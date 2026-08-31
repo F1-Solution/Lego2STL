@@ -258,4 +258,27 @@ public sealed class LDrawMeshBuilderTests
         withoutExtension.Triangles.Should().HaveCount(1);
         withExtension.Triangles.Should().HaveCount(1);
     }
+
+    /// <summary>
+    /// A part that is only a redirection is described by the part it redirects to.
+    /// </summary>
+    /// <remarks>
+    /// The mesh was always right - the builder follows the redirection when it expands the file -
+    /// but the description recorded was the stub's own, "~Moved to 3023b", which says nothing
+    /// about what the part is. Four of run 6324712's parts are like this, and the reader that
+    /// works out what kind of part it is has only that description to go on.
+    /// </remarks>
+    [Fact]
+    public async Task A_part_that_only_redirects_is_described_by_the_part_it_becomes()
+    {
+        var library = new FakeLDrawLibrary()
+            .Add("3023.dat", $"0 ~Moved to 3023b\n1 16 0 0 0 {Identity} 3023b.dat\n")
+            .Add("3023b.dat", "0 Plate  1 x  2\n3 16 0 0 0  10 0 0  0 10 0\n");
+
+        var mesh = await new LDrawMeshBuilder(library).BuildAsync("3023");
+
+        mesh.MovedTo.Should().Be("3023b");
+        mesh.Title.Should().Be("Plate  1 x  2");
+        mesh.Triangles.Should().ContainSingle("the geometry always came from the part it points at");
+    }
 }

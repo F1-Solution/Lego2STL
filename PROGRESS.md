@@ -118,3 +118,4 @@ PHASE:LOT-D WAVE:0 STATUS:complete TS:2026-08-31T10:14:37Z
 PHASE:LOT-D WAVE:6.6 STATUS:complete TS:2026-08-31T10:25:26Z
 # The 16 px icon, drawn again by hand on a whole-pixel grid rather than downscaled.
 PHASE:LOT-D WAVE:12.1 STATUS:complete TS:2026-08-31T13:08:35Z
+PHASE:AB WAVE:1 STATUS:complete TS:2026-08-31T21:39:48Z
