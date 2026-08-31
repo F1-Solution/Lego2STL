@@ -115,10 +115,11 @@ advised standing plates on their edge, which is exactly backwards. A face within
 the lowest point has to be excluded before any of the numbers above mean anything.
 
 **What was not done.** The comparison against a real slicer. Bambu Studio is installed on the
-build machine but is a windowed program that writes nothing to a console, so it cannot be driven
-headlessly; the comparison needs a person. It is moot for the decision: even if the score agreed
-with the slicer on support material to the gram, acting on it would stand half the improved parts
-on end.
+build machine; it is a windowed program and prints nothing to a console, but it does answer — it
+writes a `result.json` into the working directory — so a future attempt has a way in and should
+start there rather than assuming there is none. It was not pursued because it is moot for this
+decision: even if the score agreed with the slicer on support material to the gram, acting on it
+would stand half the improved parts on end.
 
 **The recommendation.** Build nothing from this score. Overhang area is honest about overhang and
 blind to everything else that decides an orientation — whether the part stands up, how much plate
