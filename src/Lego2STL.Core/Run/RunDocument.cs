@@ -165,7 +165,14 @@ public sealed record RunDocument
     {
         ArgumentNullException.ThrowIfNull(words);
 
-        return [.. Unread.Select(u => words.Format(TextKey.MsgUnreadEntryAt, u.Page, u.Bounds, u.Reason))];
+        // An entry from before a run kept where it was is already a finished sentence, and
+        // the only honest thing to do with it is show it as it was written.
+        return
+        [
+            .. Unread.Select(u => u.CanBeAskedAbout
+                ? words.Format(TextKey.MsgUnreadEntryAt, u.Page, u.Bounds, u.Reason)
+                : u.RawText),
+        ];
     }
 
     public IReadOnlyList<ManifestFailure> Failed { get; init; } = [];

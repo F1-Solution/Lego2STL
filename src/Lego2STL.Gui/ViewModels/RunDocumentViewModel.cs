@@ -228,7 +228,8 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
 
         foreach (var entry in Document.Unread)
         {
-            if (settled.Contains(ReviewAnswers.Key(entry.Page, entry.Bounds)))
+            if (!entry.CanBeAskedAbout
+                || settled.Contains(ReviewAnswers.Key(entry.Page, entry.Bounds)))
             {
                 continue;
             }

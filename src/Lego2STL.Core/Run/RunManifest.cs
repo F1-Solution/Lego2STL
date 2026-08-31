@@ -45,6 +45,7 @@ public sealed record ManifestFailure(string Part, string Reason);
 /// The region on the page, as the same text the extraction prints, so the file stays readable
 /// by eye and the shape of <c>PixelBounds</c> is not frozen into it.
 /// </param>
+[JsonConverter(typeof(ManifestUnreadConverter))]
 public sealed record ManifestUnread(
     int Page,
     string Bounds,
@@ -53,7 +54,91 @@ public sealed record ManifestUnread(
     string? PartNumber,
     int? ColorCode,
     string Reason,
-    string? Picture = null);
+    string? Picture = null)
+{
+    /// <summary>False for an entry recorded before a run kept where it was.</summary>
+    [JsonIgnore]
+    public bool CanBeAskedAbout => Bounds.Length > 0;
+}
+
+/// <summary>
+/// Reads both shapes this has had: a finished sentence, and the entry it was made from.
+/// </summary>
+/// <remarks>
+/// Runs already on people's disks recorded a sentence per unread entry. Refusing those would
+/// not cost the sentences alone - a record that will not parse costs the whole run, back to
+/// "a folder from before runs recorded themselves" - so an old sentence is kept as its own
+/// text, with no page and no region, and is shown rather than asked about.
+/// </remarks>
+internal sealed class ManifestUnreadConverter : JsonConverter<ManifestUnread>
+{
+    public override ManifestUnread? Read(
+        ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TokenType == JsonTokenType.String)
+        {
+            var sentence = reader.GetString() ?? string.Empty;
+            return new ManifestUnread(0, string.Empty, sentence, null, null, null, sentence);
+        }
+
+        using var document = JsonDocument.ParseValue(ref reader);
+        var root = document.RootElement;
+
+        return new ManifestUnread(
+            Number(root, "page") ?? 0,
+            Text(root, "bounds") ?? string.Empty,
+            Text(root, "rawText") ?? string.Empty,
+            Number(root, "quantity"),
+            Text(root, "partNumber"),
+            Number(root, "colorCode"),
+            Text(root, "reason") ?? string.Empty,
+            Text(root, "picture"));
+    }
+
+    public override void Write(
+        Utf8JsonWriter writer, ManifestUnread value, JsonSerializerOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(value);
+
+        writer.WriteStartObject();
+        writer.WriteNumber("page", value.Page);
+        writer.WriteString("bounds", value.Bounds);
+        writer.WriteString("rawText", value.RawText);
+        Number(writer, "quantity", value.Quantity);
+        Text(writer, "partNumber", value.PartNumber);
+        Number(writer, "colorCode", value.ColorCode);
+        writer.WriteString("reason", value.Reason);
+        Text(writer, "picture", value.Picture);
+        writer.WriteEndObject();
+    }
+
+    private static string? Text(JsonElement root, string name) =>
+        root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
+
+    private static int? Number(JsonElement root, string name) =>
+        root.TryGetProperty(name, out var value) && value.TryGetInt32(out var number)
+            ? number
+            : null;
+
+    private static void Text(Utf8JsonWriter writer, string name, string? value)
+    {
+        if (value is not null)
+        {
+            writer.WriteString(name, value);
+        }
+    }
+
+    private static void Number(Utf8JsonWriter writer, string name, int? value)
+    {
+        if (value is { } number)
+        {
+            writer.WriteNumber(name, number);
+        }
+    }
+}
 
 /// <summary>
 /// A plate the run wrote, and the colour that went on it.

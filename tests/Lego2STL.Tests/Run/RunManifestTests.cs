@@ -71,7 +71,7 @@ public sealed class RunManifestTests
     /// to the other one showed the old words for ever.
     /// </remarks>
     [Fact]
-    public void An_entry_that_could_not_be_read_keeps_its_page_and_its_region()
+    public async Task An_entry_that_could_not_be_read_keeps_its_page_and_its_region()
     {
         var layout = ARunFolder();
         var language = DisplayLanguage.Italian;
@@ -88,11 +88,59 @@ public sealed class RunManifestTests
         unread.Bounds.Should().NotBeNullOrWhiteSpace();
         unread.RawText.Should().NotBeNull();
 
+        // Through the file as well, because that is where the window reads it from.
+        await RunManifest.WriteAsync(layout, manifest);
+        var (readBack, state) = RunManifest.Read(layout.ManifestPath);
+
+        state.Should().Be(ManifestState.Present);
+        readBack!.Unread.Should().ContainSingle().Which.Should().Be(unread);
+
         var document = RunDocument.From(manifest, layout);
 
         document.Unread.Should().ContainSingle();
         document.UnreadText.Should().ContainSingle().Which.Should()
             .Contain(unread.Page.ToString(CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// A record written before unread entries were kept as data still opens, whole.
+    /// </summary>
+    /// <remarks>
+    /// The cost of refusing one is not the sentences: a record that will not parse is read as no
+    /// record at all, so the run loses its status, its parts and its plates too and falls back to
+    /// "a folder from before runs recorded themselves". An old sentence is therefore kept as its
+    /// own text, shown as it was written, and never asked about - it has no region to show.
+    /// </remarks>
+    [Fact]
+    public async Task A_record_that_kept_its_unread_entries_as_sentences_still_opens()
+    {
+        var layout = ARunFolder();
+
+        await RunManifest.WriteAsync(layout, RunManifest.From(
+            APretendRun.Complete(layout), APretendRun.Started, APretendRun.Finished, null));
+
+        const string Sentence = "page 372 at (444,530)-(512,566): could not be read";
+
+        File.WriteAllText(
+            layout.ManifestPath,
+            File.ReadAllText(layout.ManifestPath)
+                .Replace(
+                    "\"unread\": []",
+                    $"\"unread\": [ \"{Sentence}\" ]",
+                    StringComparison.Ordinal));
+
+        var (read, state) = RunManifest.Read(layout.ManifestPath);
+
+        state.Should().Be(ManifestState.Present, "one unreadable field must not cost the whole run");
+        read!.Parts.Should().NotBeEmpty();
+        read.Plates.Should().NotBeEmpty();
+
+        var unread = read.Unread.Should().ContainSingle().Subject;
+
+        unread.CanBeAskedAbout.Should().BeFalse("there is no region to show anyone");
+
+        RunDocument.From(read, layout).UnreadText
+            .Should().ContainSingle().Which.Should().Be(Sentence);
     }
 
     /// <summary>Every plate is recorded with its colour code, which is what finds it again.</summary>
