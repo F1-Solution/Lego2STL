@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -317,6 +317,15 @@ public sealed class WindowTests
     }
 
     /// <summary>Every piece of text the window is currently showing.</summary>
+    /// <summary>The window carries its own icon rather than the framework's.</summary>
+    [AvaloniaFact]
+    public void The_window_has_an_icon_of_its_own()
+    {
+        var window = new MainWindow();
+
+        window.Icon.Should().NotBeNull();
+    }
+
     private static IEnumerable<string> Texts(Visual root)
     {
         foreach (var control in root.GetLogicalDescendants().OfType<Control>())

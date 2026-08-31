@@ -130,6 +130,7 @@ $msi = Join-Path $staging "Lego2STL-$Version-win-x64.msi"
 # Worked out first and quoted: an expression written inline after -d is split into a separate
 # argument, and the toolset then reads the licence as another source file.
 $license = Join-Path $PSScriptRoot 'windows\License.rtf'
+$icon = Join-Path $root 'src\Lego2STL.Gui\Assets\icon.ico'
 
 wix build (Join-Path $PSScriptRoot 'windows\Lego2STL.wxs') `
     -ext WixToolset.UI.wixext `
@@ -161,6 +162,7 @@ wix build (Join-Path $PSScriptRoot 'windows\Bundle.wxs') `
     -d "RuntimeSize=$($platform.size)" `
     -d "MsiPath=$msi" `
     -d "LicenseRtf=$license" `
+    -d "IconIco=$icon" `
     -o $exe
 if ($LASTEXITCODE -ne 0) { throw 'the installer did not build' }
 

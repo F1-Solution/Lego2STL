@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -10,6 +10,7 @@
     <AssemblyName>Lego2STL.Gui</AssemblyName>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest Condition="'$(IsWindowsTarget)' == 'true'">app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets/icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

@@ -20,6 +20,8 @@ packaging/macos/preinstall text eol=lf
 
 *.pdf binary
 *.png binary
+*.ico binary
+*.icns binary
 *.jpg binary
 *.stl binary
 *.3mf binary

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <!-- A nozzle printing the brick under it, layer by layer: the whole tool in one image. -->
+  <rect width="128" height="128" rx="26" fill="#12233A"/>
+  <path d="M46 10 H82 V40 L70 56 H58 L46 40 Z" fill="#A8BED4"/>
+  <rect x="59" y="54" width="10" height="12" fill="#F5B301"/>
+  <rect x="32" y="64" width="24" height="12" rx="4" fill="#F5B301"/>
+  <rect x="72" y="64" width="24" height="12" rx="4" fill="#F5B301"/>
+  <rect x="24" y="76" width="80" height="12" rx="4" fill="#F5B301"/>
+  <rect x="24" y="92" width="80" height="12" rx="4" fill="#F5B301"/>
+  <rect x="24" y="108" width="80" height="12" rx="4" fill="#F5B301"/>
+</svg>

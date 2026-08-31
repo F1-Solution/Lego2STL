@@ -23,13 +23,8 @@
           Version="$(Version)"
           Manufacturer="Lego2STL"
           UpgradeCode="A7E1D9C4-3B62-4F08-9A15-6E2D8C7B4013"
-          Compressed="yes">
-
-    <!--
-      No icon of its own. Burn wants a real .ico and the only one here belongs to the toolkit
-      the window is built with; stamping another project's logo on this installer would say
-      something untrue about who made it. The default icon stands until there is one to use.
-    -->
+          Compressed="yes"
+          IconSourceFile="$(IconIco)">
 
     <BootstrapperApplication>
       <bal:WixStandardBootstrapperApplication

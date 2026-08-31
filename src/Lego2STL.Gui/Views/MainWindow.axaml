@@ -1,4 +1,4 @@
-<Window xmlns="https://github.com/avaloniaui"
+﻿<Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Lego2STL.Gui.ViewModels"
         xmlns:loc="using:Lego2STL.Gui.Localization"
@@ -10,7 +10,8 @@
         Width="1040" Height="720"
         MinWidth="820" MinHeight="560"
         Background="{DynamicResource AppWindowBackground}"
-        Title="Lego2STL">
+        Title="Lego2STL"
+        Icon="/Assets/icon.ico">
 
   <Window.Styles>
     <Style Selector="TextBlock.heading">

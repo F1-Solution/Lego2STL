@@ -18,6 +18,8 @@
        default, so that name and the console program's "lego2stl" would be one file. -->
   <key>CFBundleExecutable</key>
   <string>Lego2STL.Gui</string>
+  <key>CFBundleIconFile</key>
+  <string>icon</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>LSMinimumSystemVersion</key>

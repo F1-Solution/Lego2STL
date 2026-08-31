@@ -82,6 +82,7 @@ if [ "$platform" = "linux" ]; then
   mkdir -p "$tree"
   cp -R "$payload/." "$tree/"
   cp "$here/linux/lego2stl.desktop" "$tree/"
+  cp "$root/src/Lego2STL.Gui/Assets/icon-256.png" "$tree/lego2stl.png"
   cp "$here/linux/install.sh" "$tree/install.sh"
   cp "$here/lib/runtime-probe.sh" "$tree/runtime-probe.sh"
   cp "$root/README.md" "$tree/" 2>/dev/null || true
@@ -181,6 +182,7 @@ else
   mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources"
   sed -e "s/@VERSION@/$version/g" "$here/macos/Info.plist" > "$app/Contents/Info.plist"
   cp -R "$fused/." "$app/Contents/MacOS/"
+  cp "$here/macos/icon.icns" "$app/Contents/Resources/"
 
   # The two keep the names they were built with. A bundle whose window program were called
   # "Lego2STL" could not also hold "lego2stl": a Mac disk is case-insensitive by default, so

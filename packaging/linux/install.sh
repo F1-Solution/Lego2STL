@@ -30,12 +30,16 @@ fi
 
 echo "Installing into $prefix"
 
-mkdir -p "$prefix/lib/lego2stl" "$prefix/bin" "$prefix/share/applications"
+icons="$prefix/share/icons/hicolor/256x256/apps"
+
+mkdir -p "$prefix/lib/lego2stl" "$prefix/bin" "$prefix/share/applications" "$icons"
 cp -R "$here/." "$prefix/lib/lego2stl/"
 rm -f "$prefix/lib/lego2stl/install.sh" "$prefix/lib/lego2stl/lego2stl.desktop"
+rm -f "$prefix/lib/lego2stl/lego2stl.png"
 ln -sf "$prefix/lib/lego2stl/lego2stl"     "$prefix/bin/lego2stl"
 ln -sf "$prefix/lib/lego2stl/Lego2STL.Gui" "$prefix/bin/lego2stl-gui"
 install -m 0644 "$here/lego2stl.desktop" "$prefix/share/applications/lego2stl.desktop"
+install -m 0644 "$here/lego2stl.png" "$icons/lego2stl.png"
 
 # So the new menu entry appears without logging out. Not every system has this, and it not
 # being there is not a failure.
