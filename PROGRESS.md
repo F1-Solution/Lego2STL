@@ -131,3 +131,11 @@ PHASE:AB WAVE:5 STATUS:complete TS:2026-08-31T22:03:17Z
 # on the machine, and a small perimeter speed is written as a percentage, never an absolute.
 PHASE:AB WAVE:6 STATUS:complete TS:2026-08-31T22:10:16Z
 PHASE:AB WAVE:7 STATUS:complete TS:2026-08-31T22:14:46Z
+# Task 8: both files are written beside the plates and the suite is green. Adding a key to
+# TextKey exposed three window tests that switched the language and never switched it back,
+# so they now restore it the way the other two already did. Steps 7.2-7.4 are with the user.
+PHASE:AB WAVE:8 STATUS:complete TS:2026-08-31T22:32:24Z
+# A+B done. The preset imports into Bambu Studio and selects, supports come out off, and an
+# axle lies flat - all three confirmed by hand. The axle roll was measured and did not ship,
+# so every orientation rule confirms the pipeline and the run records which one reached each part.
+PHASE:AB WAVE:0 STATUS:complete TS:2026-08-31T22:32:24Z
