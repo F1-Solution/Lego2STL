@@ -1,16 +1,17 @@
 # Lot D — what is left, and what is already known about it
 
-**Date:** 2026-08-30
-**Status:** the decisions for all three were taken on 2026-08-30 and each now has its own plan:
-`plans/2026-08-30-answering-what-was-not-read.md` (item 6),
-`plans/2026-08-30-turning-a-part-spike.md` (item 10) and
-`plans/2026-08-30-the-application-icon.md` (item 12).
+**Date:** 2026-08-30, closed 2026-08-31
+**Status:** all three are settled. Items 6 and 12 were built, from
+`plans/2026-08-30-answering-what-was-not-read.md` and
+`plans/2026-08-30-the-application-icon.md`. Item 10 was a spike,
+`plans/2026-08-30-turning-a-part-spike.md`, and its answer — written into this file below — is
+that the feature should not be built.
 **Covers:** items 6, 10 and 12 of the reported list — see
 `2026-08-29-reported-items-and-lots.md`.
 
 Written so that the three remaining items survive a lost session with the groundwork already
-done: what was asked, what the code turns out to have, and what the open questions are. None of
-this is approved design. Do not implement from this file.
+done: what was asked, what the code turns out to have, and what the open questions were. What
+follows each item's original notes is what actually happened.
 
 ---
 
@@ -61,9 +62,12 @@ strings into data. Item 6 has to do that first; the dialogue cannot be built ove
 - **The window's alone.** The command line already reports what it could not read; answering a
   question is a conversation, and a report is a file.
 
-**Still open, for its plan to settle.** How a corrected entry reaches the parts list when the run
-folder has been reopened weeks later, and what the dialogue does with an entry whose part number
-reads cleanly but whose colour does not.
+**Both open questions, as built on 2026-08-31.** A corrected entry reaches the parts list by the
+catalogue rewriting the run's own CSV in place, so a run reopened weeks later is corrected where
+it stands and *continue from the parts list* picks the correction up. An entry whose part number
+read cleanly and whose colour did not arrives with the part number already filled in and the
+colour blank; Ok stays grey until all three fields are given, so a half answer is visibly a half
+answer rather than a silent one.
 
 ---
 
@@ -72,8 +76,10 @@ reads cleanly but whose colour does not.
 > *"Sei in grado di capire se un pezzo può essere girato (in verticale invece che in orizzontale
 > per diminuire il numero di 'supporti' che verranno stampati assieme al pezzo?"*
 
-Still a spike: nobody has measured whether it can be decided from the geometry the pipeline
-already holds. It was named as a spike in the Lot B design and has not moved since.
+Measured on 2026-08-31, over the 175 shapes of run 6324712, by a throwaway probe that has since
+been deleted. **The recommendation is: do not build this.** Not because too little overhangs, and
+not because turning does not help — both turned out otherwise — but because overhang area is the
+wrong thing to minimise, and minimising it gives advice nobody would act on.
 
 **What the code already has.** `MeshPipeline.StandUp` already turns every shape from the source's
 axes onto a print bed, and `SitOnBed` centres it and drops it onto zero — so a rotation stage has
@@ -81,15 +87,47 @@ somewhere obvious to live and an existing convention about which way is up. `Mes
 measures the surfaces; `ClearanceOffset.ThinnestSpan` already walks the geometry looking for a
 measurement, so the machinery for "look at every face and score it" exists.
 
-**The question the spike must answer first.** Can overhang be scored usefully from the triangles
-alone — the area of faces whose normal points below the bed beyond the angle a slicer would
-support — and does rotating to minimise that score actually agree with what a slicer does? If the
-score does not predict the slicer, the feature is not worth building, and that answer is the
-spike's whole output.
+**How much of a real set overhangs at all.** Counting the area of faces pointing more than 45°
+below horizontal, and excluding the face a part rests on:
 
-**A caution.** Turning a part changes what fits the plate, which Lot B's fitting scale now
-computes. The two interact: a part that does not fit lying down may fit standing up. Whatever is
-designed must say which of the two decides.
+| overhanging more than | parts |
+|---|---|
+| 5% of their surface | 155 of 175 |
+| 10% | 136 of 175 |
+| 25% | 12 of 175 |
+
+So the question is a real one about this set, not a corner case.
+
+**How much turning helps.** Scoring each shape in the six axis-aligned orientations and keeping
+the best: 95 of 175 improve by more than 5 percentage points and 26 by more than 20. The worst
+offenders shed almost all of it — a 12L axle goes from 24.7% to 0.3%.
+
+**What turning costs.** Not the plate: none of the 95 stops fitting a 256 × 256 mm bed, so the
+interaction with Lot B's fitting scale that this record warned about does not bite on this set.
+The cost is the shape of the print. **50 of those 95 end up taller than three times their
+narrowest footprint side, against 2 as built.** The extreme cases are the axles: the score's
+advice for a 12L axle is to stand 191 mm of it on a 9.6 × 9.6 mm base. That is a print that
+topples, or that needs a brim and more support than it saved.
+
+**A defect worth recording, for whoever tries again.** The first version of the score counted
+every downward-facing triangle, including the flat underside a part is resting on — and therefore
+advised standing plates on their edge, which is exactly backwards. A face within a layer height of
+the lowest point has to be excluded before any of the numbers above mean anything.
+
+**What was not done.** The comparison against a real slicer. Bambu Studio is installed on the
+build machine but is a windowed program that writes nothing to a console, so it cannot be driven
+headlessly; the comparison needs a person. It is moot for the decision: even if the score agreed
+with the slicer on support material to the gram, acting on it would stand half the improved parts
+on end.
+
+**The recommendation.** Build nothing from this score. Overhang area is honest about overhang and
+blind to everything else that decides an orientation — whether the part stands up, how much plate
+it occupies, how many layers it becomes and therefore how long it takes, and where the seam lands.
+A suggestion that is wrong about half the parts it speaks up for is worse than no suggestion,
+because someone will act on it. If this is picked up again, it should not start from triangle
+scoring at all: it should start from the slicer's own support figure for a handful of real
+orientations, and the objective it optimises has to include stability and plate cost from the
+first line, not as a filter bolted on afterwards.
 
 ---
 
@@ -110,6 +148,14 @@ Avalonia logo is the most visible place the old icon would survive.
 sizes, and looked at before one is chosen — an icon is judged by eye at 16 px, not by argument.
 The plan therefore has a gate in the middle rather than a subject settled up front.
 
+**Chosen 2026-08-31.** Four candidates were drawn, not three: the fourth — a nozzle printing a
+brick that is being laid down in layers — was asked for at the gate, after the first three had
+been rendered and looked at, and it is the one that was kept. The sizes changed at the same
+gate: 16 px was dropped and the set runs 32 to 1024, for the application stores. It is carried by
+the window, the executable, the MSI (which takes its icon out of the executable), the Windows
+bootstrapper, the Linux menu entry — which had always named an icon that was never installed —
+and the Mac bundle, whose `Resources` folder had been sitting empty for exactly this.
+
 ---
 
 ## Suggested order
@@ -118,3 +164,7 @@ Item 6 first: it is the one with a design already written into the code, the one
 real document the reader cannot fully manage, and the one whose machinery Lot C will have just
 exercised. Item 12 next, being self-contained and short. Item 10 last, and as a spike whose
 output is a recommendation rather than a feature.
+
+Done in that order on 2026-08-31. One thing is left for a person: driving the real window against
+pages 370-372 of `6324712.pdf` and answering the question page 372 raises. Everything a headless
+run can check is covered by the suite.
