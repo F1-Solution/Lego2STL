@@ -119,3 +119,8 @@ PHASE:LOT-D WAVE:6.6 STATUS:complete TS:2026-08-31T10:25:26Z
 # The 16 px icon, drawn again by hand on a whole-pixel grid rather than downscaled.
 PHASE:LOT-D WAVE:12.1 STATUS:complete TS:2026-08-31T13:08:35Z
 PHASE:AB WAVE:1 STATUS:complete TS:2026-08-31T21:39:48Z
+PHASE:AB WAVE:2 STATUS:complete TS:2026-08-31T21:43:33Z
+# Task 3, the gate: rolling an axle 45 degrees lowers the overhang share for four of the
+# six real axles and raises it for two, because the roll puts every underside face exactly
+# on the 45 degree limit. The axle rule does not ship; the spec is corrected.
+PHASE:AB WAVE:3 STATUS:complete TS:2026-08-31T21:52:13Z

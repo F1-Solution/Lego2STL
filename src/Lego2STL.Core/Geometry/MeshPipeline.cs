@@ -43,6 +43,9 @@ public sealed record MeshPipelineOptions
     /// a moulded one is made with. Zero leaves the catalogue's nominal size alone.
     /// </summary>
     public float ClearanceMillimetres { get; init; }
+
+    /// <summary>Whether to lay each part down the way its kind is printed.</summary>
+    public bool Orient { get; init; } = true;
 }
 
 /// <summary>A prepared shape, with what was done to it and how closed it came out.</summary>
@@ -59,7 +62,8 @@ public sealed record PreparedMesh(
     IReadOnlyList<string> MissingReferences,
     bool ClearanceApplied = false,
     string? ClearanceRefusedBecause = null,
-    float? ClosedAtTolerance = null)
+    float? ClosedAtTolerance = null,
+    string? LaidDown = null)
 {
     public (Vector3 Min, Vector3 Max) Bounds => Mesh.Bounds();
 
@@ -157,7 +161,15 @@ public static class MeshPipeline
         // to a shape that is already measured in them.
         var upright = StandUp(repaired, o);
         var clearance = ClearanceOffset.Apply(upright, o.ClearanceMillimetres, quality);
-        var placed = SitOnBed(clearance.Mesh, o);
+
+        // Then laid down, before it is dropped: the bed is found again afterwards, so a turned
+        // part sits on the bed rather than hovering over where its old underside used to be.
+        var kind = o.Orient ? PartKinds.FromTitle(part.Title) : PartKind.Unknown;
+        var laid = Orientation.For(kind) is { } turn
+            ? clearance.Mesh.Transformed(turn)
+            : clearance.Mesh;
+
+        var placed = SitOnBed(laid, o);
 
         return new PreparedMesh(
             part.Reference,
@@ -171,7 +183,8 @@ public static class MeshPipeline
             part.MovedTo,
             part.MissingReferences,
             clearance.Applied,
-            clearance.Reason);
+            clearance.Reason,
+            LaidDown: o.Orient ? Orientation.Name(kind) : null);
     }
 
     /// <summary>
