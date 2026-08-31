@@ -88,19 +88,28 @@ silently missing. This is a verification step, not a research step.
 
 Measured against a real Bambu Studio installation on 2026-08-31, for the default 0.4 mm nozzle:
 
-| `--printer` | Inherits |
-|---|---|
-| A1 | `0.16mm Optimal @BBL A1` |
-| A1mini | `0.16mm Optimal @BBL A1M` |
-| P1P | `0.16mm Optimal @BBL P1P` |
-| P1S | `0.16mm Optimal @BBL P1P` |
-| X1C | `0.16mm Optimal @BBL X1C` |
-| H2D | `0.16mm Standard @BBL H2D` |
+| `--printer` | Inherits | Slots per per-extruder setting |
+|---|---|---|
+| A1 | `0.16mm Optimal @BBL A1` | 1 |
+| A1mini | `0.16mm Optimal @BBL A1M` | 1 |
+| P1P | `0.16mm Optimal @BBL P1P` | 2 |
+| P1S | `0.16mm Optimal @BBL P1P` | 2 |
+| X1C | `0.16mm Optimal @BBL X1C` | 2 |
+| H2D | `0.16mm Standard @BBL H2D` | 7 |
 
-Two things this table records that are not obvious. The family name is not uniform: the A1, P1 and
-X1 lines call the 0.16 mm profile *Optimal*, while the H2 line calls it *Standard*. And there is no
+Three things this table records that are not obvious. The family name is not uniform: the A1, P1 and
+X1 lines call the 0.16 mm profile *Optimal*, while the H2 line calls it *Standard*. There is no
 `P1S` token at all — the P1S uses the P1P profiles, which is a substitution and should be named as
-one in the sheet rather than passed off as a match.
+one in the sheet rather than passed off as a match. And a per-extruder setting — the speeds — takes
+a list whose length is **not** the number of extruders and is not the same for every machine: the
+P1P and the X1C are single-extruder printers whose profiles list two values, and the H2D lists
+seven. A preset that writes one value where its base has seven hands the slicer a vector of the
+wrong length, so the count is part of the table and not a constant.
+
+The verification of 2026-08-31 also settled the form of two values. `brim_type` takes one of
+`no_brim`, `outer_only`, `inner_only`, `outer_and_inner`, `auto_brim`, `brim_ears`; and
+`small_perimeter_speed` is written as a **share of the outer wall speed**, never as an absolute —
+every occurrence in every profile the slicer ships, across all ten vendors, is a percentage.
 
 The base name also varies with nozzle: `0.16mm Optimal @BBL A1 0.2 nozzle` exists beside the plain
 name. The tool does not know the nozzle, so it targets the default 0.4 mm — and the sheet says so,
