@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using FluentAssertions;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Rebrickable;
@@ -381,5 +381,35 @@ public sealed class RunManifestTests
 
         document.Parts.Where(p => p.PartNumber != "32523")
             .Should().OnlyContain(p => p.NotPrinted == false);
+    }
+
+    /// <summary>
+    /// How a part was laid on the bed is recorded, like every other decision a run makes.
+    /// </summary>
+    /// <remarks>
+    /// Recorded so it can be disagreed with. It is also the only way the set of parts no rule
+    /// matched can be read off a real run, which is how the table of rules is meant to grow.
+    /// </remarks>
+    [Fact]
+    public async Task How_each_part_was_laid_on_the_bed_is_recorded()
+    {
+        var layout = ARunFolder();
+        var outcome = APretendRun.Complete(layout);
+
+        // Named explicitly rather than left to the pretend shapes, so the test proves the value
+        // travels rather than proving that two lists of nulls match.
+        var laid = outcome.Shapes[0] with { LaidDown = "Axle" };
+        var run = outcome with { Shapes = [laid, .. outcome.Shapes.Skip(1)] };
+
+        var manifest = RunManifest.From(run, APretendRun.Started, APretendRun.Finished, null);
+
+        manifest.Parts.Should().Contain(p => p.LaidDown == "Axle");
+
+        await RunManifest.WriteAsync(layout, manifest);
+        var (read, state) = RunManifest.Read(layout.ManifestPath);
+
+        state.Should().Be(ManifestState.Present);
+        read!.Parts.Should().Contain(p => p.LaidDown == "Axle");
+        RunDocument.From(read, layout).Parts.Should().Contain(p => p.LaidDown == "Axle");
     }
 }

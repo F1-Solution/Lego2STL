@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Lego2STL.Core.Catalogue;
@@ -175,7 +175,8 @@ public sealed record ManifestPart(
     int? OverusedEdgeCount = null,
     float? ClosedAtTolerance = null,
     string? ElementId = null,
-    string? Printability = null);
+    string? Printability = null,
+    string? LaidDown = null);
 
 /// <summary>
 /// What a run records about itself, in its own folder.
@@ -364,7 +365,8 @@ public sealed record RunManifest
             shape?.Quality.OverusedEdgeCount,
             shape?.ClosedAtTolerance,
             entry.ElementId,
-            Core.Catalogue.Printability.Of(facts.GetValueOrDefault(entry.PartNumber)).Token());
+            Core.Catalogue.Printability.Of(facts.GetValueOrDefault(entry.PartNumber)).Token(),
+            shape?.LaidDown);
     }
 
     private static ManifestStage? Stage(RunProgress? progress) =>

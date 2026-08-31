@@ -1,4 +1,4 @@
-﻿using Lego2STL.Core.Catalogue;
+using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Plates;
@@ -30,7 +30,8 @@ public sealed record RunDocumentPart(
     int? OverusedEdgeCount = null,
     float? ClosedAtTolerance = null,
     string? ElementId = null,
-    string? Printability = null)
+    string? Printability = null,
+    string? LaidDown = null)
 {
     /// <summary>
     /// Below this, in millimetres, a wall is thinner than a common nozzle can lay down and the
@@ -271,7 +272,8 @@ public sealed record RunDocument
                     part.OverusedEdgeCount,
                     part.ClosedAtTolerance,
                     part.ElementId,
-                    part.Printability)),
+                    part.Printability,
+                    part.LaidDown)),
             ],
         };
     }
