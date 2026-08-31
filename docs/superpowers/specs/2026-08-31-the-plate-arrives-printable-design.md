@@ -14,8 +14,10 @@ removed, filament spread everywhere, pieces deformed — and the print advice ga
 Both answer the same question: how does a part end up sitting on the bed, and what does the slicer
 then do with it. A decides what the slicer is told; B decides how the part is lying when it is told
 it. Split them and the same question gets answered twice, in two places, by two people who may
-disagree. The clearest case: A may say *supports off* only because B has already made supports
-unnecessary. Asserting it without B would be asserting something untrue.
+disagree. The clearest case: A may say *supports off* only because B has established that the way
+these parts are lying does not need them. Asserting it without B would be asserting something
+nobody had checked. In the event B checked and had to change nothing, but the checking is what
+earns A the claim, and it is now a test rather than a belief.
 
 ---
 
@@ -27,7 +29,9 @@ they are about printing a plate, and there is no plate.
 1. **A process preset** for the slicer, beside the `.3mf` files.
 2. **An instruction sheet**, in the run's own language, covering every setting including the ones
    the preset deliberately does not assert.
-3. **The parts already oriented** inside the plates, because B acts before packing.
+3. **The parts already oriented** inside the plates, because B acts before packing — which after
+   the measurement below means the plates are unchanged, and the orientation each part was given is
+   recorded rather than assumed.
 
 The sheet is the primary deliverable and the preset is a convenience. That ordering matters: the
 sheet is a text file that is correct for ever, while the preset depends on Bambu's own preset names
@@ -153,14 +157,17 @@ turning" list. Both are misleading, and instructively so: a plate belongs flat o
 turning it would be wrong, while turning an axle means standing it on end, which is wrong twice
 over. The parts the score shouts about are the parts already lying correctly.
 
-So B is not an optimiser. It is a small set of rules that mostly **confirm** what the pipeline
-already does, and correct the few cases where practice says it is wrong.
+So B is not an optimiser. It is a small set of rules that **confirm** what the pipeline already
+does — one of them was going to be a correction, and the measurement below took it away, which
+leaves a table that turns nothing at all. That is a thinner result than this design set out to get
+and it is the honest one: the pipeline was already laying these five kinds down correctly, and what
+B adds is that this is now written down, held still by tests, and recorded per part.
 
 | Kind | How it sits | Change from today |
 |---|---|---|
 | Brick, plate, tile | Hollow underside on the bed, studs up | Confirms current behaviour — **verified** |
 | Technic beam | Widest face on the bed | Expected to confirm — the plan checks it |
-| Technic axle (cross section) | Horizontal, and **rolled 45° about its long axis**, so one arm of the cross rests on the bed | The real correction |
+| Technic axle (cross section) | Horizontal, flat as it lies | Confirms current behaviour — the roll was **measured and rejected**, below |
 | Technic pin | Horizontal | Expected to confirm — the plan checks it |
 | Anything else | Exactly as the pipeline leaves it today | No change, and recorded |
 
@@ -175,22 +182,47 @@ The governing rule, stated as a rule because it is the reason the table exists r
 consequence of it: **no support ever touches a mating surface** — a stud, an interior tube, a
 Technic hole, an axle or a pin. When orientation and support disagree, orientation moves.
 
-### Why the axle roll, and how it will be checked
+### The axle roll: measured on 2026-08-31, and rejected
 
-The axle rule is the one thing here that does not come from a measurement, and that has to be said
-plainly. It comes from practice: an axle lies horizontally, with one point of the cross on the bed.
-It is also the rotation the earlier probe could not have found, because it tried only the six
-axis-aligned orientations on the argument that *"a part that only improves at 37 degrees is not a
-part anyone will place by hand"* — and a `+` cross section is symmetric under the 90° rolls that
-rule admits, so every roll it tried was a no-op.
+The axle rule was the one thing here that did not come from a measurement. It came from practice:
+an axle lies horizontally, with one point of the cross on the bed. It was also the rotation the
+earlier probe could not have found, because it tried only the six axis-aligned orientations on the
+argument that *"a part that only improves at 37 degrees is not a part anyone will place by hand"* —
+and a `+` cross section is symmetric under the 90° rolls that rule admits, so every roll it tried
+was a no-op.
 
-The physical reasoning is that a `+` resting flat has two horizontal arms with their undersides in
+The physical reasoning was that a `+` resting flat has two horizontal arms with their undersides in
 the air, while the same cross rolled 45° into an `×` rests on one arm and its lower faces fall away
 at 45°, which is the self-supporting limit.
 
-The plan verifies it before shipping it, using the overhang score **as a check on one prediction
-rather than as a search** — which is the one use the score is fit for. If rolling a real axle mesh
-45° does not reduce its overhang area, the rule does not go in.
+It was checked against the six plain axles of run 6324712 — 3705, 32073, 3706, 3707, 3737 and
+3708 — as the share of surface area on faces pointing more than 45° below horizontal, excluding the
+face the part rests on. **The rule ships only if the rolled figure is lower for all six. It is
+lower for four:**
+
+| Part | Title | Flat | Rolled 45° |
+|---|---|---|---|
+| 3705 | Technic Axle 4 | 24.200% | 23.911% |
+| 32073 | Technic Axle 5 | 24.359% | **31.652%** |
+| 3706 | Technic Axle 6 | 24.465% | 24.272% |
+| 3707 | Technic Axle 8 | 24.598% | 24.453% |
+| 3737 | Technic Axle 10 | 24.678% | **32.314%** |
+| 3708 | Technic Axle 12 | 24.732% | 24.635% |
+
+**So the rule does not go in, and the axle row above confirms the pipeline instead.**
+
+The reason it fails is worth more than the verdict. Rolled 45°, an axle's underside faces sit at
+*exactly* the 45° limit, so whether they count as overhangs is a tie the score has to break, and it
+breaks it differently for different meshes — which is the whole 7-point spread above. Moving the
+limit two degrees either way shows it plainly: at 43° every rolled axle scores about 8.9% against
+24.2% flat, and at 47° every one of them scores about 39.6% against the same 24.2%. Flat, by
+contrast, reads 24.2% at all three limits, because a flat axle's overhanging faces are horizontal
+and nowhere near the threshold.
+
+A prediction that reverses sign under a two-degree change in a threshold has not been confirmed by
+this measurement; it has been shown to be outside what the measurement can settle. Turning every
+axle in every run is not warranted on that. The claim can be revisited by printing one axle both
+ways, which is evidence of a kind no geometric score is.
 
 ### Three smaller decisions
 
@@ -239,11 +271,12 @@ so a person can see it and disagree with it.
 
 - **The kind reader**, table-driven over the 219 real titles from run 6324712, including the
   `Technic`-prefixed majority where the kind is the second word, and including the redirect stubs.
-- **The axle roll**, on a cross-section mesh: overhang area after the roll is lower than before. The
-  same test is what decides whether the rule ships at all.
-- **Confirming rules change nothing.** A plate, a tile and a beam come out of the pipeline in the
-  same orientation with the rules on as without them. This is the test that stops B quietly
-  becoming an optimiser later.
+- **The axle roll** was measured on the six real axles above and rejected, so there is nothing left
+  to prove about it and no code to prove it against.
+- **Every rule changes nothing**, which after that measurement is the whole table. A plate, a tile,
+  a beam, a pin and an axle come out of the pipeline in the same orientation with the rules on as
+  without them, corner for corner. This is the test that stops B quietly becoming an optimiser
+  later, and it is now the only kind of test B has.
 - **An unmatched title** leaves the mesh byte-for-byte as it was, and is recorded as unmatched.
 - **The preset**, for its JSON shape, for the inherited name of each printer in the table, and for
   writing no file at all when the printer is not in it.
