@@ -47,6 +47,12 @@ public sealed class RunLayout
 
     public string PlateDirectory => Path.Combine(Root, "3mf");
 
+    /// <summary>The slicer preset that goes with the plates, when one could be written.</summary>
+    public string PresetPath => Path.Combine(PlateDirectory, "Lego2STL.json");
+
+    /// <summary>How to print the plates, for a person.</summary>
+    public string PrintNotesPath => Path.Combine(PlateDirectory, "how-to-print.txt");
+
     /// <summary>Answers given during review, so the same question is not asked twice.</summary>
     public string OverridesPath => Path.Combine(Root, "overrides.csv");
 

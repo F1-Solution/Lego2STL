@@ -134,6 +134,7 @@ public enum TextKey
     MsgClosedAndOpen,
     MsgProducedNothing,
     MsgWrotePlates,
+    MsgWrotePrintSettings,
     MsgNoPlatesRequested,
     MsgPlatesMissingParts,
     MsgCalibrationWritten,

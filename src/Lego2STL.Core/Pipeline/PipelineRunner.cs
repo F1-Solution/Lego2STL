@@ -1,4 +1,4 @@
-﻿using Lego2STL.Core.Catalogue;
+using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Extraction;
 using Lego2STL.Core.Geometry;
@@ -675,12 +675,27 @@ public sealed class PipelineRunner
                 cancellationToken)
             .ConfigureAwait(false);
 
+        // Written here rather than inside the plate builder: the builder's job is arranging
+        // shapes, and this is about the machine that will print them.
+        if (ProcessPreset.For(settings.Printer) is { } preset)
+        {
+            await File.WriteAllTextAsync(layout.PresetPath, preset, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        await File.WriteAllTextAsync(
+                layout.PrintNotesPath,
+                PrintNotes.Write(settings.Printer, words),
+                cancellationToken)
+            .ConfigureAwait(false);
+
         foreach (var part in plates.Skipped)
         {
             _log("  " + PlateBuilder.Describe(part, words, settings.Bed));
         }
 
         _log(words.Format(TextKey.MsgWrotePlates, plates.Plates.Count, layout.PlateDirectory));
+        _log(words.Format(TextKey.MsgWrotePrintSettings, layout.PrintNotesPath));
         return plates;
     }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -87,22 +87,29 @@ public sealed class WindowTests
     {
         var window = Open(out var model);
 
-        model.SelectedLanguage = Loc.Choices.First(c => c.Language == DisplayLanguage.English);
-        window.CaptureRenderedFrame();
-        var english = Texts(window).ToList();
+        try
+        {
+            model.SelectedLanguage = Loc.Choices.First(c => c.Language == DisplayLanguage.English);
+            window.CaptureRenderedFrame();
+            var english = Texts(window).ToList();
 
-        model.SelectedLanguage = Loc.Choices.First(c => c.Language == DisplayLanguage.Italian);
-        window.CaptureRenderedFrame();
-        var italian = Texts(window).ToList();
+            model.SelectedLanguage = Loc.Choices.First(c => c.Language == DisplayLanguage.Italian);
+            window.CaptureRenderedFrame();
+            var italian = Texts(window).ToList();
 
-        // Asked for by key rather than by wording, so re-wording a phrase does not fail this:
-        // the claim is that the window re-reads itself, not that it says any one thing.
-        var inEnglish = Strings.For(DisplayLanguage.English)[TextKey.UiInputKind];
-        var inItalian = Strings.For(DisplayLanguage.Italian)[TextKey.UiInputKind];
+            // Asked for by key rather than by wording, so re-wording a phrase does not fail this:
+            // the claim is that the window re-reads itself, not that it says any one thing.
+            var inEnglish = Strings.For(DisplayLanguage.English)[TextKey.UiInputKind];
+            var inItalian = Strings.For(DisplayLanguage.Italian)[TextKey.UiInputKind];
 
-        english.Should().Contain(inEnglish);
-        italian.Should().Contain(inItalian);
-        italian.Should().NotContain(inEnglish);
+            english.Should().Contain(inEnglish);
+            italian.Should().Contain(inItalian);
+            italian.Should().NotContain(inEnglish);
+        }
+        finally
+        {
+            Loc.Current.Use(DisplayLanguage.English);
+        }
     }
 
     [AvaloniaFact]
@@ -110,10 +117,17 @@ public sealed class WindowTests
     {
         var window = Open(out var model);
 
-        model.SelectedLanguage = Loc.Choices.First(c => c.Language == DisplayLanguage.Italian);
-        window.CaptureRenderedFrame();
+        try
+        {
+            model.SelectedLanguage = Loc.Choices.First(c => c.Language == DisplayLanguage.Italian);
+            window.CaptureRenderedFrame();
 
-        model.Options.ToSettings().Language.Should().Be(DisplayLanguage.Italian);
+            model.Options.ToSettings().Language.Should().Be(DisplayLanguage.Italian);
+        }
+        finally
+        {
+            Loc.Current.Use(DisplayLanguage.English);
+        }
     }
 
     /// <summary>
@@ -218,23 +232,30 @@ public sealed class WindowTests
         var window = Open(out var model);
         var screen = Rail(model)[which];
 
-        model.SelectedLanguage = Loc.Choices.First(c => c.Language == DisplayLanguage.Italian);
-        model.Show(screen);
-
-        var frame = window.CaptureRenderedFrame();
-        frame.Should().NotBeNull();
-
-        var directory = Environment.GetEnvironmentVariable("LEGO2STL_UI_SHOTS");
-        if (string.IsNullOrWhiteSpace(directory))
+        try
         {
-            return;
-        }
+            model.SelectedLanguage = Loc.Choices.First(c => c.Language == DisplayLanguage.Italian);
+            model.Show(screen);
 
-        Directory.CreateDirectory(directory);
-        using var file = File.Create(Path.Combine(directory, $"{screen.GetType().Name}-it.png"));
+            var frame = window.CaptureRenderedFrame();
+            frame.Should().NotBeNull();
+
+            var directory = Environment.GetEnvironmentVariable("LEGO2STL_UI_SHOTS");
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                return;
+            }
+
+            Directory.CreateDirectory(directory);
+            using var file = File.Create(Path.Combine(directory, $"{screen.GetType().Name}-it.png"));
 #pragma warning disable CS0618
-        frame!.Save(file);
+            frame!.Save(file);
 #pragma warning restore CS0618
+        }
+        finally
+        {
+            Loc.Current.Use(DisplayLanguage.English);
+        }
     }
 
     /// <summary>

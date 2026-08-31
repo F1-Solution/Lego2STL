@@ -130,3 +130,4 @@ PHASE:AB WAVE:5 STATUS:complete TS:2026-08-31T22:03:17Z
 # Bambu Studio ships. Two corrections: a per-extruder setting takes 1, 2 or 7 slots depending
 # on the machine, and a small perimeter speed is written as a percentage, never an absolute.
 PHASE:AB WAVE:6 STATUS:complete TS:2026-08-31T22:10:16Z
+PHASE:AB WAVE:7 STATUS:complete TS:2026-08-31T22:14:46Z
