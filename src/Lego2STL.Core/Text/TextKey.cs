@@ -1,4 +1,4 @@
-﻿namespace Lego2STL.Core.Text;
+namespace Lego2STL.Core.Text;
 
 /// <summary>
 /// Every piece of text the tool shows.
@@ -446,4 +446,31 @@ public enum TextKey
     LabelOptLog,
     LabelOptQuiet,
     LabelOptIncludeSpares,
+
+    /// <summary>The heading of the sheet that goes beside the plates.</summary>
+    PrintNotesTitle,
+
+    /// <summary>Says the preset is a starting point and calibration beats it.</summary>
+    PrintNotesStartingPoint,
+
+    /// <summary>Tells the reader to import the preset file beside the plates.</summary>
+    PrintNotesImport,
+
+    /// <summary>Says this printer has no profiles of its own and whose it borrows.</summary>
+    PrintNotesBorrowedProfile,
+
+    /// <summary>Says no preset could be written for this printer.</summary>
+    PrintNotesNoPreset,
+
+    /// <summary>Says which nozzle the preset is for.</summary>
+    PrintNotesNozzle,
+
+    /// <summary>The heading over the table of settings.</summary>
+    PrintNotesSettings,
+
+    /// <summary>The heading over the calibration sequence.</summary>
+    PrintNotesCalibration,
+
+    /// <summary>The calibration sequence itself.</summary>
+    PrintNotesCalibrationSteps,
 }

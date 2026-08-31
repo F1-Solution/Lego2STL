@@ -1,4 +1,4 @@
-﻿namespace Lego2STL.Core.Text;
+namespace Lego2STL.Core.Text;
 
 public sealed partial class Strings
 {
@@ -521,6 +521,32 @@ public sealed partial class Strings
             [TextKey.NoteSetLinesWithoutColour] =
                 "{0} line(s) could not be given a BrickLink colour and were left out.",
             [TextKey.ReportPrinter] = "Printer",
+
+            [TextKey.PrintNotesTitle] = "Printing these plates",
+            [TextKey.PrintNotesStartingPoint] =
+                "These are starting values, not answers. The moment you have calibrated your own "
+                + "machine and your own spool, your figures beat every number here.",
+            [TextKey.PrintNotesImport] =
+                "Import {0} beside this file as a process preset, and select it before slicing. "
+                + "It turns supports off, which the parts on these plates were laid down to make "
+                + "unnecessary.",
+            [TextKey.PrintNotesBorrowedProfile] =
+                "The {0} has no profiles of its own, so this preset inherits the {1}'s. That is a "
+                + "substitution and not a match; check the bed size before you print.",
+            [TextKey.PrintNotesNoPreset] =
+                "No preset was written: this tool does not know which profile a {0} inherits from. "
+                + "Set the values below by hand.",
+            [TextKey.PrintNotesNozzle] =
+                "The preset is for the default 0.4 mm nozzle. With any other nozzle it is the "
+                + "wrong preset: choose the profile in the slicer whose name ends in your nozzle "
+                + "size, and set the values below on top of it.",
+            [TextKey.PrintNotesSettings] = "Settings",
+            [TextKey.PrintNotesCalibration] = "Calibrate first",
+            [TextKey.PrintNotesCalibrationSteps] =
+                "Wash the plate with warm water and washing-up liquid and dry it without touching "
+                + "the printing surface. Then, for each spool: Calibration > Flow Dynamics, then "
+                + "Calibration > Flow Rate, and save the result as a preset of its own. A damp "
+                + "spool ruins a print more thoroughly than any setting here can fix.",
         };
     }
 }

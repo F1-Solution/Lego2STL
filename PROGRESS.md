@@ -126,3 +126,7 @@ PHASE:AB WAVE:2 STATUS:complete TS:2026-08-31T21:43:33Z
 PHASE:AB WAVE:3 STATUS:complete TS:2026-08-31T21:52:13Z
 PHASE:AB WAVE:4 STATUS:complete TS:2026-08-31T21:58:14Z
 PHASE:AB WAVE:5 STATUS:complete TS:2026-08-31T22:03:17Z
+# Task 6, the key gate: every key, value type and enum token checked against the profiles
+# Bambu Studio ships. Two corrections: a per-extruder setting takes 1, 2 or 7 slots depending
+# on the machine, and a small perimeter speed is written as a percentage, never an absolute.
+PHASE:AB WAVE:6 STATUS:complete TS:2026-08-31T22:10:16Z

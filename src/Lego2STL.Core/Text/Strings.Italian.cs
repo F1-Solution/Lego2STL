@@ -542,6 +542,34 @@ public sealed partial class Strings
             [TextKey.NoteSetLinesWithoutColour] =
                 "{0} righe non hanno potuto ricevere un colore BrickLink e sono state lasciate fuori.",
             [TextKey.ReportPrinter] = "Stampante",
+
+            [TextKey.PrintNotesTitle] = "Stampare questi piatti",
+            [TextKey.PrintNotesStartingPoint] =
+                "Questi sono valori di partenza, non risposte. Dal momento in cui hai calibrato la "
+                + "tua macchina e la tua bobina, i tuoi numeri battono ogni valore scritto qui.",
+            [TextKey.PrintNotesImport] =
+                "Importa {0}, che sta accanto a questo file, come preset di processo, e "
+                + "selezionalo prima di affettare. Disattiva i supporti, che i pezzi di questi "
+                + "piatti sono stati appoggiati apposta per non richiedere.",
+            [TextKey.PrintNotesBorrowedProfile] =
+                "La {0} non ha profili propri, quindi questo preset eredita da quelli della {1}. È "
+                + "una sostituzione, non una corrispondenza: controlla la dimensione del piano "
+                + "prima di stampare.",
+            [TextKey.PrintNotesNoPreset] =
+                "Nessun preset è stato scritto: questo strumento non sa da quale profilo erediti "
+                + "una {0}. Imposta a mano i valori qui sotto.",
+            [TextKey.PrintNotesNozzle] =
+                "Il preset è per l'ugello predefinito da 0,4 mm. Con qualunque altro ugello è il "
+                + "preset sbagliato: scegli nello slicer il profilo il cui nome finisce con la "
+                + "misura del tuo ugello, e applicaci sopra i valori qui sotto.",
+            [TextKey.PrintNotesSettings] = "Impostazioni",
+            [TextKey.PrintNotesCalibration] = "Prima calibra",
+            [TextKey.PrintNotesCalibrationSteps] =
+                "Lava il piano con acqua calda e detersivo per piatti e asciugalo senza toccare la "
+                + "superficie di stampa. Poi, per ogni bobina: Calibration > Flow Dynamics, quindi "
+                + "Calibration > Flow Rate, e salva il risultato come preset a sé. Una bobina umida "
+                + "rovina una stampa più a fondo di quanto qualunque impostazione qui possa "
+                + "rimediare.",
         };
     }
 }
