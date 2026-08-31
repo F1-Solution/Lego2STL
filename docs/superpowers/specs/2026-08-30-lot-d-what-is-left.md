@@ -152,7 +152,10 @@ The plan therefore has a gate in the middle rather than a subject settled up fro
 **Chosen 2026-08-31.** Four candidates were drawn, not three: the fourth — a nozzle printing a
 brick that is being laid down in layers — was asked for at the gate, after the first three had
 been rendered and looked at, and it is the one that was kept. The sizes changed at the same
-gate: 16 px was dropped and the set runs 32 to 1024, for the application stores. It is carried by
+gate: the set runs 32 to 1024, for the application stores. 16 px was dropped at that gate and
+asked for again straight afterwards, so it exists as a second source, `icon-16.svg`, corrected by
+hand on a whole-pixel grid with two layers instead of three — a downscale of the 128 turns the
+layers to mud, which is the whole reason the plan said an icon is judged at 16 px. It is carried by
 the window, the executable, the MSI (which takes its icon out of the executable), the Windows
 bootstrapper, the Linux menu entry — which had always named an icon that was never installed —
 and the Mac bundle, whose `Resources` folder had been sitting empty for exactly this.

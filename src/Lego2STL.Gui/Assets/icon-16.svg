@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <!--
+    The same icon corrected by hand for 16 px: a whole-pixel grid, two layers instead of three,
+    and no rounded corners on the brick. A downscale of the 128 version turns the layers to mud.
+  -->
+  <rect width="16" height="16" rx="3" fill="#12233A"/>
+  <path d="M5 2 H11 V6 L8 8 Z" fill="#A8BED4"/>
+  <rect x="7" y="7" width="2" height="2" fill="#F5B301"/>
+  <rect x="3" y="9" width="3" height="1" fill="#F5B301"/>
+  <rect x="10" y="9" width="3" height="1" fill="#F5B301"/>
+  <rect x="1" y="10" width="14" height="2" fill="#F5B301"/>
+  <rect x="1" y="13" width="14" height="2" fill="#F5B301"/>
+</svg>
