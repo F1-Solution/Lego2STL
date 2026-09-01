@@ -69,9 +69,14 @@ New-Item -ItemType Directory -Force -Path $payload, $dist | Out-Null
 # work: the second run clears what the first put there. They are gathered afterwards instead,
 # which is also what lets them share one copy of everything they both use.
 foreach ($name in 'Cli', 'Gui') {
+    # -p:TargetFrameworks alongside -f: Core.csproj lists five frameworks since Phase D, and
+    # restore evaluates all of them for every framework x RID combination regardless of which
+    # one -f selects - "win-x64" paired with a mobile framework has no runtime pack, which
+    # NuGet reports as a Mono runtime pack it cannot find. Forcing TargetFrameworks down to
+    # the one this script actually wants avoids evaluating the other four at all.
     dotnet publish (Join-Path $root "src\Lego2STL.$name\Lego2STL.$name.csproj") `
         -c $Configuration -f $framework -r win-x64 `
-        -p:Version=$Version `
+        -p:Version=$Version -p:TargetFrameworks=$framework `
         -o (Join-Path $staging $name) --nologo
     if ($LASTEXITCODE -ne 0) { throw "publish failed for Lego2STL.$name" }
 }

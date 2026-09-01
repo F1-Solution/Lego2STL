@@ -24,8 +24,14 @@ work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
 for project in Cli Gui; do
+    # -p:TargetFrameworks alongside -f: Core.csproj lists five frameworks since Phase D, and
+    # restore evaluates all of them for every framework x RID combination regardless of which
+    # one -f selects - this RID paired with a mobile framework has no runtime pack, which
+    # NuGet reports as a Mono runtime pack it cannot find. Forcing TargetFrameworks down to
+    # the one this script actually wants avoids evaluating the other four at all.
     dotnet publish "$root/src/Lego2STL.$project/Lego2STL.$project.csproj" \
-        -c Release -f "$framework" -r "$rid" -p:Version="$version" \
+        -c Release -f "$framework" -r "$rid" \
+        -p:Version="$version" -p:TargetFrameworks="$framework" \
         -o "$work/$project" --nologo
 done
 

@@ -57,7 +57,43 @@ jobs:
 
       # The whole suite runs on Windows, because reading a document needs the recogniser that
       # is part of Windows. Everything it covers is the same code the other systems run.
-      - run: dotnet test --configuration Release --nologo
+      #
+      # -p:TargetFrameworks forces every project in the graph to this one framework. Without
+      # it, restore evaluates Core's full TargetFrameworks list - including the android, ios
+      # and macos targets the mobile job below builds - and fails outright if this runner
+      # has not got those workloads installed, which it has no reason to for a job that only
+      # runs the Windows-only test suite.
+      - run: dotnet test --configuration Release --nologo -p:TargetFrameworks=net10.0-windows10.0.19041.0
+
+  mobile:
+    name: mobile
+    needs: [version]
+    # Xcode is what net10.0-ios and net10.0-macos need to build at all, and only a macOS
+    # runner carries it. The android workload builds anywhere, but there is nothing to gain
+    # from a second job just for it.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install the mobile workloads
+        run: dotnet workload install android ios maccatalyst macos
+
+      # Build only, one target at a time, and only Core: this proves the three new
+      # recognisers compile against the real bindings, which is everything a headless runner
+      # can prove. Nothing here boots an emulator or a simulator, and nothing calls the real
+      # recogniser - that is left to a person, with tests/Lego2STL.OcrSmokeTest.
+      - name: Build Core for android
+        run: dotnet build src/Lego2STL.Core/Lego2STL.Core.csproj -c Release -f net10.0-android36.0
+
+      - name: Build Core for ios
+        run: dotnet build src/Lego2STL.Core/Lego2STL.Core.csproj -c Release -f net10.0-ios26.0
+
+      - name: Build Core for macos
+        run: dotnet build src/Lego2STL.Core/Lego2STL.Core.csproj -c Release -f net10.0-macos26.0
 
   windows:
     name: windows
