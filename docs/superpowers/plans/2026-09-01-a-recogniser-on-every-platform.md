@@ -608,6 +608,8 @@ git commit -m "feat: OcrEngines resolves a real recogniser on android, ios and m
 
 **Files:**
 - Modify: `.github/workflows/package.yml`
+- Modify: `packaging/build-windows.ps1`
+- Modify: `packaging/lib/payload.sh`
 
 **Interfaces:**
 - Consumes: nothing from earlier tasks except that `Lego2STL.Core` now has the three new targets
@@ -615,7 +617,59 @@ git commit -m "feat: OcrEngines resolves a real recogniser on android, ios and m
 - Produces: a new `mobile` job. Nothing later in this plan depends on its exact output; it is a
   leaf.
 
-- [ ] **Step 1: Add the job**
+**A discovery that widens this task's scope beyond the `mobile` job alone.** Every *existing* job
+that builds anything from this solution goes through the same restore-evaluates-every-framework
+behaviour recorded in Global Constraints — not just this machine, any runner without the mobile
+workloads. Two places break, for two different reasons:
+
+1. The `test` job's `dotnet test --configuration Release --nologo`, with no project or `-f` named,
+   resolves `Lego2STL.slnx` and restores every project's full `TargetFrameworks` list — including
+   Core's three new ones — before it ever gets to running a test. `windows-latest` has no reason to
+   carry the android/ios/maccatalyst/macos workloads for a job whose whole purpose is running the
+   Windows-only suite, so this fails outright without a fix.
+2. `packaging/build-windows.ps1` and `packaging/lib/payload.sh` (used by the `windows`, `linux` and
+   `macos` packaging jobs) `dotnet publish` a single project with `-f <framework> -r <rid>` — a
+   framework already selected, so it looks safe. It is not: restore still evaluates every framework
+   in Core's list against that RID, and a mobile framework paired with e.g. `win-x64` or `osx-x64`
+   has no matching runtime pack. NuGet reports this as `NU1102: Unable to find package
+   Microsoft.NETCore.App.Runtime.Mono.win-x64` — a Mono runtime pack, because mobile targets use
+   Mono's AOT runtime, and the confusing symptom is exactly why this is worth writing down.
+
+Both are fixed the same way: pass `-p:TargetFrameworks=<the one value this job actually wants>`
+alongside whatever `-f` is already there. As a command-line property it overrides every project's
+own `TargetFrameworks` assignment for the whole build — Core's five-entry list included — so
+restore never evaluates the other four at all. `-p:TargetFrameworks=` alone is not enough for
+`publish` specifically: a project that still declares `<TargetFrameworks>` (plural, even forced down
+to one value) needs `-f` too, or the SDK refuses with `NETSDK1129` asking which framework to
+publish. `dotnet test` has no such restriction, so it needs only the `-p:` override.
+
+- [ ] **Step 1: Fix the `test` job**
+
+In `.github/workflows/package.yml`, change the `test` job's run step to:
+
+```yaml
+      # The whole suite runs on Windows, because reading a document needs the recogniser that
+      # is part of Windows. Everything it covers is the same code the other systems run.
+      #
+      # -p:TargetFrameworks forces every project in the graph to this one framework. Without
+      # it, restore evaluates Core's full TargetFrameworks list - including the android, ios
+      # and macos targets the mobile job below builds - and fails outright if this runner
+      # has not got those workloads installed, which it has no reason to for a job that only
+      # runs the Windows-only test suite.
+      - run: dotnet test --configuration Release --nologo -p:TargetFrameworks=net10.0-windows10.0.19041.0
+```
+
+- [ ] **Step 2: Fix the two packaging scripts**
+
+In `packaging/build-windows.ps1`, the `foreach ($name in 'Cli', 'Gui')` loop's `dotnet publish` call
+gains `-p:TargetFrameworks=$framework` alongside its existing `-p:Version=$Version`, with a comment
+explaining why (the `NU1102`/Mono-runtime-pack symptom above, in this file's own words).
+
+In `packaging/lib/payload.sh`, the `for project in Cli Gui` loop's `dotnet publish` call gains
+`-p:TargetFrameworks="$framework"` alongside its existing `-p:Version="$version"`, with the same
+explanation.
+
+- [ ] **Step 3: Add the `mobile` job**
 
 In `.github/workflows/package.yml`, add a new job after `test` and before `windows`:
 
@@ -635,7 +689,7 @@ In `.github/workflows/package.yml`, add a new job after `test` and before `windo
           dotnet-version: '10.0.x'
 
       - name: Install the mobile workloads
-        run: dotnet workload install android ios maccatalyst
+        run: dotnet workload install android ios maccatalyst macos
 
       # Build only, one target at a time, and only Core: this proves the three new
       # recognisers compile against the real bindings, which is everything a headless runner
@@ -651,26 +705,52 @@ In `.github/workflows/package.yml`, add a new job after `test` and before `windo
         run: dotnet build src/Lego2STL.Core/Lego2STL.Core.csproj -c Release -f net10.0-macos26.0
 ```
 
+All four workloads, not the three the roadmap named — the `macos` workload is what the third build
+step needs, and installing it costs nothing extra worth avoiding.
+
 `needs: [version]` only, not `needs: [test, version]`: this job says nothing about the number stamped
 on a release, and does not need to wait behind the Windows-hosted `test` job to start.
 
-- [ ] **Step 2: Confirm the workflow file is still valid YAML**
+- [ ] **Step 4: Confirm the workflow file is still valid YAML, and the fixes actually work**
 
-Run: `Get-Content .github/workflows/package.yml | Out-Null` — this only confirms the file reads; the
-real check is `act`'s own dry parse:
+`packaging/act/run.ps1 -DryRun` (note the flag — the plan's earlier draft named it `-n`, which does
+not exist) runs against `packaging/act/local-package.yml`, a hand-maintained subset that only
+mirrors `version` and `linux` — it never sees the real `.github/workflows/package.yml`, so it cannot
+confirm the new job parses. Use `act` directly instead:
 
 ```
-./packaging/act/run.ps1 -n
+act -W .github/workflows/package.yml -l
 ```
 
-Expected: act lists `mobile` among the jobs it would run, and reports (as it already does for
-`windows` and `macos`) that it has no way to run it locally.
+Expected: a job table listing `version`, `test`, `mobile`, `windows`, `linux`, `macos`, `release` —
+`mobile` at the same stage as `windows`/`linux`/`macos`. This confirms the YAML parses and the job
+graph is what was intended; it does not run anything, so it says nothing about whether the job
+would actually pass on a real `macos-latest` runner.
 
-- [ ] **Step 3: Commit**
+To check the two packaging-script fixes for real (not just that the YAML parses), run one publish
+by hand with the exact flags now in the script:
+
+```
+dotnet publish src/Lego2STL.Cli/Lego2STL.Cli.csproj -c Release -f net10.0 -r win-x64 -p:TargetFrameworks=net10.0 -o <some temp folder> --nologo
+```
+
+Expected: succeeds. Before this task's fix, the identical command without `-p:TargetFrameworks`
+fails with `NU1102: Unable to find package Microsoft.NETCore.App.Runtime.Mono.win-x64` — confirmed
+by reproducing it once here, deliberately, so the fix is checked against the actual failure it
+targets rather than assumed.
+
+- [ ] **Step 5: Confirm the whole solution still builds and the suite still passes**
+
+Run: `dotnet build Lego2STL.slnx -c Debug` (no `-f` — see Global Constraints)
+Run: `dotnet test Lego2STL.slnx`
+Expected: both succeed against the baseline recorded in Global Constraints. Nothing in this task
+touches source code the suite exercises; it only touches CI and packaging scripts.
+
+- [ ] **Step 6: Commit**
 
 ```bash
-git add .github/workflows/package.yml
-git commit -m "ci: build Core for android, ios and macos on every push"
+git add .github/workflows/package.yml packaging/build-windows.ps1 packaging/lib/payload.sh
+git commit -m "ci: build Core for android, ios and macos, and fix packaging restore for the five-target Core"
 ```
 
 ---
