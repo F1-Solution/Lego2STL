@@ -21,13 +21,38 @@ workloads.
 
 ## Global Constraints
 
-- Build with `dotnet build Lego2STL.slnx -c Debug`. Test the Windows-only suite with
-  `dotnet test Lego2STL.slnx`.
-- **This machine is Windows and has none of the mobile workloads installed.** Tasks 1, 2 and 5 are
-  verified here by building and testing the two targets that already exist — `net10.0` and
-  `net10.0-windows10.0.19041.0` — and must stay green throughout. Tasks 3, 4, 7, 8 and 9 cannot be
-  compiled here at all; each says exactly what to check instead, and Task 6's CI job is where the
-  three new targets are actually built for the first time.
+- Build with `dotnet build Lego2STL.slnx -c Debug` (no `-f`). Test with `dotnet test Lego2STL.slnx`.
+  **Never pass `-f` at the solution level** — `Lego2STL.Tests` and `Lego2STL.UiTests` only ever
+  target `net10.0-windows10.0.19041.0` (they are not multi-targeted), so a solution-wide `-f`
+  forces a framework they do not have and fails with a confusing missing-symbol error, unrelated to
+  anything this plan changes. Scope a `-f` or `-p:TargetFrameworks=` override to one project
+  (`dotnet build src/Lego2STL.Core/Lego2STL.Core.csproj -f <tfm>`) when a single target needs
+  checking in isolation, and run a fresh `dotnet restore Lego2STL.slnx` (or delete `obj`/`bin`)
+  afterward — a scoped override leaves a stale `project.assets.json` behind that the next
+  unscoped build silently reuses.
+- **This machine started with none of the mobile workloads installed, and that broke more than the
+  three new targets.** The moment `Lego2STL.Core.csproj` lists a `TargetFramework` whose workload is
+  missing, **restore fails for every project that references Core** — `Lego2STL.Cli`, `Lego2STL.Gui`,
+  `Lego2STL.Tests`, `Lego2STL.UiTests`, and Core itself — regardless of which single framework `-f`
+  asks to build, because the SDK validates workload requirements for every listed `TargetFramework`
+  of every project in the graph during restore, not just the one selected. So Task 1 installed
+  `android`, `ios`, `maccatalyst` and `macos` on this machine (`dotnet workload install android ios
+  maccatalyst macos` — took roughly 90 minutes end to end, several GB, confirmed with the user
+  first) rather than working around it. With the workloads present, **every task in this plan can be
+  built and, where a test project exists, tested locally** — the earlier assumption that Tasks 3, 4,
+  7, 8 and 9 could only be compiled in CI no longer holds. What still cannot be done here is running
+  the smoke test project for real (Task 7 onward) — that needs a booted emulator, simulator or a
+  Mac, none of which this machine has — and CI (Task 6) remains the only place proving the exact
+  workload versions CI's own runners resolve.
+- **A pre-existing failure, unrelated to this plan: `Lego2STL.UiTests.CalibrationPlateTests
+  .With_nothing_to_build_from_it_says_so_and_writes_no_shapes` fails on unmodified `main`.**
+  Confirmed by stashing every change from this plan and re-running the test in isolation before
+  Task 1 began — it failed identically. It sometimes drags a second `CalibrationPlateTests` case
+  down with it when the whole suite runs together (2 failures instead of 1), which looks like
+  shared-state flakiness on top of the underlying failure, not something this plan caused. Treat the
+  baseline as "`Lego2STL.Tests` 653/653, `Lego2STL.UiTests` all green except this one test (and
+  occasionally a second `CalibrationPlateTests` case)" — not "all green" — when judging whether a
+  task regressed anything. Do not fix it as part of this plan; it is out of Phase D's scope.
 - **`act` cannot run this plan's new CI job.** It needs Xcode for the iOS/macOS legs, and act runs
   Linux containers only — the same limitation already recorded for the `windows` and `macos` jobs in
   `README-act.md`. There is no local route to verifying it; the first real signal is the job running
@@ -107,11 +132,8 @@ element inside the existing `<Project Sdk="Microsoft.NET.Sdk">` — before the f
 
 - [ ] **Step 3: Confirm the two existing targets still build**
 
-Run: `dotnet build Lego2STL.slnx -c Debug -f net10.0`
-Expected: succeeds, same as before this task.
-
-Run: `dotnet build Lego2STL.slnx -c Debug -f net10.0-windows10.0.19041.0`
-Expected: succeeds, same as before this task.
+Run: `dotnet build Lego2STL.slnx -c Debug` (no `-f` — see Global Constraints)
+Expected: succeeds, all five targets, same as before this task for the two that already existed.
 
 The three new targets cannot be built here — no workload for them is installed on this machine.
 That is expected; Task 6 is where they first actually build, in CI.
@@ -207,14 +229,14 @@ namespace Lego2STL.Core.Ocr;
 // Body written in Task 4.
 ```
 
-- [ ] **Step 4: Confirm the two existing targets still build and the suite still passes**
+- [ ] **Step 4: Confirm the whole solution still builds and the suite still passes**
 
-Run: `dotnet build Lego2STL.slnx -c Debug -f net10.0`
-Run: `dotnet build Lego2STL.slnx -c Debug -f net10.0-windows10.0.19041.0`
+Run: `dotnet build Lego2STL.slnx -c Debug` (no `-f` — see Global Constraints)
 Run: `dotnet test Lego2STL.slnx`
-Expected: all three succeed, unchanged. The two placeholder files are excluded from both targets by
-the groups just added, so neither target sees a bare `// Body written in Task N` file trying to
-compile.
+Expected: both succeed against the baseline recorded in Global Constraints — `Lego2STL.Tests`
+653/653, `Lego2STL.UiTests` all green except the pre-existing `CalibrationPlateTests` failure. The
+two placeholder files are excluded from every target except their own by the groups just added, so
+nothing sees a bare `// Body written in Task N` file trying to compile.
 
 - [ ] **Step 5: Commit**
 
@@ -317,12 +339,16 @@ public sealed class AndroidOcrEngine : IOcrEngine
 }
 ```
 
-**Namespace and method names are written from ML Kit's Android documentation, not verified against
-the package here — this machine cannot build the Android target.** The first real signal is Task 6's
-CI job. If `Com.Google.MLKit.Vision.Common` or `.Vision.Text` do not match the installed package's
-actual casing, or `Process(...)` returns something other than an `Android.Gms.Tasks.Task` that
-`AsAsync<Text>()` can bridge, fix it there against the compiler's own error, which will name the
-real type.
+**Namespace and method names are written from ML Kit's Android documentation, not from a build.**
+Now that the android workload is installed, check for real:
+
+Run: `dotnet build src/Lego2STL.Core/Lego2STL.Core.csproj -c Debug -f net10.0-android36.0`
+
+If `Com.Google.MLKit.Vision.Common` or `.Vision.Text` do not match the installed package's actual
+casing, or `Process(...)` returns something other than an `Android.Gms.Tasks.Task` that
+`AsAsync<Text>()` can bridge, fix it against the compiler's own error, which will name the real
+type. Run `dotnet restore Lego2STL.slnx` afterward before touching any other project, per the
+Global Constraints note on scoped overrides leaving a stale `project.assets.json` behind.
 
 - [ ] **Step 2: Commit**
 
@@ -438,10 +464,15 @@ public sealed class AppleOcrEngine : IOcrEngine
 }
 ```
 
-**Same caveat as Task 3: written from Vision's documented API, not verified against a build.** Task
-6's CI job is the first real compile. If `VNRecognizeTextRequest`'s constructor overload, or
-`GetResults<T>()`, or `TopCandidates(1)` do not match what the installed binding actually exposes, fix
-it there against the compiler's error.
+**Same caveat as Task 3: written from Vision's documented API, checked against a real build.** The
+ios and macos workloads are installed, so check both targets:
+
+Run: `dotnet build src/Lego2STL.Core/Lego2STL.Core.csproj -c Debug -f net10.0-ios26.0`
+Run: `dotnet build src/Lego2STL.Core/Lego2STL.Core.csproj -c Debug -f net10.0-macos26.0`
+
+If `VNRecognizeTextRequest`'s constructor overload, or `GetResults<T>()`, or `TopCandidates(1)` do
+not match what the installed binding actually exposes, fix it against the compiler's error. Run
+`dotnet restore Lego2STL.slnx` afterward, per the Global Constraints note on scoped overrides.
 
 - [ ] **Step 2: Commit**
 
@@ -528,14 +559,13 @@ to:
 `DescribeUnavailable` is untouched — its two messages already cover "Windows, but the plain build"
 and "nowhere at all," and after this task the second one is only ever true on Linux.
 
-- [ ] **Step 3: Confirm the two existing targets still build and the suite still passes**
+- [ ] **Step 3: Confirm the whole solution still builds and the suite still passes**
 
-Run: `dotnet build Lego2STL.slnx -c Debug -f net10.0`
-Run: `dotnet build Lego2STL.slnx -c Debug -f net10.0-windows10.0.19041.0`
+Run: `dotnet build Lego2STL.slnx -c Debug` (no `-f` — see Global Constraints)
 Run: `dotnet test Lego2STL.slnx`
-Expected: all three succeed, unchanged. Neither `#elif ANDROID` nor `#elif IOS || MACOS` is ever true
-on these two targets, so `OcrEngines.Create()` still resolves to exactly the branches it did before
-this task wherever this machine can check.
+Expected: both succeed against the baseline recorded in Global Constraints. On the Windows target,
+`#elif ANDROID` and `#elif IOS || MACOS` are never true, so `OcrEngines.Create()` still resolves to
+exactly the branch it did before this task there.
 
 - [ ] **Step 4: Commit**
 
@@ -764,12 +794,11 @@ In `Lego2STL.slnx`, inside the existing `<Folder Name="/tests/">`, add:
 
 - [ ] **Step 4: Confirm nothing else regressed**
 
-Run: `dotnet build Lego2STL.slnx -c Debug -f net10.0`
-Run: `dotnet build Lego2STL.slnx -c Debug -f net10.0-windows10.0.19041.0`
+Run: `dotnet build Lego2STL.slnx -c Debug` (no `-f` — see Global Constraints)
 Run: `dotnet test Lego2STL.slnx`
-Expected: all three succeed, unchanged. `Lego2STL.OcrSmokeTest` targets only the three mobile
-frameworks, so building or testing the other two never touches it, and `dotnet test` still runs only
-`Lego2STL.Tests` and `Lego2STL.UiTests` — this new project has no test framework in it and nothing
+Expected: both succeed against the baseline recorded in Global Constraints. `Lego2STL.OcrSmokeTest`
+targets only the three mobile frameworks, and `dotnet test` still runs only `Lego2STL.Tests` and
+`Lego2STL.UiTests` — this new project has no test framework in it and nothing
 here makes `dotnet test` try to run it.
 
 - [ ] **Step 5: Commit**
@@ -1049,12 +1078,17 @@ git commit -m "feat: the OCR smoke test runs on iOS and macOS, with a README for
 
 ## Notes for whoever executes this
 
-- **Tasks 3, 4, 8 and 9 cannot be compiled on this machine.** Each says so and says what to check
-  instead. Do not treat "it builds here" as a gate for those tasks — it cannot be met, and the plan
-  does not ask for it.
-- **Task 6's CI job is the first real compile of any of this.** Expect it to fail the first time on a
-  binding namespace or method name, and expect fixing that to be normal — the caveat in Tasks 3 and 4
-  says exactly that, and it is not a sign anything upstream was done wrong.
+- **Tasks 3, 4, 7, 8 and 9 can now be compiled on this machine.** The android, ios, maccatalyst and
+  macos workloads were installed during Task 1 (see Global Constraints) specifically because their
+  absence broke restore for the entire solution, not just the three new targets. With them present,
+  `dotnet build Lego2STL.slnx -c Debug` is a real signal for every task in this plan — treat it as
+  a gate, not an aspiration. What still cannot happen here is running the smoke test project for
+  real (Task 7 onward): that needs a booted emulator, simulator or a Mac, and Task 6's CI job
+  remains the only place proving the exact workload versions CI's own runners resolve to.
+- **If a binding namespace or method name doesn't match what compiles**, fix it against the real
+  compiler error now that it's checkable locally — the caveat in Tasks 3 and 4 that this is expected
+  engineering work against a binding never used in this repository still applies; only the "wait for
+  CI to find out" part of it is now optional.
 - **`Directory.Build.props`'s shared `TargetFrameworks` is deliberately untouched.** The three new
   targets live only in `Lego2STL.Core.csproj`, through `MobileTargetFrameworks`. If a later task
   seems to need `Lego2STL.Cli` or `Lego2STL.Gui` to build for a mobile target, stop — that is Phase
