@@ -176,11 +176,35 @@ public sealed partial class Strings
                 + "Niente di tutto questo si può prendere dalla stampante di qualcun altro: il "
                 + "valore cercato è più piccolo della differenza fra due macchine dello stesso "
                 + "modello.",
+            [TextKey.CalibrationHow2] =
+                "Stampa tutto il piatto nel materiale che intendi usare, sulla macchina che "
+                + "intendi usare, con le impostazioni qui sotto. Nulla di tutto questo può essere "
+                + "ripreso dalla stampante di qualcun altro: la cifra che si cerca è più piccola "
+                + "della differenza fra due macchine dello stesso modello.",
             [TextKey.CalibrationThen] =
                 "Poi provarli. Salire dal più piccolo finché i pezzi si uniscono senza forzare "
                 + "e restano uniti se si scuotono. Quel gioco è il proprio: passarlo al comando "
                 + "build come --clearance. Ricontrollarlo se si cambia materiale, ugello o "
                 + "stampante.",
+            [TextKey.CalibrationMap] =
+                "Quale pezzo è quale, in base a dove si trova. Le file vanno dal davanti del "
+                + "piano all'indietro, e ogni fila da sinistra a destra. Sui pezzi non c'è scritto "
+                + "nulla: incidere un numero cambierebbe proprio la superficie da misurare.",
+            [TextKey.CalibrationWitness] =
+                "Un pezzo non ha alcuna tolleranza: la piastra larga. Non fa parte della misura, "
+                + "sta lì per essere guardata. Se i suoi angoli si sono sollevati dal piano, nulla "
+                + "di ciò che sta su questo piatto significa ancora qualcosa, e vengono prima il "
+                + "piano, il primo strato e la temperatura.",
+            [TextKey.CalibrationMissing] =
+                "Non sono sul piatto, perché la libreria non aveva una forma per loro: {0}. "
+                + "Qualunque accoppiamento provassero è rimasto non provato; il resto del piatto "
+                + "non ne risente.",
+            [TextKey.CalibrationSaveIt] =
+                "Poi conservala. Esegui questo, con il nome che preferisci, e ogni build "
+                + "successiva potrà richiederla con quel nome:\n\n"
+                + "    lego2stl calibration --save 0.15 --name \"eSUN PLA+ nero - A1\" --preferred\n\n"
+                + "--preferred la rende quella che una build usa quando non se ne chiede una. "
+                + "Toglilo se preferisci nominarla ogni volta con --tolerances.",
             [TextKey.HelpOptSave] =
                 "Registra una tolleranza misurata, in millimetri, e non costruisce nulla.",
             [TextKey.HelpOptToleranceName] =

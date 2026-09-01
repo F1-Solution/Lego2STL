@@ -171,11 +171,34 @@ public sealed partial class Strings
                 + "with the settings you mean to use. Nothing here can be carried over from "
                 + "someone else's printer: the figure being looked for is smaller than the "
                 + "difference between two machines of the same model.",
+            [TextKey.CalibrationHow2] =
+                "Print the whole plate in the material you mean to use, on the machine you mean "
+                + "to use, with the settings below. Nothing here can be carried over from someone "
+                + "else's printer: the figure being looked for is smaller than the difference "
+                + "between two machines of the same model.",
             [TextKey.CalibrationThen] =
                 "Then try them. Work up from the smallest until parts go together without "
                 + "forcing and stay together when shaken. That clearance is yours: pass it to "
                 + "the build command as --clearance. Check it again if you change material, "
                 + "nozzle or printer.",
+            [TextKey.CalibrationMap] =
+                "Which piece is which, by where it sits. Rows run from the front of the bed "
+                + "backwards, and each row from left to right. Nothing is marked on the pieces "
+                + "themselves: engraving a number would change the very surface being measured.",
+            [TextKey.CalibrationWitness] =
+                "One piece carries no clearance at all: the wide plate. It is not part of the "
+                + "measurement - it is there to be looked at. If its corners have lifted off the "
+                + "bed, nothing else on this plate means anything yet, and the bed, the first "
+                + "layer and the temperature come first.",
+            [TextKey.CalibrationMissing] =
+                "Not on the plate, because the library had no shape for them: {0}. Whatever fit "
+                + "they tested went untested; the rest of the plate is unaffected.",
+            [TextKey.CalibrationSaveIt] =
+                "Then keep it. Run this, with your own name for it, and every build afterwards "
+                + "can ask for it by that name:\n\n"
+                + "    lego2stl calibration --save 0.15 --name \"eSUN PLA+ black - A1\" --preferred\n\n"
+                + "--preferred makes it the one a build uses when none is asked for. Drop it if "
+                + "you would rather name it every time with --tolerances.",
             [TextKey.HelpOptSave] =
                 "Record a clearance you measured, in millimetres, and build nothing.",
             [TextKey.HelpOptToleranceName] =
