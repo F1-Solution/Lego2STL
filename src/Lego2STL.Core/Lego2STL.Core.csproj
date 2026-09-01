@@ -24,6 +24,27 @@
     <Compile Remove="Ocr\WindowsOcrEngine.cs" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(IsAndroidTarget)' != 'true'">
+    <!-- The only file that talks to ML Kit. Off the Android target there is no recogniser. -->
+    <Compile Remove="Ocr\AndroidOcrEngine.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsApplePlatformTarget)' != 'true'">
+    <!-- The only file that talks to Vision. Off an Apple target there is no recogniser. -->
+    <Compile Remove="Ocr\AppleOcrEngine.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsAndroidTarget)' == 'true'">
+    <!--
+      The bundled variant, not the Play-Services one: it ships the recognition model inside
+      the app instead of downloading it on first use, so a run needs no network access and no
+      Play Services to read a page - the same reason WindowsOcrEngine was chosen over anything
+      that downloads a model.
+    -->
+    <PackageReference Include="Xamarin.Google.MLKit.TextRecognition" Version="116.0.1.7" />
+    <PackageReference Include="Xamarin.Google.MLKit.TextRecognition.Bundled.Common" Version="117.0.0.7" />
+  </ItemGroup>
+
   <ItemGroup>
     <!--
       PdfPig reads the pages. PDFtoImage renders the ones that are not a single image, and
