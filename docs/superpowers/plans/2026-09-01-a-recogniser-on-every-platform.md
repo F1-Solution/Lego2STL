@@ -1057,9 +1057,17 @@ git commit -m "feat: the OCR smoke test runs on Android"
 
 **Files:**
 - Create: `tests/Lego2STL.OcrSmokeTest/Platforms/iOS/AppDelegate.cs`
-- Create: `tests/Lego2STL.OcrSmokeTest/Platforms/iOS/Main.cs`
+- Modify: `tests/Lego2STL.OcrSmokeTest/Platforms/iOS/Main.cs` (a placeholder since Task 7; replaced
+  here)
 - Create: `tests/Lego2STL.OcrSmokeTest/Platforms/iOS/Info.plist`
-- Create: `tests/Lego2STL.OcrSmokeTest/Platforms/MacOS/Program.cs`
+- Modify: `tests/Lego2STL.OcrSmokeTest/Lego2STL.OcrSmokeTest.csproj` — `Info.plist` lives beside the
+  other iOS files, not at the project root the SDK looks in by default, so it needs the same kind
+  of pointer property `AndroidManifest` needed: `<InfoPlist>Platforms\iOS\Info.plist</InfoPlist>`,
+  conditioned on `$(TargetFramework.Contains('-ios'))`, next to the existing iOS `Compile Remove`
+  group. Not foreseeable from documentation — found by building and seeing the SDK silently ignore
+  a plist it never looked for.
+- Modify: `tests/Lego2STL.OcrSmokeTest/Platforms/MacOS/Program.cs` (a placeholder since Task 7;
+  replaced here)
 - Create: `tests/Lego2STL.OcrSmokeTest/README.md`
 
 **Interfaces:**
@@ -1158,6 +1166,21 @@ public sealed class AppDelegate : UIApplicationDelegate
 </dict>
 </plist>
 ```
+
+**Verified against a real build.** `net10.0-ios26.0` compiled clean on the first try — no
+namespace corrections needed, unlike Android's ML Kit bindings. Two pre-existing warnings surface
+(not errors, not fixed here): `FinishedLaunching`'s `options` parameter has a nullability mismatch
+against the base class, and `UIWindow`'s plain constructor is obsoleted on iOS 26 in favour of a
+`UIWindowScene` overload. The second is a real, current API steer — a scene-based rewrite is the
+"correct" modern shape — but is out of proportion for a one-screen smoke test whose only job is
+showing PASS or FAIL text, so it stays as a known, accepted warning rather than being fixed here.
+Do not let a future pass "clean up" this warning into a full `UIWindowScene`/`UISceneDelegate`
+rewrite without being asked; it would multiply this file's size for no change in what the smoke
+test proves.
+
+Remember to add the `<InfoPlist>` property to `Lego2STL.OcrSmokeTest.csproj` (see this task's Files
+list above) — without it the SDK never finds this file at all, and the failure mode is silent: no
+error, just an app whose display name and bundle identifier default to nothing recognisable.
 
 - [ ] **Step 2: Write the macOS entry point**
 
