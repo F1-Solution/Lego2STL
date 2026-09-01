@@ -90,7 +90,7 @@ public static class PlateBuilder
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var items = new List<PackableItem>();
+            var items = new List<PlateItem>();
 
             foreach (var entry in colorGroup.Entries)
             {
@@ -100,17 +100,7 @@ public static class PlateBuilder
                     continue;
                 }
 
-                var (min, max) = mesh.Bounds();
-                var size = max - min;
-                var item = new PackableItem(
-                    entry.PartNumber,
-                    new Vector2(size.X, size.Y),
-                    size.Z);
-
-                for (var i = 0; i < entry.Quantity; i++)
-                {
-                    items.Add(item);
-                }
+                items.Add(new PlateItem(entry.PartNumber, mesh, entry.Quantity));
             }
 
             if (items.Count == 0)
@@ -118,41 +108,26 @@ public static class PlateBuilder
                 continue;
             }
 
-            var packed = ShelfPacker.Pack(items, o);
-
-            foreach (var over in packed.Oversized.DistinctBy(x => x.Item.PartNumber))
-            {
-                skipped.Add(new SkippedPart(
-                    over.Item.PartNumber,
-                    over.Item.Footprint.X,
-                    over.Item.Footprint.Y,
-                    over.Item.Height,
-                    over.TooTall));
-            }
-
             // The colour is named in the run's language here and nowhere earlier: the file
             // name, the plate's own title and the report all come from this one wording.
             var colorName = ColorNames.For(language, colorGroup.ColorName);
 
-            foreach (var plate in packed.Plates)
+            var result = await PlateWriter
+                .WritePlatesAsync(items, colorName, colorName, colorGroup.Rgb, directory, o, cancellationToken)
+                .ConfigureAwait(false);
+
+            skipped.AddRange(result.Skipped);
+
+            foreach (var plate in result.Plates)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var name = PlateFileName.For(colorName, plate.Number, packed.Plates.Count);
-                var contents = Contents(name, colorName, colorGroup, plate, shapesByPart);
-
-                await ThreeMfWriter
-                    .WriteFileAsync(Path.Combine(directory, name), contents, cancellationToken)
-                    .ConfigureAwait(false);
-
                 written.Add(new BuiltPlate(
-                    name,
+                    plate.FileName,
                     colorName,
                     colorGroup.BrickLinkColorCode,
                     colorGroup.Rgb,
                     plate.Number,
                     plate.PieceCount,
-                    plate.DescribeUsed()));
+                    plate.Footprint));
             }
         }
 
@@ -181,36 +156,6 @@ public static class PlateBuilder
                 [.. g.OrderBy(e => e.Id)]))
             .OrderByDescending(g => g.Entries.Sum(e => e.Quantity))
             .ThenBy(g => g.ColorName, StringComparer.Ordinal);
-
-    /// <summary>
-    /// One entry per distinct shape, carrying every place a copy of it sits, so that the file
-    /// holds each mesh once however many copies are on the plate.
-    /// </summary>
-    private static PlateContents Contents(
-        string name,
-        string colorName,
-        ColorGroup group,
-        PackedPlate plate,
-        IReadOnlyDictionary<string, IndexedMesh> shapesByPart)
-    {
-        var objects = new List<PlateObject>();
-
-        foreach (var byPart in plate.Items.GroupBy(p => p.Item.PartNumber, StringComparer.Ordinal))
-        {
-            var mesh = shapesByPart[byPart.Key];
-            var (min, _) = mesh.Bounds();
-
-            // Placements are the near-left corner of the footprint, and a shape sits wherever
-            // its own origin left it, so shift by the corner of its box to land it exactly.
-            var positions = byPart
-                .Select(p => new Vector2(p.X - min.X, p.Y - min.Y))
-                .ToList();
-
-            objects.Add(new PlateObject(byPart.Key, mesh, positions));
-        }
-
-        return new PlateContents(name, colorName, group.Rgb, objects);
-    }
 
     /// <summary>Why a part is not on any plate, said the way the report prints it.</summary>
     public static string Describe(SkippedPart part, Strings words, PrintBed bed)
