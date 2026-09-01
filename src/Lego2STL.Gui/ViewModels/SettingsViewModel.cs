@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Lego2STL.Core.LDraw;
+using Lego2STL.Core.Plates;
 using Lego2STL.Core.Rebrickable;
 using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
@@ -275,5 +279,40 @@ public sealed partial class SettingsViewModel : ViewModelBase
         {
             RememberTolerances();
         }
+    }
+
+    /// <summary>
+    /// Builds a calibration plate, because a calibration is run in order to fill the list above.
+    /// </summary>
+    [RelayCommand]
+    private async Task RunCalibration()
+    {
+        var directory = Path.Combine(
+            Options.OutputDirectory is { Length: > 0 } chosen ? chosen : Environment.CurrentDirectory,
+            "calibration");
+
+        using var library = new EscalatingLDrawLibrary(
+            Options.ToSettings().LDrawOptions, _ => { }, Loc.Current.Words);
+
+        var builder = new LDrawMeshBuilder(library);
+        var sources = new Dictionary<string, PartMesh>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var partNumber in CalibrationSet.PartNumbers)
+        {
+            try
+            {
+                sources[partNumber] = await builder.BuildAsync(partNumber).ConfigureAwait(true);
+            }
+            catch (LDrawPartNotFoundException)
+            {
+                // Left off the plate and named on the sheet, exactly as the command does.
+            }
+        }
+
+        await CalibrationRun
+            .WriteAsync(sources, CalibrationSet.DefaultSteps, Options.Printer, directory, Loc.Current.Words)
+            .ConfigureAwait(true);
+
+        Desktop.Open(directory);
     }
 }

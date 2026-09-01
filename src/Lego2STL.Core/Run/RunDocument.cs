@@ -188,6 +188,10 @@ public sealed record RunDocument
 
     public required string StlDirectory { get; init; }
 
+    public required string PrintNotesPath { get; init; }
+
+    public required string PresetPath { get; init; }
+
     /// <summary>Where the pictures cut from the document live.</summary>
     public string ImageDirectory { get; init; } = string.Empty;
 
@@ -328,6 +332,8 @@ public sealed record RunDocument
         Status = RunStatus.Running,
         PartsListPath = layout.PartsListPath,
         StlDirectory = layout.StlDirectory,
+        PrintNotesPath = layout.PrintNotesPath,
+        PresetPath = layout.PresetPath,
         ImageDirectory = layout.ImageDirectory,
         ReviewDirectory = layout.ReviewDirectory,
         OverridesPath = layout.OverridesPath,

@@ -183,6 +183,10 @@
           <Button HorizontalAlignment="Left"
                   Content="{Binding [UiAddTolerance], Source={x:Static loc:Loc.Current}}"
                   Command="{Binding AddToleranceCommand}" />
+
+          <Button HorizontalAlignment="Left"
+                  Content="{Binding [UiRunCalibration], Source={x:Static loc:Loc.Current}}"
+                  Command="{Binding RunCalibrationCommand}" />
         </StackPanel>
       </Border>
 

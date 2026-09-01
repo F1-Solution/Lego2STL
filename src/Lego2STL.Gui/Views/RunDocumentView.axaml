@@ -35,6 +35,16 @@
                   Content="{Binding [UiCancel], Source={x:Static loc:Loc.Current}}" />
         </Grid>
 
+        <!-- Offered the same way the parts list already is: what the folder holds, opened. -->
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Button IsVisible="{Binding HasPrintNotes}"
+                  Command="{Binding OpenPrintNotesCommand}"
+                  Content="{Binding [UiOpenPrintNotes], Source={x:Static loc:Loc.Current}}" />
+          <Button IsVisible="{Binding HasPreset}"
+                  Command="{Binding OpenPresetCommand}"
+                  Content="{Binding [UiOpenPreset], Source={x:Static loc:Loc.Current}}" />
+        </StackPanel>
+
         <ProgressBar Minimum="0" Maximum="1" Value="{Binding Progress, Mode=OneWay}" />
 
         <TextBlock Foreground="{DynamicResource AppTextSecondary}"

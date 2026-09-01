@@ -163,6 +163,10 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
 
     public bool CanContinue => NeedsDecision && File.Exists(Document.PartsListPath);
 
+    public bool HasPrintNotes => File.Exists(Document.PrintNotesPath);
+
+    public bool HasPreset => File.Exists(Document.PresetPath);
+
     public bool HasPartsThatDoNotFit =>
         Document.DidNotFit.Count > 0 && Document.LargestFittingScalePercent is not null;
 
@@ -413,6 +417,12 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
 
     [RelayCommand]
     private void OpenPartsList() => Desktop.Open(Document.PartsListPath);
+
+    [RelayCommand]
+    private void OpenPrintNotes() => Desktop.Open(Document.PrintNotesPath);
+
+    [RelayCommand]
+    private void OpenPreset() => Desktop.Open(Document.PresetPath);
 
     /// <summary>
     /// Carries on from the parts list this run already wrote, in the same folder.

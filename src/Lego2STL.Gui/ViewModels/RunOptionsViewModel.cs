@@ -7,6 +7,7 @@ using Lego2STL.Core.Colors;
 using Lego2STL.Core.Geometry;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Plates;
+using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
 
 namespace Lego2STL.Gui.ViewModels;
@@ -83,8 +84,16 @@ public sealed partial class RunOptionsViewModel : ViewModelBase
     [ObservableProperty]
     public partial double ScalePercent { get; set; } = 100.0;
 
+    /// <summary>
+    /// Stays a plain number with 0 meaning "not set", because a numeric box has no third state.
+    /// The command line keeps the sharper distinction that a nullable option gives it.
+    /// </summary>
     [ObservableProperty]
     public partial double Clearance { get; set; }
+
+    /// <summary>The saved tolerance to take the clearance from, when one was chosen.</summary>
+    [ObservableProperty]
+    public partial string? Tolerances { get; set; }
 
     [ObservableProperty]
     public partial bool FillGaps { get; set; } = true;
@@ -214,48 +223,57 @@ public sealed partial class RunOptionsViewModel : ViewModelBase
     private void SetSetNumber() => Kind = InputKind.SetNumber;
 
     /// <summary>Everything gathered into the form the pipeline takes.</summary>
-    public RunSettings ToSettings() => new()
+    public RunSettings ToSettings()
     {
-        Kind = Kind,
-        InputPath = EffectiveInputPath,
-        SetNumber = SetNumber,
-        Pages = Pages,
-        ColorScheme = ColorScheme,
-        ElementMap = Blank(ElementMap),
-        IncludeSpares = IncludeSpares,
+        // The same resolver the command line uses, so the two cannot come to disagree about
+        // whether a preferred tolerance applies.
+        var clearance = ClearanceChoice.Resolve(
+            Clearance > 0 ? Clearance : null, Tolerances, TolerancePresets.Load());
 
-        Stages = !MakeShapes
-            ? RunStages.PartsListOnly
-            : MakePlates
-                ? RunStages.ShapesAndPlates
-                : RunStages.Shapes,
+        return new RunSettings
+        {
+            Kind = Kind,
+            InputPath = EffectiveInputPath,
+            SetNumber = SetNumber,
+            Pages = Pages,
+            ColorScheme = ColorScheme,
+            ElementMap = Blank(ElementMap),
+            IncludeSpares = IncludeSpares,
 
-        OutputDirectory = Blank(OutputDirectory),
-        Delimiter = Delimiter == "tab" ? '\t' : (Delimiter.Length > 0 ? Delimiter[0] : ';'),
-        AsciiStl = AsciiStl,
+            Stages = !MakeShapes
+                ? RunStages.PartsListOnly
+                : MakePlates
+                    ? RunStages.ShapesAndPlates
+                    : RunStages.Shapes,
 
-        KeepOrigin = KeepOrigin,
-        ScalePercent = ScalePercent,
-        Clearance = Clearance,
-        FillGaps = FillGaps,
-        NoSeamRepair = NoSeamRepair,
-        PrintEverything = PrintEverything,
-        WeldTolerance = WeldTolerance,
+            OutputDirectory = Blank(OutputDirectory),
+            Delimiter = Delimiter == "tab" ? '\t' : (Delimiter.Length > 0 ? Delimiter[0] : ';'),
+            AsciiStl = AsciiStl,
 
-        LDrawDirectory = Blank(LDrawDirectory),
-        LDrawCache = Blank(LDrawCache),
-        Offline = Offline,
-        IncludeUnofficial = IncludeUnofficial,
+            KeepOrigin = KeepOrigin,
+            ScalePercent = ScalePercent,
+            Clearance = clearance.Millimetres,
+            ClearanceFrom = clearance.FromPreset,
+            FillGaps = FillGaps,
+            NoSeamRepair = NoSeamRepair,
+            PrintEverything = PrintEverything,
+            WeldTolerance = WeldTolerance,
 
-        Printer = Printer,
-        PlateSize = Blank(PlateSize),
-        PlateSpacing = PlateSpacing,
+            LDrawDirectory = Blank(LDrawDirectory),
+            LDrawCache = Blank(LDrawCache),
+            Offline = Offline,
+            IncludeUnofficial = IncludeUnofficial,
 
-        Language = Language,
-        ApiKey = Blank(ApiKey),
-        Quiet = Quiet,
-        LogFile = Blank(LogFile),
-    };
+            Printer = Printer,
+            PlateSize = Blank(PlateSize),
+            PlateSpacing = PlateSpacing,
+
+            Language = Language,
+            ApiKey = Blank(ApiKey),
+            Quiet = Quiet,
+            LogFile = Blank(LogFile),
+        };
+    }
 
     /// <summary>The command that would do the same thing from a terminal.</summary>
     public string CommandLine => ToSettings().ToCommandLine();

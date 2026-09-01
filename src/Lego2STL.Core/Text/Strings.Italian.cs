@@ -409,6 +409,9 @@ public sealed partial class Strings
                 "Segue la parte che questa versione capisce.",
             [TextKey.UiRunItAgain] = "Esegui di nuovo",
             [TextKey.UiOpenPartsList] = "Apri l'elenco pezzi",
+            [TextKey.UiOpenPrintNotes] = "Come stampare",
+            [TextKey.UiOpenPreset] = "Preset slicer",
+            [TextKey.UiRunCalibration] = "Costruisci un piatto di calibrazione",
             [TextKey.UiContinueFromPartsList] = "Continua dall'elenco pezzi",
 
             // Trovare la strada fra le opzioni.
@@ -540,6 +543,7 @@ public sealed partial class Strings
             [TextKey.LabelOptNoUnofficial] = "Solo libreria ufficiale",
             [TextKey.LabelOptScale] = "Scala",
             [TextKey.LabelOptClearance] = "Gioco",
+            [TextKey.LabelOptTolerances] = "Tolleranza salvata",
             [TextKey.LabelOptWeldTolerance] = "Fusione dei vertici",
             [TextKey.LabelOptPlateSpacing] = "Spazio fra i pezzi",
             [TextKey.LabelOptOutputDir] = "Cartella dei risultati",

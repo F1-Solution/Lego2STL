@@ -214,6 +214,40 @@ public sealed class RunDocumentViewTests
     }
 
     /// <summary>
+    /// The window offers the sheet and the preset, the way it offers the parts list.
+    /// </summary>
+    /// <remarks>
+    /// The item the previous sub-project's design left under "left for the plan" and never
+    /// answered. Without it those two files exist in the folder and nobody using the window ever
+    /// finds them.
+    /// </remarks>
+    [AvaloniaFact]
+    public void A_run_offers_how_to_print_its_plates()
+    {
+        var layout = RunLayout.At(ARunFolder());
+        Directory.CreateDirectory(layout.PlateDirectory);
+        File.WriteAllText(layout.PrintNotesPath, "how to print");
+        File.WriteAllText(layout.PresetPath, "{}");
+
+        using var page = RunDocumentViewModel.Reopened(RunFolder.Read(layout.Root));
+
+        page.HasPrintNotes.Should().BeTrue();
+        page.HasPreset.Should().BeTrue();
+    }
+
+    /// <summary>A run from before this existed offers neither, and says nothing about it.</summary>
+    [AvaloniaFact]
+    public void A_run_without_them_offers_neither()
+    {
+        var layout = RunLayout.At(ARunFolder());
+
+        using var page = RunDocumentViewModel.Reopened(RunFolder.Read(layout.Root));
+
+        page.HasPrintNotes.Should().BeFalse();
+        page.HasPreset.Should().BeFalse();
+    }
+
+    /// <summary>
     /// A parts list on a disk, the shape library pointed at nothing and the network refused, so
     /// a shapes run reaches its failure path without leaving the machine.
     /// </summary>

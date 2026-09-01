@@ -313,4 +313,18 @@ public sealed class SettingsTests
 
         settings.ToleranceRows.Where(r => r.IsPreferred).Should().ContainSingle(r => r.Name == "second");
     }
+
+    /// <summary>A tolerance chosen in the window reaches the settings a run would use.</summary>
+    [AvaloniaFact]
+    public void The_chosen_tolerance_reaches_the_settings_a_run_would_use()
+    {
+        TolerancePresets.Remember("black", 0.15, preferred: false);
+
+        var settings = ASettingsScreen(out var options, out _);
+
+        options.Tolerances = "black";
+
+        options.ToSettings().Clearance.Should().Be(0.15);
+        options.ToSettings().ClearanceFrom.Should().Be("black");
+    }
 }

@@ -345,6 +345,9 @@ public enum TextKey
     UiNewerManifest,
     UiRunItAgain,
     UiOpenPartsList,
+    UiOpenPrintNotes,
+    UiOpenPreset,
+    UiRunCalibration,
     UiContinueFromPartsList,
 
     // Finding a way through the options.
@@ -456,6 +459,7 @@ public enum TextKey
     LabelOptNoUnofficial,
     LabelOptScale,
     LabelOptClearance,
+    LabelOptTolerances,
     LabelOptWeldTolerance,
     LabelOptPlateSpacing,
     LabelOptOutputDir,

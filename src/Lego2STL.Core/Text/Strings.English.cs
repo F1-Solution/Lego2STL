@@ -395,6 +395,9 @@ public sealed partial class Strings
                 "part this one understands.",
             [TextKey.UiRunItAgain] = "Run it again",
             [TextKey.UiOpenPartsList] = "Open the parts list",
+            [TextKey.UiOpenPrintNotes] = "How to print",
+            [TextKey.UiOpenPreset] = "Slicer preset",
+            [TextKey.UiRunCalibration] = "Build a calibration plate",
             [TextKey.UiContinueFromPartsList] = "Continue from the parts list",
 
             // Finding a way through the options.
@@ -520,6 +523,7 @@ public sealed partial class Strings
             [TextKey.LabelOptNoUnofficial] = "Official library only",
             [TextKey.LabelOptScale] = "Scale",
             [TextKey.LabelOptClearance] = "Clearance",
+            [TextKey.LabelOptTolerances] = "Saved tolerance",
             [TextKey.LabelOptWeldTolerance] = "Corner merging",
             [TextKey.LabelOptPlateSpacing] = "Gap between parts",
             [TextKey.LabelOptOutputDir] = "Run folder",

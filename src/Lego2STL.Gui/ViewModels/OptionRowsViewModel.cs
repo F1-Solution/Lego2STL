@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Lego2STL.Core.Geometry;
 using Lego2STL.Core.Plates;
+using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
 using Lego2STL.Gui.Localization;
 
@@ -155,6 +156,15 @@ public sealed partial class OptionRowsViewModel : ViewModelBase
                 () => o.Clearance, v => o.Clearance = v, fresh.Clearance)
             {
                 Minimum = 0, Maximum = 5, Increment = 0.01, Format = "0.000",
+            },
+
+            new ChoiceOptionRow("--tolerances", TextKey.LabelOptTolerances, TextKey.HelpOptTolerances,
+                () => o.Tolerances, v => o.Tolerances = v, null,
+                [.. TolerancePresets.Load().Select(p => p.Name)])
+            {
+                // Nothing to choose from until something has been measured, and a chooser with no
+                // choices on a screen full of controls is a puzzle rather than a feature.
+                Enabled = () => TolerancePresets.Load().Count > 0,
             },
 
             new NumberOptionRow("--weld-tolerance", TextKey.LabelOptWeldTolerance, TextKey.HelpOptWeldTolerance,
