@@ -153,6 +153,39 @@
         </StackPanel>
       </Border>
 
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <TextBlock Classes="label"
+                     Text="{Binding [UiTolerances], Source={x:Static loc:Loc.Current}}" />
+
+          <ItemsControl ItemsSource="{Binding ToleranceRows}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ToleranceRowViewModel">
+                <Grid ColumnDefinitions="Auto,*,120,Auto" Margin="0,0,0,6">
+                  <RadioButton Grid.Column="0" GroupName="PreferredTolerance" VerticalAlignment="Center"
+                               Margin="0,0,8,0"
+                               IsChecked="{Binding IsPreferred, Mode=TwoWay}" />
+                  <TextBox Grid.Column="1" Margin="0,0,6,0"
+                           PlaceholderText="{Binding [UiToleranceName], Source={x:Static loc:Loc.Current}}"
+                           Text="{Binding Name}" />
+                  <NumericUpDown Grid.Column="2" Margin="0,0,6,0"
+                                 Value="{Binding Millimetres}"
+                                 Minimum="0" Increment="0.05" FormatString="0.00" />
+                  <Button Grid.Column="3"
+                          Content="{Binding [UiRemoveTolerance], Source={x:Static loc:Loc.Current}}"
+                          Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).RemoveToleranceCommand}"
+                          CommandParameter="{Binding}" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <Button HorizontalAlignment="Left"
+                  Content="{Binding [UiAddTolerance], Source={x:Static loc:Loc.Current}}"
+                  Command="{Binding AddToleranceCommand}" />
+        </StackPanel>
+      </Border>
+
     </StackPanel>
   </ScrollViewer>
 </UserControl>

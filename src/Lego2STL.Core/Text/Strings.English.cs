@@ -311,6 +311,11 @@ public sealed partial class Strings
             [TextKey.UiPreferredShop] = "Preferred",
             [TextKey.UiShopHelp] =
                 "In an address, {part} is the part number, {element} the LEGO element number and {color} the colour code.",
+            [TextKey.UiTolerances] = "Tolerances",
+            [TextKey.UiToleranceName] = "Name",
+            [TextKey.UiToleranceMillimetres] = "Clearance (mm)",
+            [TextKey.UiAddTolerance] = "Add a tolerance",
+            [TextKey.UiRemoveTolerance] = "Remove",
             [TextKey.UiEquivalentCommand] = "The same thing from the command line",
             [TextKey.UiCopyCommand] = "Copy command",
             [TextKey.UiCopied] = "Copied",

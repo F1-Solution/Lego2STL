@@ -224,6 +224,14 @@ public enum TextKey
 
     /// <summary>Explains what a shop's address may contain.</summary>
     UiShopHelp,
+
+    /// <summary>The settings card holding the list of measured clearances.</summary>
+    UiTolerances,
+    UiToleranceName,
+    UiToleranceMillimetres,
+    UiAddTolerance,
+    UiRemoveTolerance,
+
     UiEquivalentCommand,
     UiCopyCommand,
     UiCopied,

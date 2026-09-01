@@ -323,6 +323,11 @@ public sealed partial class Strings
             [TextKey.UiPreferredShop] = "Preferito",
             [TextKey.UiShopHelp] =
                 "In un indirizzo, {part} è il codice pezzo, {element} il numero elemento LEGO e {color} il codice colore.",
+            [TextKey.UiTolerances] = "Tolleranze",
+            [TextKey.UiToleranceName] = "Nome",
+            [TextKey.UiToleranceMillimetres] = "Tolleranza (mm)",
+            [TextKey.UiAddTolerance] = "Aggiungi una tolleranza",
+            [TextKey.UiRemoveTolerance] = "Rimuovi",
             [TextKey.UiEquivalentCommand] = "Lo stesso comando da terminale",
             [TextKey.UiCopyCommand] = "Copia comando",
             [TextKey.UiCopied] = "Copiato",

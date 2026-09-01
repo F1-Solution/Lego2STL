@@ -273,4 +273,44 @@ public sealed class SettingsTests
         saved.Shops[0].Name.Should().Be("My shop");
         saved.PreferredShop.Should().Be(settings.ShopRows.First(row => row.IsPreferred).Name);
     }
+
+    /// <summary>
+    /// A tolerance saved in the window is the one the command line reads.
+    /// </summary>
+    /// <remarks>
+    /// The shops list beside this one persists into the window's own preferences; this list
+    /// cannot, because the command line does not reference the window's assembly and so cannot
+    /// see that file. Same shape on screen, different file underneath.
+    /// </remarks>
+    [AvaloniaFact]
+    public void A_tolerance_saved_in_the_window_is_the_one_the_command_line_reads()
+    {
+        var settings = ASettingsScreen(out _, out _);
+
+        settings.AddToleranceCommand.Execute(null);
+        var row = settings.ToleranceRows[^1];
+        row.Name = "eSUN PLA+ black - A1";
+        row.Millimetres = 0.15;
+        row.IsPreferred = true;
+
+        TolerancePresets.Load().Should()
+            .ContainSingle(p => p.Name == "eSUN PLA+ black - A1" && p.Millimetres == 0.15 && p.Preferred);
+    }
+
+    /// <summary>Only one row is preferred, however many are ticked.</summary>
+    [AvaloniaFact]
+    public void Ticking_a_second_tolerance_unticks_the_first()
+    {
+        var settings = ASettingsScreen(out _, out _);
+
+        settings.AddToleranceCommand.Execute(null);
+        settings.ToleranceRows[^1].Name = "first";
+        settings.ToleranceRows[^1].IsPreferred = true;
+
+        settings.AddToleranceCommand.Execute(null);
+        settings.ToleranceRows[^1].Name = "second";
+        settings.ToleranceRows[^1].IsPreferred = true;
+
+        settings.ToleranceRows.Where(r => r.IsPreferred).Should().ContainSingle(r => r.Name == "second");
+    }
 }

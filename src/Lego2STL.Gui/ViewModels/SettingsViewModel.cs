@@ -76,6 +76,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         };
 
         FillShops();
+        FillTolerances();
     }
 
     public RunOptionsViewModel Options { get; }
@@ -216,4 +217,63 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     /// <summary>The flag, so the same thing can be asked for from a terminal.</summary>
     public static string LanguageFlag => "--lang";
+
+    /// <summary>The clearances measured so far, as rows that can be edited.</summary>
+    public ObservableCollection<ToleranceRowViewModel> ToleranceRows { get; } = [];
+
+    private void FillTolerances()
+    {
+        foreach (var preset in TolerancePresets.Load())
+        {
+            AddRow(new ToleranceRowViewModel(preset));
+        }
+    }
+
+    private void AddRow(ToleranceRowViewModel row)
+    {
+        row.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(ToleranceRowViewModel.IsPreferred) && row.IsPreferred)
+            {
+                foreach (var other in ToleranceRows.Where(r => r != row))
+                {
+                    other.IsPreferred = false;
+                }
+            }
+
+            RememberTolerances();
+        };
+
+        ToleranceRows.Add(row);
+    }
+
+    /// <summary>
+    /// Written to Core's own file rather than the window's preferences, because the command line
+    /// has to read the same list and cannot see the window's assembly.
+    /// </summary>
+    private void RememberTolerances() =>
+        TolerancePresets.Save(
+        [
+            .. ToleranceRows
+                .Where(r => !string.IsNullOrWhiteSpace(r.Name))
+                .Select(r => r.ToPreset()),
+        ]);
+
+    [RelayCommand]
+    private void AddTolerance() =>
+        AddRow(new ToleranceRowViewModel(
+            new TolerancePreset(string.Empty, 0.15, Preferred: false, DateTimeOffset.UtcNow)));
+
+    /// <summary>
+    /// Unlike the shops, none has to be preferred: none means a build applies no clearance, which
+    /// is the state this tool starts in and is entitled to stay in.
+    /// </summary>
+    [RelayCommand]
+    private void RemoveTolerance(ToleranceRowViewModel? row)
+    {
+        if (row is not null && ToleranceRows.Remove(row))
+        {
+            RememberTolerances();
+        }
+    }
 }
