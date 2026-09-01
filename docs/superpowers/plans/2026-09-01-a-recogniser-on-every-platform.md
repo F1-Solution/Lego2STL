@@ -760,6 +760,10 @@ git commit -m "ci: build Core for android, ios and macos, and fix packaging rest
 **Files:**
 - Create: `tests/Lego2STL.OcrSmokeTest/Lego2STL.OcrSmokeTest.csproj`
 - Create: `tests/Lego2STL.OcrSmokeTest/SyntheticFixture.cs`
+- Create: `tests/Lego2STL.OcrSmokeTest/Platforms/Android/AndroidManifest.xml` (brought forward from
+  Task 8 — see below)
+- Create: `tests/Lego2STL.OcrSmokeTest/Platforms/iOS/Main.cs`, `Platforms/MacOS/Program.cs`
+  (placeholders — see below; real content is Task 9)
 - Modify: `Lego2STL.slnx`
 
 **Interfaces:**
@@ -856,16 +860,16 @@ public static class SyntheticFixture
         using var canvas = new SKCanvas(bitmap);
         canvas.Clear(SKColors.White);
 
+        using var typeface = SKTypeface.FromFamilyName("Arial", SKFontStyleWeight.Normal, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright);
+        using var font = new SKFont(typeface, 24);
         using var paint = new SKPaint
         {
             Color = SKColors.Black,
-            TextSize = 24,
             IsAntialias = true,
-            Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyleWeight.Normal, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright),
         };
 
-        canvas.DrawText("5x", 20, 34, paint);
-        canvas.DrawText("32523, 11", 20, 66, paint);
+        canvas.DrawText("5x", 20, 34, SKTextAlign.Left, font, paint);
+        canvas.DrawText("32523, 11", 20, 66, SKTextAlign.Left, font, paint);
 
         return bitmap;
     }
@@ -891,6 +895,56 @@ public static class SyntheticFixture
 `BuildLabelImage` draws directly rather than calling `RowCrop.Extract` — there is no page to crop
 from, only a fixture to draw — so it borrows `RowCrop`'s *shape* (a white margin around the text,
 never scaled) without calling into `Lego2STL.Core.Extraction` at all.
+
+**The code above is verified against a real build.** SkiaSharp 4.150.1 (the same version Core
+pins) has no `SKPaint.TextSize` or `.Typeface` and no `DrawText(string, x, y, paint)` overload —
+those belong to an older SkiaSharp API. Text needs an `SKFont` (family and size) passed alongside
+the paint, and the non-obsolete overload also takes an `SKTextAlign`.
+
+**Three more things this task turned up, none foreseeable from documentation alone, all found by
+actually building each target once the workloads existed:**
+
+1. **Android app-level manifest merging never showed up in Core, because Core is a library.**
+   Core builds for `net10.0-android36.0` with no manifest at all — nothing merges. The moment an
+   `OutputType=Exe` Android project exists (this one), the SDK merges every referenced library's
+   own manifest into one, and two things fail without help: no `minSdkVersion` is declared, so the
+   SDK assumes 21, but a transitive ML Kit dependency (`androidx.lifecycle.runtime`) needs 23 or
+   higher; and until that mismatch is fixed, the merger's error output is a confusing, unrelated
+   `error XAAMM0000: Namespace '...' is used in multiple modules and/or libraries` — which turned
+   out to be a symptom of the `minSdkVersion` disagreement, not a real duplicate dependency, and
+   went away entirely once the version numbers agreed. **This means Task 8's `AndroidManifest.xml`
+   has to exist a task earlier than planned** — Task 7 could not reach a building state without it.
+   It is written now, at `Platforms/Android/AndroidManifest.xml`, with `minSdkVersion="24"` and
+   `targetSdkVersion="36"` (the latter to silence a `TargetFrameworkVersion` mismatch warning), and
+   the `.csproj` gains a matching `<SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>` —
+   the two have to agree exactly, or the SDK refuses outright with `XA1036`. Task 8 below therefore
+   only writes `MainActivity.cs`; the manifest is already committed here.
+2. **Android tolerates a project with no entry point; iOS and macOS do not.** `net10.0-android36.0`
+   built clean with nothing but `SyntheticFixture.cs` in the project — Android app lifecycle starts
+   from an `[Activity]`, not a `static Main`. `net10.0-ios26.0` and `net10.0-macos26.0` both failed
+   with `CS5001: Program does not contain a static 'Main' method suitable for an entry point` at
+   this same stage. Fixed here with the same stub convention Task 2 used for the two engine files:
+   minimal placeholders that compile and do nothing, replaced by real content in Task 9.
+   `Platforms/iOS/Main.cs`:
+
+   ```csharp
+   namespace Lego2STL.OcrSmokeTest.Platforms.iOS;
+
+   // Body written in Task 9.
+   public static class Program
+   {
+       private static void Main(string[] args)
+       {
+       }
+   }
+   ```
+
+   `Platforms/MacOS/Program.cs`:
+
+   ```csharp
+   // Body written in Task 9.
+   return;
+   ```
 
 - [ ] **Step 3: Add the project to the solution**
 
