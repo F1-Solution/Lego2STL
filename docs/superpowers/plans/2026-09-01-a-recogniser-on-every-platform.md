@@ -264,10 +264,12 @@ git commit -m "chore: wire the android and apple recogniser files into the build
 Replace the contents of `src/Lego2STL.Core/Ocr/AndroidOcrEngine.cs` with:
 
 ```csharp
+using Android.Gms.Extensions;
 using Android.Graphics;
-using Com.Google.MLKit.Vision.Common;
-using Com.Google.MLKit.Vision.Text;
 using SkiaSharp;
+using Xamarin.Google.MLKit.Vision.Common;
+using Xamarin.Google.MLKit.Vision.Text;
+using Xamarin.Google.MLKit.Vision.Text.Latin;
 
 namespace Lego2STL.Core.Ocr;
 
@@ -312,9 +314,11 @@ public sealed class AndroidOcrEngine : IOcrEngine
         var input = InputImage.FromBitmap(bitmap, 0);
 
         // Process(...) returns a Java Task, bridged to a .NET one so this method can be
-        // awaited like every other IOcrEngine implementation.
+        // awaited like every other IOcrEngine implementation. Text is written fully
+        // qualified: Vision.Text is both a namespace and, within it, a type name, and the
+        // bare name resolves to the namespace.
         var result = await _recognizer.Process(input)
-            .AsAsync<Text>()
+            .AsAsync<Xamarin.Google.MLKit.Vision.Text.Text>()
             .WaitAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -339,16 +343,30 @@ public sealed class AndroidOcrEngine : IOcrEngine
 }
 ```
 
-**Namespace and method names are written from ML Kit's Android documentation, not from a build.**
-Now that the android workload is installed, check for real:
+**The code above is verified against a real build**, not merely documentation, and the namespaces
+in it are the ones that actually compile — this is worth recording because the first attempt did
+not compile as `Com.Google.MLKit.Vision.Common` / `.Vision.Text`, and finding the real ones took
+some digging. `TextRecognition`, `ITextRecognizer`, `Text` and `Latin.TextRecognizerOptions` are
+not in the `Xamarin.Google.MLKit.TextRecognition` package's own assembly at all — that assembly
+turned out to hold only a "dynamite module descriptor" stub. They live in
+`Xamarin.GooglePlayServices.MLKit.Text.Recognition[.Common]`, which is pulled in *transitively* by
+the two packages Task 2 already references (`Xamarin.Google.MLKit.TextRecognition` and its
+`.Bundled.Common`), so no new `PackageReference` was needed — only the corrected `using`s above.
+`AsAsync<T>()` comes from `Android.Gms.Extensions` (in `Xamarin.GooglePlayServices.Tasks`, already
+a transitive dependency).
 
 Run: `dotnet build src/Lego2STL.Core/Lego2STL.Core.csproj -c Debug -f net10.0-android36.0`
+Expected: succeeds, 0 errors (a handful of pre-existing `CS1574`/`CS1570` doc-comment warnings from
+code Task 3 doesn't touch are fine, including two new ones where this file's own `<see
+cref="WindowsOcrEngine"/>` can't resolve on a target that excludes that file).
 
-If `Com.Google.MLKit.Vision.Common` or `.Vision.Text` do not match the installed package's actual
-casing, or `Process(...)` returns something other than an `Android.Gms.Tasks.Task` that
-`AsAsync<Text>()` can bridge, fix it against the compiler's own error, which will name the real
-type. Run `dotnet restore Lego2STL.slnx` afterward before touching any other project, per the
-Global Constraints note on scoped overrides leaving a stale `project.assets.json` behind.
+If a future ML Kit package upgrade breaks this again, the fix is the same technique used to find
+these names the first time: read the actual type names out of the installed assembly's metadata
+(e.g. with `System.Reflection.PortableExecutable.PEReader` and `GetMetadataReader()`, which reads
+type and member names without needing to load the assembly's own runtime dependencies) rather than
+guessing from documentation. Run `dotnet restore Lego2STL.slnx` afterward before touching any other
+project, per the Global Constraints note on scoped overrides leaving a stale `project.assets.json`
+behind.
 
 - [ ] **Step 2: Commit**
 
