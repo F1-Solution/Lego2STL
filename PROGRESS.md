@@ -139,3 +139,5 @@ PHASE:AB WAVE:8 STATUS:complete TS:2026-08-31T22:32:24Z
 # axle lies flat - all three confirmed by hand. The axle roll was measured and did not ship,
 # so every orientation rule confirms the pipeline and the run records which one reached each part.
 PHASE:AB WAVE:0 STATUS:complete TS:2026-08-31T22:32:24Z
+
+PHASE:C WAVE:1 STATUS:complete TS:2026-09-01T12:59:27Z
