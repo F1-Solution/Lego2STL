@@ -176,6 +176,21 @@ public sealed partial class Strings
                 + "forcing and stay together when shaken. That clearance is yours: pass it to "
                 + "the build command as --clearance. Check it again if you change material, "
                 + "nozzle or printer.",
+            [TextKey.HelpOptSave] =
+                "Record a clearance you measured, in millimetres, and build nothing.",
+            [TextKey.HelpOptToleranceName] =
+                "What to call the clearance being saved. Something you will recognise: the spool "
+                + "and the machine, not a code.",
+            [TextKey.HelpOptPreferred] =
+                "Mark the clearance being saved as the one a build uses when none is asked for.",
+            [TextKey.HelpOptListTolerances] = "List the clearances saved so far, and build nothing.",
+            [TextKey.HelpOptPrefer] =
+                "Make this saved clearance the one a build uses when none is asked for.",
+            [TextKey.HelpOptForget] = "Remove a saved clearance.",
+            [TextKey.ErrToleranceNeedsAName] =
+                "A clearance needs a name to be saved under, or nothing can ask for it again. "
+                + "Add --name.",
+            [TextKey.MsgToleranceSaved] = "Saved '{0}' as {1} mm.",
             [TextKey.MsgClearanceApplied] =
                 "Took every face in by {2} mm on {0} of {1} shape(s).",
             [TextKey.MsgClearanceFromPreset] =

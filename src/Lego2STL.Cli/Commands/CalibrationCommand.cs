@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using Lego2STL.Core.Geometry;
 using Lego2STL.Core.LDraw;
+using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
 
 namespace Lego2STL.Cli.Commands;
@@ -69,9 +70,40 @@ internal static class CalibrationCommand
             Description = words[TextKey.HelpOptAscii],
         };
 
+        var save = new Option<double?>("--save")
+        {
+            Description = words[TextKey.HelpOptSave],
+        };
+
+        var name = new Option<string?>("--name")
+        {
+            Description = words[TextKey.HelpOptToleranceName],
+        };
+
+        var preferred = new Option<bool>("--preferred")
+        {
+            Description = words[TextKey.HelpOptPreferred],
+        };
+
+        var list = new Option<bool>("--list")
+        {
+            Description = words[TextKey.HelpOptListTolerances],
+        };
+
+        var prefer = new Option<string?>("--prefer")
+        {
+            Description = words[TextKey.HelpOptPrefer],
+        };
+
+        var forget = new Option<string?>("--forget")
+        {
+            Description = words[TextKey.HelpOptForget],
+        };
+
         var command = new Command("calibration", words[TextKey.HelpCalibration])
         {
             parts, steps, outputDirectory, ldrawDirectory, offline, asText,
+            save, name, preferred, list, prefer, forget,
         };
 
         command.SetAction(async (parseResult, cancellationToken) => await RunAsync(
@@ -81,6 +113,12 @@ internal static class CalibrationCommand
             parseResult.GetValue(ldrawDirectory),
             parseResult.GetValue(offline),
             parseResult.GetValue(asText),
+            parseResult.GetValue(save),
+            parseResult.GetValue(name),
+            parseResult.GetValue(preferred),
+            parseResult.GetValue(list),
+            parseResult.GetValue(prefer),
+            parseResult.GetValue(forget),
             parseResult.GetValue(CommonOptions.Language),
             cancellationToken).ConfigureAwait(false));
 
@@ -121,10 +159,56 @@ internal static class CalibrationCommand
         DirectoryInfo? ldrawDirectory,
         bool offline,
         bool asText,
+        double? save,
+        string? name,
+        bool preferred,
+        bool list,
+        string? prefer,
+        string? forget,
         DisplayLanguage language,
         CancellationToken cancellationToken)
     {
         var words = Strings.For(language);
+
+        // The management flags record or report and stop. Placed before anything is created so
+        // that asking what is saved never leaves a folder behind.
+        if (list)
+        {
+            foreach (var preset in TolerancePresets.Load())
+            {
+                Console.WriteLine(string.Create(
+                    CultureInfo.InvariantCulture,
+                    $"  {(preset.Preferred ? "*" : " ")} {preset.Name,-40}{preset.Millimetres,8:0.00} mm"));
+            }
+
+            return Program.ExitOk;
+        }
+
+        if (prefer is { Length: > 0 })
+        {
+            TolerancePresets.Prefer(prefer);
+            return Program.ExitOk;
+        }
+
+        if (forget is { Length: > 0 })
+        {
+            TolerancePresets.Forget(forget);
+            return Program.ExitOk;
+        }
+
+        if (save is { } measured)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                Console.Error.WriteLine($"{words[TextKey.MsgError]}: {words[TextKey.ErrToleranceNeedsAName]}");
+                return Program.ExitFailure;
+            }
+
+            TolerancePresets.Remember(name, measured, preferred);
+            Console.WriteLine(words.Format(TextKey.MsgToleranceSaved, name, measured));
+            return Program.ExitOk;
+        }
+
         var directory = outputDirectory?.FullName ?? Path.Combine(Environment.CurrentDirectory, "calibration");
 
         Directory.CreateDirectory(directory);
@@ -169,17 +253,17 @@ internal static class CalibrationCommand
                     ClearanceMillimetres = (float)step,
                 });
 
-                var name = string.Create(
+                var fileName = string.Create(
                     CultureInfo.InvariantCulture, $"{partNumber}-{step:0.00}mm.stl");
 
                 await StlWriter
-                    .WriteFileAsync(Path.Combine(directory, name), prepared.Mesh, asText, name, cancellationToken)
+                    .WriteFileAsync(Path.Combine(directory, fileName), prepared.Mesh, asText, fileName, cancellationToken)
                     .ConfigureAwait(false);
 
                 written++;
                 rows.Add(string.Create(
                     CultureInfo.InvariantCulture,
-                    $"{name,-28}{step,8:0.00}{(prepared.ClearanceApplied ? string.Empty : "  not applied"),-14}  {prepared.DescribeSize()}"));
+                    $"{fileName,-28}{step,8:0.00}{(prepared.ClearanceApplied ? string.Empty : "  not applied"),-14}  {prepared.DescribeSize()}"));
 
                 Console.WriteLine($"  {rows[^1]}");
             }

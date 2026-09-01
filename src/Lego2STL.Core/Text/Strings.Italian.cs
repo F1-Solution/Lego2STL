@@ -181,6 +181,22 @@ public sealed partial class Strings
                 + "e restano uniti se si scuotono. Quel gioco è il proprio: passarlo al comando "
                 + "build come --clearance. Ricontrollarlo se si cambia materiale, ugello o "
                 + "stampante.",
+            [TextKey.HelpOptSave] =
+                "Registra una tolleranza misurata, in millimetri, e non costruisce nulla.",
+            [TextKey.HelpOptToleranceName] =
+                "Come chiamare la tolleranza da salvare. Qualcosa di riconoscibile: la bobina e la "
+                + "macchina, non un codice.",
+            [TextKey.HelpOptPreferred] =
+                "Segna la tolleranza da salvare come quella che una build usa quando non se ne chiede una.",
+            [TextKey.HelpOptListTolerances] =
+                "Elenca le tolleranze salvate finora, e non costruisce nulla.",
+            [TextKey.HelpOptPrefer] =
+                "Rende questa tolleranza salvata quella che una build usa quando non se ne chiede una.",
+            [TextKey.HelpOptForget] = "Rimuove una tolleranza salvata.",
+            [TextKey.ErrToleranceNeedsAName] =
+                "Una tolleranza ha bisogno di un nome per essere salvata, altrimenti niente potrà "
+                + "richiederla. Aggiungi --name.",
+            [TextKey.MsgToleranceSaved] = "Salvata '{0}' come {1} mm.",
             [TextKey.MsgClearanceApplied] =
                 "Ogni faccia rientrata di {2} mm su {0} forme di {1}.",
             [TextKey.MsgClearanceFromPreset] =
