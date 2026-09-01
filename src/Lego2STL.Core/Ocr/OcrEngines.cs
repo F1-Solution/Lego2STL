@@ -37,7 +37,7 @@ public static class OcrEngines
 
     /// <summary>True when this build can recognise text at all.</summary>
     public static bool IsAvailable =>
-#if WINDOWS
+#if WINDOWS || ANDROID || IOS || MACOS
         true;
 #else
         false;
@@ -76,6 +76,12 @@ public static class OcrEngines
 #if WINDOWS
         _ = words;
         return WindowsOcrEngine.Create(languageTag);
+#elif ANDROID
+        _ = words;
+        return AndroidOcrEngine.Create(languageTag);
+#elif IOS || MACOS
+        _ = words;
+        return AppleOcrEngine.Create(languageTag);
 #else
         _ = languageTag;
         throw new OcrUnavailableException(DescribeUnavailable(words));
