@@ -1,16 +1,15 @@
 using System.CommandLine;
 using System.Globalization;
-using System.Text;
-using Lego2STL.Core.Geometry;
 using Lego2STL.Core.LDraw;
+using Lego2STL.Core.Plates;
 using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
 
 namespace Lego2STL.Cli.Commands;
 
 /// <summary>
-/// Writes the same small part several times at different clearances, so the right one can be
-/// measured instead of guessed.
+/// Writes a calibration plate: the same small parts several times at different clearances, so
+/// the right one can be measured instead of guessed.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -20,34 +19,25 @@ namespace Lego2STL.Cli.Commands;
 /// does not offer a default: it offers a way of finding yours.
 /// </para>
 /// <para>
-/// The default pair is an axle and the bush that runs on it, because a fit is a property of two
-/// parts and not of one. Printing both at each value and trying them together answers the
-/// question directly - this one is loose, that one will not go on, so it is the one between.
+/// Three mating pairs, because a fit is a property of two parts and not of one, plus one wide
+/// plate that tests warping rather than clearance. The set is the set: substituting a part would
+/// leave the sheet describing a plate that was not built.
 /// </para>
 /// </remarks>
 internal static class CalibrationCommand
 {
-    /// <summary>
-    /// An axle and the bush that goes on it: the smallest pair that actually tests a fit, and
-    /// both come out closed, so a clearance can be applied to them without covering any gaps.
-    /// </summary>
-    private static readonly string[] DefaultParts = ["3705", "4265c"];
-
-    private static readonly double[] DefaultSteps = [0.00, 0.05, 0.10, 0.15, 0.20, 0.25];
-
     public static Command Create(Strings words)
     {
-        var parts = new Option<string[]>("--part")
-        {
-            Description = words[TextKey.HelpOptPart] +
-                $" Defaults to {string.Join(" and ", DefaultParts)}.",
-            AllowMultipleArgumentsPerToken = true,
-        };
-
         var steps = new Option<string?>("--steps")
         {
             Description = words[TextKey.HelpArgSteps] +
-                $" Defaults to {string.Join(",", DefaultSteps.Select(s => s.ToString("0.00", CultureInfo.InvariantCulture)))}.",
+                $" Defaults to {string.Join(",", CalibrationSet.DefaultSteps.Select(s => s.ToString("0.00", CultureInfo.InvariantCulture)))}.",
+        };
+
+        var printer = new Option<string>("--printer")
+        {
+            Description = words.Format(TextKey.HelpOptPrinter, string.Join(", ", PrintBeds.Names)),
+            DefaultValueFactory = _ => PrintBeds.Default.Name,
         };
 
         var outputDirectory = new Option<DirectoryInfo?>("--output-dir")
@@ -63,11 +53,6 @@ internal static class CalibrationCommand
         var offline = new Option<bool>("--offline")
         {
             Description = words[TextKey.HelpOptOffline],
-        };
-
-        var asText = new Option<bool>("--ascii")
-        {
-            Description = words[TextKey.HelpOptAscii],
         };
 
         var save = new Option<double?>("--save")
@@ -102,17 +87,16 @@ internal static class CalibrationCommand
 
         var command = new Command("calibration", words[TextKey.HelpCalibration])
         {
-            parts, steps, outputDirectory, ldrawDirectory, offline, asText,
+            steps, printer, outputDirectory, ldrawDirectory, offline,
             save, name, preferred, list, prefer, forget,
         };
 
         command.SetAction(async (parseResult, cancellationToken) => await RunAsync(
-            parseResult.GetValue(parts) is { Length: > 0 } chosen ? chosen : DefaultParts,
             ParseSteps(parseResult.GetValue(steps)),
+            parseResult.GetValue(printer) ?? PrintBeds.Default.Name,
             parseResult.GetValue(outputDirectory),
             parseResult.GetValue(ldrawDirectory),
             parseResult.GetValue(offline),
-            parseResult.GetValue(asText),
             parseResult.GetValue(save),
             parseResult.GetValue(name),
             parseResult.GetValue(preferred),
@@ -129,7 +113,7 @@ internal static class CalibrationCommand
     {
         if (string.IsNullOrWhiteSpace(text))
         {
-            return DefaultSteps;
+            return [.. CalibrationSet.DefaultSteps];
         }
 
         var values = new List<double>();
@@ -149,16 +133,15 @@ internal static class CalibrationCommand
             values.Add(value);
         }
 
-        return values.Count > 0 ? [.. values.Distinct().Order()] : DefaultSteps;
+        return values.Count > 0 ? [.. values.Distinct().Order()] : [.. CalibrationSet.DefaultSteps];
     }
 
     private static async Task<int> RunAsync(
-        IReadOnlyList<string> parts,
         IReadOnlyList<double> steps,
+        string printer,
         DirectoryInfo? outputDirectory,
         DirectoryInfo? ldrawDirectory,
         bool offline,
-        bool asText,
         double? save,
         string? name,
         bool preferred,
@@ -211,8 +194,6 @@ internal static class CalibrationCommand
 
         var directory = outputDirectory?.FullName ?? Path.Combine(Environment.CurrentDirectory, "calibration");
 
-        Directory.CreateDirectory(directory);
-
         using var library = new EscalatingLDrawLibrary(
             new LDrawSourceOptions
             {
@@ -223,98 +204,40 @@ internal static class CalibrationCommand
             words);
 
         var builder = new LDrawMeshBuilder(library);
-        var written = 0;
-        var rows = new List<string>();
 
-        foreach (var partNumber in parts)
+        // A part the library has not got is left off rather than stopping a plate whose value is
+        // mostly still there.
+        var sources = new Dictionary<string, PartMesh>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var partNumber in CalibrationSet.PartNumbers)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            PartMesh source;
             try
             {
-                source = await builder.BuildAsync(partNumber, cancellationToken).ConfigureAwait(false);
-            }
-            catch (LDrawPartNotFoundException ex)
-            {
-                Console.Error.WriteLine($"{words[TextKey.MsgError]}: {ex.Message}");
-                return Program.ExitFailure;
-            }
-
-            foreach (var step in steps)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var prepared = MeshPipeline.Prepare(source, new MeshPipelineOptions
-                {
-                    // Gaps are covered here whatever was asked for: a calibration piece that
-                    // silently came out at true size would send the whole exercise wrong.
-                    FillGaps = true,
-                    ClearanceMillimetres = (float)step,
-                });
-
-                var fileName = string.Create(
-                    CultureInfo.InvariantCulture, $"{partNumber}-{step:0.00}mm.stl");
-
-                await StlWriter
-                    .WriteFileAsync(Path.Combine(directory, fileName), prepared.Mesh, asText, fileName, cancellationToken)
+                sources[partNumber] = await builder.BuildAsync(partNumber, cancellationToken)
                     .ConfigureAwait(false);
-
-                written++;
-                rows.Add(string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"{fileName,-28}{step,8:0.00}{(prepared.ClearanceApplied ? string.Empty : "  not applied"),-14}  {prepared.DescribeSize()}"));
-
-                Console.WriteLine($"  {rows[^1]}");
+            }
+            catch (LDrawPartNotFoundException)
+            {
+                // Named on the sheet by the run itself, from what it was not given.
             }
         }
 
-        await WriteInstructionsAsync(directory, parts, steps, rows, words, cancellationToken)
+        var result = await CalibrationRun
+            .WriteAsync(sources, steps, printer, directory, words, cancellationToken)
             .ConfigureAwait(false);
+
+        if (result.PieceCount == 0)
+        {
+            Console.Error.WriteLine(
+                $"{words[TextKey.MsgError]}: {words[TextKey.ErrCalibrationNothingToBuild]}");
+            return Program.ExitFailure;
+        }
 
         Console.WriteLine();
-        Console.WriteLine(words.Format(TextKey.MsgCalibrationWritten, written, directory));
+        Console.WriteLine(words.Format(TextKey.MsgCalibrationWritten, result.PieceCount, directory));
 
         return Program.ExitOk;
-    }
-
-    /// <summary>
-    /// A note beside the files saying what to do with them. A folder of near-identical shapes
-    /// is useless without one, and by the time they are printed the command line that made
-    /// them is long gone.
-    /// </summary>
-    private static async Task WriteInstructionsAsync(
-        string directory,
-        IReadOnlyList<string> parts,
-        IReadOnlyList<double> steps,
-        IReadOnlyList<string> rows,
-        Strings words,
-        CancellationToken cancellationToken)
-    {
-        var sb = new StringBuilder();
-
-        sb.AppendLine(words[TextKey.CalibrationTitle]);
-        sb.AppendLine(new string('-', 70));
-        sb.AppendLine();
-        sb.AppendLine(words.Format(
-            TextKey.CalibrationHow,
-            string.Join(", ", parts),
-            string.Join(", ", steps.Select(s => s.ToString("0.00", CultureInfo.InvariantCulture)))));
-        sb.AppendLine();
-
-        foreach (var row in rows)
-        {
-            sb.AppendLine(row);
-        }
-
-        sb.AppendLine();
-        sb.AppendLine(words[TextKey.CalibrationThen]);
-
-        await File.WriteAllTextAsync(
-                Path.Combine(directory, "how-to-use-these.txt"),
-                sb.ToString(),
-                new UTF8Encoding(true),
-                cancellationToken)
-            .ConfigureAwait(false);
     }
 }

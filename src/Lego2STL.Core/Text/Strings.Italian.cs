@@ -169,13 +169,6 @@ public sealed partial class Strings
                 + "sono stati sistemati come sempre e il resoconto elenca ciò che manca.",
             [TextKey.MsgCalibrationWritten] = "Scritte {0} forme di taratura in {1}",
             [TextKey.CalibrationTitle] = "Trovare il gioco che serve alla propria stampante",
-            [TextKey.CalibrationHow] =
-                "Qui c'è {0}, una volta per ciascuno di questi giochi in millimetri: {1}. "
-                + "Stampare tutta la serie con il materiale che si intende usare, sulla "
-                + "macchina che si intende usare, con le impostazioni che si intendono usare. "
-                + "Niente di tutto questo si può prendere dalla stampante di qualcun altro: il "
-                + "valore cercato è più piccolo della differenza fra due macchine dello stesso "
-                + "modello.",
             [TextKey.CalibrationHow2] =
                 "Stampa tutto il piatto nel materiale che intendi usare, sulla macchina che "
                 + "intendi usare, con le impostazioni qui sotto. Nulla di tutto questo può essere "
@@ -221,6 +214,9 @@ public sealed partial class Strings
                 "Una tolleranza ha bisogno di un nome per essere salvata, altrimenti niente potrà "
                 + "richiederla. Aggiungi --name.",
             [TextKey.MsgToleranceSaved] = "Salvata '{0}' come {1} mm.",
+            [TextKey.ErrCalibrationNothingToBuild] =
+                "Non è stato possibile costruire nulla: la libreria delle forme non aveva "
+                + "nessuno dei pezzi di calibrazione.",
             [TextKey.MsgClearanceApplied] =
                 "Ogni faccia rientrata di {2} mm su {0} forme di {1}.",
             [TextKey.MsgClearanceFromPreset] =
@@ -509,8 +505,6 @@ public sealed partial class Strings
                 "Dice solo l'essenziale: avvisi, errori e dove sono state scritte le cose.",
             [TextKey.HelpOptLog] =
                 "Scrive anche su questo file tutto quello che viene detto durante l'esecuzione.",
-            [TextKey.HelpOptPart] =
-                "Con quale pezzo stampare la serie. Ripetere per averne più di uno.",
             [TextKey.HelpOptKind] =
                 "Mattoncino (tre piastre), piastra (una) o piastrella (una, liscia sopra).",
             [TextKey.HelpOptNoKnobs] =

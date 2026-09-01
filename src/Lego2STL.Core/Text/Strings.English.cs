@@ -165,12 +165,6 @@ public sealed partial class Strings
                 + "as usual and the report lists what is absent.",
             [TextKey.MsgCalibrationWritten] = "Wrote {0} calibration shape(s) to {1}",
             [TextKey.CalibrationTitle] = "Finding the clearance your printer needs",
-            [TextKey.CalibrationHow] =
-                "Here is {0}, once for each of these clearances in millimetres: {1}. Print the "
-                + "whole set in the material you mean to use, on the machine you mean to use, "
-                + "with the settings you mean to use. Nothing here can be carried over from "
-                + "someone else's printer: the figure being looked for is smaller than the "
-                + "difference between two machines of the same model.",
             [TextKey.CalibrationHow2] =
                 "Print the whole plate in the material you mean to use, on the machine you mean "
                 + "to use, with the settings below. Nothing here can be carried over from someone "
@@ -214,6 +208,8 @@ public sealed partial class Strings
                 "A clearance needs a name to be saved under, or nothing can ask for it again. "
                 + "Add --name.",
             [TextKey.MsgToleranceSaved] = "Saved '{0}' as {1} mm.",
+            [TextKey.ErrCalibrationNothingToBuild] =
+                "Nothing could be built: the shape library had none of the calibration parts.",
             [TextKey.MsgClearanceApplied] =
                 "Took every face in by {2} mm on {0} of {1} shape(s).",
             [TextKey.MsgClearanceFromPreset] =
@@ -490,7 +486,6 @@ public sealed partial class Strings
             [TextKey.HelpOptQuiet] =
                 "Say only what matters: warnings, failures and where things were written.",
             [TextKey.HelpOptLog] = "Also write everything said during the run to this file.",
-            [TextKey.HelpOptPart] = "Which part to print the set from. Repeat for several.",
             [TextKey.HelpOptKind] =
                 "Brick (three plates), plate (one), or tile (one, smooth on top).",
             [TextKey.HelpOptNoKnobs] = "Leave the top smooth. A tile is already smooth.",
