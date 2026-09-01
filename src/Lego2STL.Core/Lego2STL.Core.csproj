@@ -1,5 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <PropertyGroup>
+    <!--
+      The only project that reads text, so the only one that needs a recogniser for every
+      platform. TargetFrameworks already holds the two-target list from Directory.Build.props
+      by the time this line runs, because Directory.Build.props is imported before a project's
+      own body; appending here adds three more without touching what Cli or Gui inherit.
+    -->
+    <TargetFrameworks>$(TargetFrameworks);$(MobileTargetFrameworks)</TargetFrameworks>
+  </PropertyGroup>
+
   <ItemGroup>
     <!--
       The colour cross-reference ships inside the assembly so a normal run needs no API

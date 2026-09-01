@@ -164,3 +164,9 @@ PHASE:C WAVE:11 STATUS:complete TS:2026-09-01T14:14:35Z
 
 PHASE:C WAVE:12 STATUS:complete TS:2026-09-01T14:33:19Z
 PHASE:C WAVE:0 STATUS:complete TS:2026-09-01T14:33:19Z
+
+PHASE:D WAVE:1 STATUS:complete TS:2026-09-01T21:16:04Z
+# The android/ios/maccatalyst/macos workloads were installed on this machine to unblock
+# Task 1 verification - once Core.csproj lists a target framework whose workload is missing,
+# restore fails for every project that references Core, not just the new target, so nothing
+# could be verified locally without them. All five targets now build clean.
