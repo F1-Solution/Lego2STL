@@ -47,12 +47,22 @@ workloads.
 - **A pre-existing failure, unrelated to this plan: `Lego2STL.UiTests.CalibrationPlateTests
   .With_nothing_to_build_from_it_says_so_and_writes_no_shapes` fails on unmodified `main`.**
   Confirmed by stashing every change from this plan and re-running the test in isolation before
-  Task 1 began — it failed identically. It sometimes drags a second `CalibrationPlateTests` case
-  down with it when the whole suite runs together (2 failures instead of 1), which looks like
-  shared-state flakiness on top of the underlying failure, not something this plan caused. Treat the
-  baseline as "`Lego2STL.Tests` 653/653, `Lego2STL.UiTests` all green except this one test (and
-  occasionally a second `CalibrationPlateTests` case)" — not "all green" — when judging whether a
-  task regressed anything. Do not fix it as part of this plan; it is out of Phase D's scope.
+  Task 1 began — it failed identically, and it keeps failing in isolation on every task's
+  verification since. When the whole `UiTests` suite runs together under this machine's own load
+  (heavier than usual on this particular day, from the workload install and repeated five-target
+  builds), it drags other, unrelated tests down with it — seen so far:
+  `CalibrationManagementTests.Preferring_and_forgetting_do_what_they_say`,
+  `TolerancesReachABuildTests.A_named_tolerance_supplies_the_clearance`,
+  `TolerancesReachABuildTests.An_explicit_clearance_still_wins`, and
+  `OptionRoundTripTests.Unticking_puts_each_one_back` — each confirmed to pass again when re-run
+  outside the full suite. This is shared-state flakiness under contention, not something any task in
+  this plan caused (nothing here touches tolerances, calibration, or option round-tripping). Treat
+  the baseline as "`Lego2STL.Tests` 653/653 always, `Lego2STL.UiTests` green except
+  `CalibrationPlateTests.With_nothing_to_build_from_it_says_so_and_writes_no_shapes` always, plus a
+  varying number of other tests that fail only under full-suite contention and pass in isolation" —
+  not "all green" — when judging whether a task regressed anything. If a task's full-suite run shows
+  a failure outside this known set, re-run that one test alone before concluding it is a regression.
+  Do not fix any of this as part of this plan; it is out of Phase D's scope.
 - **`act` cannot run this plan's new CI job.** It needs Xcode for the iOS/macOS legs, and act runs
   Linux containers only — the same limitation already recorded for the `windows` and `macos` jobs in
   `README-act.md`. There is no local route to verifying it; the first real signal is the job running
