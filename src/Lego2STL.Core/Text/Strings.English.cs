@@ -430,6 +430,10 @@ public sealed partial class Strings
             [TextKey.HelpOptScale] = "Scale as a percentage. 100 is true size.",
             [TextKey.HelpOptClearance] =
                 "Take every face in by this many millimetres, so printed parts clip together. Use the calibration command to find the right figure for your printer.",
+            [TextKey.HelpOptTolerances] =
+                "Take the clearance from a saved tolerance, by name. An explicit --clearance wins.",
+            [TextKey.ErrUnknownTolerancePreset] =
+                "No saved tolerance is called '{0}'. The ones that are: {1}.",
             [TextKey.HelpOptNoRepair] =
                 "Leave the gaps a shape's surface arrives with, instead of covering them over. Covering is on by default, because a shape with gaps is not a solid and no clearance can be applied to it.",
             [TextKey.HelpOptNoSeamRepair] =

@@ -444,6 +444,10 @@ public sealed partial class Strings
             [TextKey.HelpOptScale] = "Scala in percentuale. 100 è la grandezza reale.",
             [TextKey.HelpOptClearance] =
                 "Rientra ogni faccia di tanti millimetri, perché i pezzi stampati si incastrino. Il comando calibration serve a trovare il valore giusto per la propria stampante.",
+            [TextKey.HelpOptTolerances] =
+                "Prende la tolleranza da un preset salvato, per nome. Un --clearance esplicito vince.",
+            [TextKey.ErrUnknownTolerancePreset] =
+                "Nessuna tolleranza salvata si chiama '{0}'. Quelle che ci sono: {1}.",
             [TextKey.HelpOptNoRepair] =
                 "Lascia i buchi con cui arriva la superficie di una forma, invece di coprirli. La copertura è attiva di default, perché una forma con buchi non è un solido e non può ricevere nessun gioco.",
             [TextKey.HelpOptNoSeamRepair] =

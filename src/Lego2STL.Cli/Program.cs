@@ -41,6 +41,15 @@ internal static class Program
             Console.Error.WriteLine(words[TextKey.MsgCancelled]);
             return ExitFailure;
         }
+        catch (Core.Run.UnknownTolerancePresetException ex)
+        {
+            // Named separately from the catch below so the message can offer the names that do
+            // exist, which is what turns a refusal into something the reader can act on.
+            Console.Error.WriteLine($"{words[TextKey.MsgError]}: " + words.Format(
+                TextKey.ErrUnknownTolerancePreset, ex.Name, string.Join(", ", ex.Available)));
+
+            return ExitFailure;
+        }
         catch (Exception ex)
         {
             // Everything the tool throws deliberately carries a message meant for the

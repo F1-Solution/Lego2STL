@@ -4,6 +4,7 @@ using Lego2STL.Core.Colors;
 using Lego2STL.Core.Geometry;
 using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Plates;
+using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
 
 namespace Lego2STL.Cli.Commands;
@@ -74,10 +75,14 @@ internal sealed class PipelineOptions
             DefaultValueFactory = _ => 100.0,
         };
 
-        Clearance = new Option<double>("--clearance")
+        Clearance = new Option<double?>("--clearance")
         {
             Description = words[TextKey.HelpOptClearance],
-            DefaultValueFactory = _ => 0.0,
+        };
+
+        Tolerances = new Option<string?>("--tolerances")
+        {
+            Description = words[TextKey.HelpOptTolerances],
         };
 
         NoRepair = new Option<bool>("--no-repair") { Description = words[TextKey.HelpOptNoRepair] };
@@ -165,7 +170,9 @@ internal sealed class PipelineOptions
 
     public Option<double> Scale { get; }
 
-    public Option<double> Clearance { get; }
+    public Option<double?> Clearance { get; }
+
+    public Option<string?> Tolerances { get; }
 
     public Option<bool> NoRepair { get; }
 
@@ -209,7 +216,7 @@ internal sealed class PipelineOptions
         foreach (var option in new Option[]
         {
             IncludeSpares, CsvOnly, NoPlates, OutputDirectory, Delimiter, Ascii,
-            KeepOrigin, Scale, Clearance, NoRepair, NoSeamRepair, WeldTolerance,
+            KeepOrigin, Scale, Clearance, Tolerances, NoRepair, NoSeamRepair, WeldTolerance,
             PrintEverything,
             LDrawDirectory, LDrawCache, Offline, NoUnofficial,
             Printer, PlateSize, PlateSpacing,
@@ -227,6 +234,13 @@ internal sealed class PipelineOptions
 
         var csvOnly = parseResult.GetValue(CsvOnly);
         var noPlates = parseResult.GetValue(NoPlates);
+
+        // One resolver for both front ends, so the window and the command line cannot come to
+        // disagree about whether a preferred tolerance applies.
+        var clearance = ClearanceChoice.Resolve(
+            parseResult.GetValue(Clearance),
+            parseResult.GetValue(Tolerances),
+            TolerancePresets.Load());
 
         return new RunSettings
         {
@@ -250,7 +264,8 @@ internal sealed class PipelineOptions
 
             KeepOrigin = parseResult.GetValue(KeepOrigin),
             ScalePercent = parseResult.GetValue(Scale),
-            Clearance = parseResult.GetValue(Clearance),
+            Clearance = clearance.Millimetres,
+            ClearanceFrom = clearance.FromPreset,
             FillGaps = !parseResult.GetValue(NoRepair),
             NoSeamRepair = parseResult.GetValue(NoSeamRepair),
             PrintEverything = parseResult.GetValue(PrintEverything),

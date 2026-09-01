@@ -398,6 +398,8 @@ public enum TextKey
     HelpOptKeepOrigin,
     HelpOptScale,
     HelpOptClearance,
+    HelpOptTolerances,
+    ErrUnknownTolerancePreset,
     HelpOptNoRepair,
     HelpOptNoSeamRepair,
     HelpOptPrintEverything,
