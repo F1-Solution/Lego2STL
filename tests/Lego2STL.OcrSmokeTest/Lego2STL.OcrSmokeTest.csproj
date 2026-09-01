@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      Only the three mobile targets, read from the same MobileTargetFrameworks property
+      Lego2STL.Core.csproj appends in Task 1, so the three version suffixes stay pinned in
+      exactly one place: this project's whole purpose is proving the real recogniser on each
+      of them, so there is nothing for it to do on net10.0 or net10.0-windows, and adding
+      either would need a recogniser this project does not test.
+    -->
+    <TargetFrameworks>$(MobileTargetFrameworks)</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <ApplicationTitle>Lego2STL OCR Smoke Test</ApplicationTitle>
+    <ApplicationId>com.lego2stl.ocrsmoketest</ApplicationId>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsAndroidTarget)' != 'true'">
+    <Compile Remove="Platforms\Android\**\*.cs" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(IsAndroidTarget)' == 'true'">
+    <!--
+      Not the default root location: this project's manifest lives beside its other
+      per-platform files, so the SDK has to be told where to find it.
+    -->
+    <AndroidManifest>Platforms\Android\AndroidManifest.xml</AndroidManifest>
+    <!--
+      Must match the manifest's own minSdkVersion exactly, or the SDK refuses to build.
+      24, not the SDK's own default of 21: a transitive ML Kit dependency
+      (androidx.lifecycle.runtime) needs 23 or higher.
+    -->
+    <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <ItemGroup Condition="!$(TargetFramework.Contains('-ios'))">
+    <Compile Remove="Platforms\iOS\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!$(TargetFramework.Contains('-macos'))">
+    <Compile Remove="Platforms\MacOS\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Lego2STL.Core\Lego2STL.Core.csproj" />
+  </ItemGroup>
+
+</Project>

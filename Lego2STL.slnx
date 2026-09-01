@@ -7,5 +7,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/Lego2STL.Tests/Lego2STL.Tests.csproj" />
     <Project Path="tests/Lego2STL.UiTests/Lego2STL.UiTests.csproj" />
+    <Project Path="tests/Lego2STL.OcrSmokeTest/Lego2STL.OcrSmokeTest.csproj" />
   </Folder>
 </Solution>
