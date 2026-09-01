@@ -178,6 +178,8 @@ public sealed partial class Strings
                 + "nozzle or printer.",
             [TextKey.MsgClearanceApplied] =
                 "Took every face in by {2} mm on {0} of {1} shape(s).",
+            [TextKey.MsgClearanceFromPreset] =
+                "Clearance {0} mm, from the saved tolerance '{1}'.",
             [TextKey.MsgClearanceRefusedOpen] =
                 "{0} left at true size: their surfaces still have gaps, and pulling the faces in " +
                 "would drag the edges of those gaps too. Drop --no-repair so the gaps are covered first.",

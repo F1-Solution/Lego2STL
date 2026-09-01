@@ -412,4 +412,36 @@ public sealed class RunManifestTests
         read!.Parts.Should().Contain(p => p.LaidDown == "Axle");
         RunDocument.From(read, layout).Parts.Should().Contain(p => p.LaidDown == "Axle");
     }
+
+    /// <summary>
+    /// A clearance that came from a preset says so, because nothing on the command line will.
+    /// </summary>
+    /// <remarks>
+    /// This is the price of a preferred preset applying without being asked for. Every other
+    /// decision the tool makes is already recorded, including how each part was laid on the bed,
+    /// and a number that changes every dimension of every shape is not the one to leave out.
+    /// </remarks>
+    [Fact]
+    public async Task Where_the_clearance_came_from_is_recorded()
+    {
+        var layout = ARunFolder();
+        var outcome = APretendRun.Complete(layout) with
+        {
+            Settings = APretendRun.ASetting() with
+            {
+                Clearance = 0.15,
+                ClearanceFrom = "eSUN PLA+ black - A1",
+            },
+        };
+
+        var manifest = RunManifest.From(outcome, APretendRun.Started, APretendRun.Finished, null);
+
+        manifest.Settings.ClearanceFrom.Should().Be("eSUN PLA+ black - A1");
+
+        await RunManifest.WriteAsync(layout, manifest);
+        var (read, state) = RunManifest.Read(layout.ManifestPath);
+
+        state.Should().Be(ManifestState.Present);
+        read!.Settings.ClearanceFrom.Should().Be("eSUN PLA+ black - A1");
+    }
 }

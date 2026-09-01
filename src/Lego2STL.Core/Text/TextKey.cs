@@ -142,6 +142,7 @@ public enum TextKey
     CalibrationHow,
     CalibrationThen,
     MsgClearanceApplied,
+    MsgClearanceFromPreset,
     MsgClearanceRefusedOpen,
     MsgClearanceRefusedStillOpen,
     MsgClearanceRefusedThin,

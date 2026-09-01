@@ -41,6 +41,8 @@ public sealed record ManifestSettings
 
     public double Clearance { get; init; }
 
+    public string? ClearanceFrom { get; init; }
+
     public bool FillGaps { get; init; }
 
     public bool NoSeamRepair { get; init; }
@@ -89,6 +91,7 @@ public sealed record ManifestSettings
             KeepOrigin = settings.KeepOrigin,
             ScalePercent = settings.ScalePercent,
             Clearance = settings.Clearance,
+            ClearanceFrom = settings.ClearanceFrom,
             FillGaps = settings.FillGaps,
             NoSeamRepair = settings.NoSeamRepair,
             WeldTolerance = settings.WeldTolerance,
@@ -130,6 +133,7 @@ public sealed record ManifestSettings
             KeepOrigin = KeepOrigin,
             ScalePercent = ScalePercent,
             Clearance = Clearance,
+            ClearanceFrom = ClearanceFrom,
             FillGaps = FillGaps,
             NoSeamRepair = NoSeamRepair,
             WeldTolerance = WeldTolerance,

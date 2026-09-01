@@ -183,6 +183,8 @@ public sealed partial class Strings
                 + "stampante.",
             [TextKey.MsgClearanceApplied] =
                 "Ogni faccia rientrata di {2} mm su {0} forme di {1}.",
+            [TextKey.MsgClearanceFromPreset] =
+                "Tolleranza {0} mm, dal preset salvato '{1}'.",
             [TextKey.MsgClearanceRefusedOpen] =
                 "{0} lasciate a grandezza reale: la loro superficie ha ancora dei buchi, e " +
                 "rientrare le facce trascinerebbe anche i bordi di quei buchi. Togliere " +

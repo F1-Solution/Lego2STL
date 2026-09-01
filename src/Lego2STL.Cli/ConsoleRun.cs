@@ -129,6 +129,14 @@ internal static class ConsoleRun
             return;
         }
 
+        // Said out loud because a preferred tolerance applies without appearing on the command
+        // line, and a number that changes every dimension of every shape should not arrive silently.
+        if (outcome.Settings.ClearanceFrom is { Length: > 0 } preset)
+        {
+            Console.WriteLine("  " + words.Format(
+                TextKey.MsgClearanceFromPreset, outcome.Settings.Clearance, preset));
+        }
+
         Console.WriteLine("  " + words.Format(
             TextKey.MsgClearanceApplied,
             outcome.ClearedShapeCount,

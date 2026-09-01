@@ -113,6 +113,9 @@ public sealed record RunSettings
 
     public double Clearance { get; init; }
 
+    /// <summary>The tolerance preset the clearance came from, when it came from one.</summary>
+    public string? ClearanceFrom { get; init; }
+
     /// <summary>
     /// Cover over the gaps in a shape's surface, turning it into a solid.
     /// </summary>

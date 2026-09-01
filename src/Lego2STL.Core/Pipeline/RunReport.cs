@@ -192,6 +192,12 @@ public static class RunReport
                 outcome.Shapes.Count,
                 outcome.Settings.Clearance.ToString("0.###", CultureInfo.InvariantCulture)));
 
+            if (outcome.Settings.ClearanceFrom is { Length: > 0 } preset)
+            {
+                sb.AppendLine(words.Format(
+                    TextKey.MsgClearanceFromPreset, outcome.Settings.Clearance, preset));
+            }
+
             foreach (var refused in outcome.Shapes.Where(p => p.ClearanceRefusedBecause is not null))
             {
                 sb.AppendLine($"  {refused.PartNumber}: {Describe(words, refused)}");
