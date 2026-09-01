@@ -80,16 +80,33 @@ public static class PrintNotes
             sheet.AppendLine(words.Format(TextKey.PrintNotesNoPreset, name));
         }
 
-        sheet.AppendLine().AppendLine(words[TextKey.PrintNotesSettings]).AppendLine();
-
-        foreach (var (setting, value) in Profile)
-        {
-            sheet.Append("  ").Append(setting.PadRight(34)).AppendLine(value);
-        }
+        sheet.AppendLine().Append(Settings(words));
 
         sheet.AppendLine().AppendLine(words[TextKey.PrintNotesCalibration]).AppendLine();
         sheet.AppendLine(words[TextKey.PrintNotesCalibrationSteps]);
 
         return sheet.ToString();
+    }
+
+    /// <summary>
+    /// The starting profile on its own, for a sheet that is not this one.
+    /// </summary>
+    /// <remarks>
+    /// A calibration folder keeps one sheet rather than two, so it composes this into a document
+    /// of its own instead of getting a second file beside it.
+    /// </remarks>
+    public static string Settings(Strings words)
+    {
+        ArgumentNullException.ThrowIfNull(words);
+
+        var block = new StringBuilder();
+        block.AppendLine(words[TextKey.PrintNotesSettings]).AppendLine();
+
+        foreach (var (setting, value) in Profile)
+        {
+            block.Append("  ").Append(setting.PadRight(34)).AppendLine(value);
+        }
+
+        return block.ToString();
     }
 }

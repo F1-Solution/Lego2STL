@@ -66,4 +66,30 @@ public sealed class PrintNotesTests
         sheet.Should().NotBeNullOrWhiteSpace();
         sheet.Should().Contain("215", "the settings are the point, and they do not depend on a preset");
     }
+
+    /// <summary>
+    /// The settings block can be had on its own, for a sheet that is not this one.
+    /// </summary>
+    /// <remarks>
+    /// A calibration folder gets a single sheet under its own name, carrying the settings and
+    /// then its own map and instructions. Writing a second file called how-to-print.txt beside it
+    /// would leave two overlapping documents in one folder, which is exactly what the note was
+    /// written to prevent.
+    /// </remarks>
+    [Fact]
+    public void The_settings_block_is_available_without_the_rest_of_the_sheet()
+    {
+        var block = PrintNotes.Settings(Strings.English);
+
+        block.Should().Contain(Strings.English[TextKey.PrintNotesSettings]);
+        block.Should().Contain("215").And.Contain("0.16");
+        block.Should().NotContain(Strings.English[TextKey.PrintNotesTitle]);
+        block.Should().NotContain(Strings.English[TextKey.PrintNotesCalibration]);
+    }
+
+    /// <summary>The whole sheet still contains the block, because it is made of it.</summary>
+    [Fact]
+    public void The_whole_sheet_contains_the_block_verbatim() =>
+        PrintNotes.Write("A1", Strings.English)
+            .Should().Contain(PrintNotes.Settings(Strings.English));
 }
