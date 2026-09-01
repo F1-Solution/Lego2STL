@@ -36,6 +36,11 @@
     <Compile Remove="Platforms\iOS\**\*.cs" />
   </ItemGroup>
 
+  <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+    <!-- Not the default root location: this project's Info.plist lives with its other iOS files. -->
+    <InfoPlist>Platforms\iOS\Info.plist</InfoPlist>
+  </PropertyGroup>
+
   <ItemGroup Condition="!$(TargetFramework.Contains('-macos'))">
     <Compile Remove="Platforms\MacOS\**\*.cs" />
   </ItemGroup>

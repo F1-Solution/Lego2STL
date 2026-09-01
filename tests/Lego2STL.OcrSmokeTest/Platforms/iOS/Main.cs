@@ -1,9 +1,8 @@
+using UIKit;
+
 namespace Lego2STL.OcrSmokeTest.Platforms.iOS;
 
-// Body written in Task 9.
 public static class Program
 {
-    private static void Main(string[] args)
-    {
-    }
+    private static void Main(string[] args) => UIApplication.Main(args, null, typeof(AppDelegate));
 }
