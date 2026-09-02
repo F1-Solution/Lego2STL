@@ -3,5 +3,16 @@
   <!-- 24, not the SDK's default of 21: a transitive ML Kit dependency needs 23 or higher. -->
   <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="36" />
   <uses-permission android:name="android.permission.INTERNET" />
-  <application android:label="Lego2STL" android:allowBackup="true" />
+  <application android:label="Lego2STL" android:allowBackup="true">
+    <!-- The share sheet receives a content:// URI through this, or it cannot read the file at all. -->
+    <provider
+        android:name="androidx.core.content.FileProvider"
+        android:authorities="com.lego2stl.app.fileprovider"
+        android:exported="false"
+        android:grantUriPermissions="true">
+      <meta-data
+          android:name="android.support.FILE_PROVIDER_PATHS"
+          android:resource="@xml/file_paths" />
+    </provider>
+  </application>
 </manifest>

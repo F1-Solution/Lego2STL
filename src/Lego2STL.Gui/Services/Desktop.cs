@@ -9,57 +9,68 @@ namespace Lego2STL.Gui.Services;
 /// Hands a file or a folder to whatever the machine opens such things with.
 /// </summary>
 /// <remarks>
-/// Each desktop has its own way of being asked. Windows will open a path directly; macOS has
-/// "open"; the freedesktop convention is "xdg-open". Getting this wrong is not worth an error
-/// dialog - the buttons that use it are conveniences, and the folder is always named on screen
-/// as well, so someone can go there themselves.
+/// Each platform has its own way of being asked. Windows will open a path directly; macOS has
+/// "open"; the freedesktop convention is "xdg-open". Android and iOS have no equivalent, so
+/// they install a share-sheet handler instead. Getting this wrong is not worth an error dialog
+/// - the buttons that use it are conveniences, and the result is always named on screen too.
 /// </remarks>
 public static class Desktop
 {
+    public static IDesktopActions Handler { get; set; } = new ProcessStart();
+
     public static void Open(string path)
     {
-        if (string.IsNullOrWhiteSpace(path))
+        if (!string.IsNullOrWhiteSpace(path))
         {
-            return;
-        }
-
-        try
-        {
-            Start(path);
-        }
-        catch (Exception ex) when (ex is InvalidOperationException
-                                       or System.ComponentModel.Win32Exception
-                                       or PlatformNotSupportedException)
-        {
-            // Nothing to be done, and nothing worth interrupting for.
+            Handler.Open(path);
         }
     }
 
-    /// <summary>Opens the folder a file is in, rather than the file itself.</summary>
     public static void Reveal(string path)
     {
-        if (string.IsNullOrWhiteSpace(path))
+        if (!string.IsNullOrWhiteSpace(path))
         {
-            return;
-        }
-
-        var folder = Directory.Exists(path) ? path : Path.GetDirectoryName(path);
-
-        if (!string.IsNullOrEmpty(folder))
-        {
-            Open(folder);
+            Handler.Reveal(path);
         }
     }
 
-    private static void Start(string path)
+    private sealed class ProcessStart : IDesktopActions
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        public void Open(string path)
         {
-            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true })?.Dispose();
-            return;
+            try
+            {
+                Start(path);
+            }
+            catch (Exception ex) when (ex is InvalidOperationException
+                                           or System.ComponentModel.Win32Exception
+                                           or PlatformNotSupportedException)
+            {
+                // Nothing to be done, and nothing worth interrupting for.
+            }
         }
 
-        var opener = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "open" : "xdg-open";
-        Process.Start(new ProcessStartInfo(opener, [path]) { UseShellExecute = false })?.Dispose();
+        /// <summary>Opens the folder a file is in, rather than the file itself.</summary>
+        public void Reveal(string path)
+        {
+            var folder = Directory.Exists(path) ? path : Path.GetDirectoryName(path);
+
+            if (!string.IsNullOrEmpty(folder))
+            {
+                Open(folder);
+            }
+        }
+
+        private static void Start(string path)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true })?.Dispose();
+                return;
+            }
+
+            var opener = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "open" : "xdg-open";
+            Process.Start(new ProcessStartInfo(opener, [path]) { UseShellExecute = false })?.Dispose();
+        }
     }
 }

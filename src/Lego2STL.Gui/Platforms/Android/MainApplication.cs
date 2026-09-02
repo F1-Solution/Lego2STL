@@ -16,6 +16,7 @@ public sealed class MainApplication(nint handle, JniHandleOwnership ownership)
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
     {
         RunHomes.Current = new ApplicationStorageRunHome(UserSettings.StorageRoot);
+        Desktop.Handler = new AndroidShareActions();
 
         return base.CustomizeAppBuilder(builder).WithInterFont();
     }

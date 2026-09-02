@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Matches UserSettings.StorageRoot, which sits under Environment.SpecialFolder.LocalApplicationData
+     - the app's own files directory on Android. -->
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+  <files-path name="runs" path="Lego2STL/runs/" />
+</paths>

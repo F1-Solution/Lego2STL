@@ -12,6 +12,7 @@ public partial class AppDelegate : AvaloniaAppDelegate<App>
     protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
     {
         RunHomes.Current = new ApplicationStorageRunHome(UserSettings.StorageRoot);
+        Desktop.Handler = new AppleShareActions();
 
         return base.CustomizeAppBuilder(builder).WithInterFont();
     }
