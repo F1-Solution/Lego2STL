@@ -162,6 +162,24 @@ set number.
 
 ---
 
+## On a phone
+
+The same window runs on Android and iOS, over the same view models as the desktop one. A few
+things work differently because a phone is not a desktop:
+
+- A run's folder lives in the app's own storage rather than beside the input document, because
+  a picked document has no folder of its own to sit beside.
+- Results leave the phone through the share sheet, rather than by opening a folder.
+- The phone downloads only the LDraw geometry its own parts list needs, never the whole
+  library.
+- The iOS build is simulator-only for now — it needs an Apple Developer Program membership
+  before it can run on a real device.
+
+What is **not** on a phone: the `bricks` command, which makes a piece to a size rather than
+building a set — a desktop-only tool for now.
+
+---
+
 ## Building it
 
 ```
