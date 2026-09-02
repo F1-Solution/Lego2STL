@@ -12,12 +12,17 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        var model = new MainViewModel();
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            var model = new MainViewModel();
-
             desktop.MainWindow = new MainWindow { DataContext = model };
             desktop.ShutdownRequested += (_, _) => model.Dispose();
+        }
+        else if (ApplicationLifetime is ISingleViewApplicationLifetime single)
+        {
+            // A phone has no shutdown to hook: the view model lives as long as the process.
+            single.MainView = new MainView { DataContext = model };
         }
 
         base.OnFrameworkInitializationCompleted();
