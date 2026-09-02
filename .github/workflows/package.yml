@@ -188,7 +188,7 @@ jobs:
           api-level: 30
           # macos-latest runners are Apple Silicon (aarch64): the emulator needs an arm64
           # system image, or QEMU2 fails to boot it outright.
-          arch: arm64
+          arch: arm64-v8a
           target: google_apis
           # Above the action's own 600s default: a known source of flakiness on GitHub's
           # macOS runners even when nothing here is wrong - see ReactiveCircus/android-emulator-runner#160.
