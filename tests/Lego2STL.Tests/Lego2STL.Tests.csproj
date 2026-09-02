@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Lego2STL.Core\Lego2STL.Core.csproj" />
+    <ProjectReference Include="..\Lego2STL.MobileSmokeTest\Lego2STL.MobileSmokeTest.csproj" />
   </ItemGroup>
 
 </Project>

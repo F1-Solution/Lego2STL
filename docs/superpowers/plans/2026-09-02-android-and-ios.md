@@ -1707,6 +1707,35 @@ git add tests/Lego2STL.MobileSmokeTest tests/Lego2STL.Tests/Pipeline/SmokeFixtur
 git commit -m "feat: a smoke test that takes a parts list to a plate on a phone"
 ```
 
+> **What the real build corrected (Task 8).** Three things the plan's fixture snippet did not
+> survive contact with the actual pipeline, plus one machine-level surprise:
+>
+> 1. **The plan's `RunSettings` for the fixture omitted `Kind = InputKind.PartsList`.** Since
+>    `Kind` defaults to `InputKind.Document`, the pipeline tried to read the fixture's CSV as a
+>    PDF and failed immediately with "Could not find the version header comment". Added the
+>    missing `Kind`.
+> 2. **The parts list's third column, "Codice BrickLink", is the BrickLink *colour* code — an
+>    integer — not a part code**, despite the plan's row putting `cube` there. `PartsListCsv`
+>    parses it with `int.TryParse` and throws otherwise. Changed the row's third field to `11`;
+>    nothing downstream looks the value up for a fixture part that exists only in this file.
+> 3. **`Android.Util.Log.Info(...)` in `MainActivity.cs` doesn't compile** — this file's own
+>    namespace, `Lego2STL.MobileSmokeTest.Platforms.Android`, has a segment named `Android` that
+>    shadows the global one, the same class of clash Task 2 hit with `Application` and `Button`.
+>    Qualified it as `global::Android.Util.Log.Info(...)`.
+> 4. **This machine's installed Android SDK (`Microsoft.Android.Sdk.Windows` 36.1.69) developed a
+>    reproducible `XAGJS7000` failure** ("Mono.Android.dll ... being used by another process",
+>    sometimes a Cecil metadata-write crash instead) inside `GenerateJavaStubs`'s parallel type
+>    scan, for *every* Android project in the repo including the pre-existing, previously-working
+>    `Lego2STL.OcrSmokeTest` — not something this task's code caused. `dotnet workload repair`
+>    itself failed with a fatal MSI error (`0x00000643`), which needs elevation or a reboot this
+>    session couldn't provide. The one thing that reliably compiles the Android target on this
+>    machine right now is `dotnet build Lego2STL.slnx -c Debug` — the actual Global Constraints
+>    build gate — which built all three Android projects cleanly; an isolated
+>    `dotnet build ... -c Release -f net10.0-android36.0` on `Lego2STL.MobileSmokeTest` or
+>    `Lego2STL.OcrSmokeTest` alone reproduces the failure consistently. Whoever picks this up next:
+>    try `dotnet workload repair` again after a reboot, or from an elevated prompt, before assuming
+>    the code is at fault.
+
 ---
 
 ### Task 9: CI builds the applications
