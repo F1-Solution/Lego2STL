@@ -40,3 +40,36 @@ simulator, launches the smoke app on each, and greps its log for `SMOKE PASS`.
 plan's own Task 10 Step 2. Expect to correct the simulator device name, the `.app` search
 path, and the Android activity name against what the runner actually reports, in that
 order.
+
+## macOS universal binary — `Lego2STL.Gui.deps.json` fusion
+
+**What happened:** the first real `macos` CI run reached `fuse-universal.sh` and failed:
+
+```
+fused ./libpdfium.dylib                        x86_64 arm64
+./Lego2STL.Gui.deps.json differs between the two builds and is not a program.
+Something in the build is not reproducible; refusing to pick one.
+```
+
+The script's assumption — that everything but the native `.dylib`/launcher binaries is
+byte-identical between an `osx-x64` and an `osx-arm64` publish of the same project — is
+wrong for `deps.json` specifically. A framework-dependent, RID-specific publish embeds its
+own RID in the file (as part of the runtime target name), so the two payloads' copies
+never match by design. This was never caught before because `packaging/lib/payload.sh`'s
+missing execute bit always failed the job earlier, until that was fixed.
+
+**What was done:** `fuse-universal.sh` now special-cases `*.deps.json` and keeps the Intel
+(`osx-x64`) copy rather than failing.
+
+**Not verified:** whether the fused payload's PDFium/SkiaSharp/HarfBuzz native libraries
+actually load correctly when launched on real Apple silicon hardware with the Intel
+`deps.json` in place — there is no macOS machine available to this session to test that.
+The universal `.dylib`s themselves are confirmed fused (`lipo -archs` reports both
+architectures), but `deps.json`'s RID-specific `runtimeTargets` section is what maps a
+native asset to the architecture that should load it, and that section was written for
+`osx-x64` only. If a Mac running this build fails to load a native library, this is the
+first place to look — the fix should likely merge both files' `runtimeTargets` sections
+rather than pick one.
+
+**Real signal instead:** install and run the packaged app on both an Intel Mac and an
+Apple silicon Mac.
