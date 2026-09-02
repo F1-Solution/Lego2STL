@@ -5,6 +5,10 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 
 ## [Unreleased]
 
+### Fixed
+
+- The version-lookup step in CI no longer fails with "Permission denied".
+
 ## [0.2.0] - 2026-09-02
 
 ### Added
