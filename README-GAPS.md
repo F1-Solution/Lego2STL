@@ -41,7 +41,7 @@ plan's own Task 10 Step 2. Expect to correct the simulator device name, the `.ap
 path, and the Android activity name against what the runner actually reports, in that
 order.
 
-## macOS universal binary — `Lego2STL.Gui.deps.json` fusion
+## macOS universal binary — non-reproducible files between the two publishes
 
 **What happened:** the first real `macos` CI run reached `fuse-universal.sh` and failed:
 
@@ -53,23 +53,34 @@ Something in the build is not reproducible; refusing to pick one.
 
 The script's assumption — that everything but the native `.dylib`/launcher binaries is
 byte-identical between an `osx-x64` and an `osx-arm64` publish of the same project — is
-wrong for `deps.json` specifically. A framework-dependent, RID-specific publish embeds its
-own RID in the file (as part of the runtime target name), so the two payloads' copies
-never match by design. This was never caught before because `packaging/lib/payload.sh`'s
-missing execute bit always failed the job earlier, until that was fixed.
+wrong for `deps.json`: a framework-dependent, RID-specific publish embeds its own RID in
+the file (as part of the runtime target name), so the two payloads' copies never match by
+design. This was never caught before because `packaging/lib/payload.sh`'s missing execute
+bit always failed the job earlier, until that was fixed.
 
-**What was done:** `fuse-universal.sh` now special-cases `*.deps.json` and keeps the Intel
-(`osx-x64`) copy rather than failing.
+Fixing that one revealed a second, less explicable case at the same check:
+`Lego2STL.Gui.dll` — the managed assembly itself — also differs between the two publishes.
+There is no `RuntimeIdentifier`-conditional code anywhere in the source, so this is not a
+real logic difference; the leading theory was an obj-directory path embedded in the PE
+debug directory (each RID publishes into its own `obj/Release/net10.0/<rid>/`), which
+`-p:ContinuousIntegrationBuild=true` in `payload.sh` is supposed to prevent. Adding it did
+not change the result, so the actual cause is still unknown.
 
-**Not verified:** whether the fused payload's PDFium/SkiaSharp/HarfBuzz native libraries
-actually load correctly when launched on real Apple silicon hardware with the Intel
-`deps.json` in place — there is no macOS machine available to this session to test that.
-The universal `.dylib`s themselves are confirmed fused (`lipo -archs` reports both
-architectures), but `deps.json`'s RID-specific `runtimeTargets` section is what maps a
-native asset to the architecture that should load it, and that section was written for
-`osx-x64` only. If a Mac running this build fails to load a native library, this is the
-first place to look — the fix should likely merge both files' `runtimeTargets` sections
-rather than pick one.
+**What was done:** rather than special-case each file as one is found, `fuse-universal.sh`
+now treats any non-Mach-O difference the same way: log it loudly as a known limitation and
+keep the Intel (`osx-x64`) copy, rather than failing the build.
+
+**Not verified:** whether the fused payload actually runs correctly on real Apple silicon
+hardware. The universal `.dylib`s and the two program launchers are confirmed fused
+(`lipo -archs` reports both architectures on each), but everything else in the payload —
+`deps.json` included — is the Intel build's copy, unverified on arm64. If a Mac running
+this build behaves oddly on Apple silicon, start here:
+- `deps.json`'s RID-specific `runtimeTargets` section maps a native asset to the
+  architecture that should load it, and was written for `osx-x64` only; the fix likely
+  needs to merge both files' `runtimeTargets` sections rather than pick one.
+- Whatever makes `Lego2STL.Gui.dll` differ is still unknown; diffing the two publishes'
+  intermediate `obj` output (not just the final `.dll`) on an actual Mac would be the next
+  step, since that is exactly what this session could not do.
 
 **Real signal instead:** install and run the packaged app on both an Intel Mac and an
 Apple silicon Mac.

@@ -24,14 +24,13 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 - The Linux and macOS packaging steps in CI no longer fail with "Permission denied".
 - The iOS build steps in CI no longer fail over an Xcode version newer than the .NET for iOS
   workload supports.
-- The macOS packaging step no longer refuses to fuse the universal binary over the two
-  publishes' `deps.json` files legitimately differing by architecture. **Known limitation:**
-  the Intel one is kept as-is, unverified so far on real Apple silicon hardware.
 - The iOS simulator build steps in CI no longer hang for over an hour: they now build with
   the interpreter, which a simulator supports directly, instead of the ahead-of-time compiler a
   real device needs.
-- The macOS packaging step no longer refuses to fuse the universal binary over the two
-  publishes' assemblies differing only by the build path embedded in each.
+- The macOS packaging step no longer refuses to fuse the universal binary over files that
+  differ between the two publishes for reasons other than architecture. **Known limitation:**
+  the Intel copy of each such file is kept as-is, unverified so far on real Apple silicon
+  hardware — see `README-GAPS.md`.
 - The Android emulator step in CI gets more time to boot before giving up.
 
 ## [0.2.0] - 2026-09-02
