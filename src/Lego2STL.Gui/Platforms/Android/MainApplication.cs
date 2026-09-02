@@ -2,6 +2,8 @@ using Android.App;
 using Android.Runtime;
 using Avalonia;
 using Avalonia.Android;
+using Lego2STL.Core.Run;
+using Lego2STL.Gui.Services;
 
 namespace Lego2STL.Gui.Platforms.Android;
 
@@ -11,6 +13,10 @@ namespace Lego2STL.Gui.Platforms.Android;
 public sealed class MainApplication(nint handle, JniHandleOwnership ownership)
     : AvaloniaAndroidApplication<App>(handle, ownership)
 {
-    protected override AppBuilder CustomizeAppBuilder(AppBuilder builder) =>
-        base.CustomizeAppBuilder(builder).WithInterFont();
+    protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
+    {
+        RunHomes.Current = new ApplicationStorageRunHome(UserSettings.StorageRoot);
+
+        return base.CustomizeAppBuilder(builder).WithInterFont();
+    }
 }

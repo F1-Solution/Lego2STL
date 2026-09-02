@@ -65,6 +65,13 @@ public sealed class UserSettings
 
     public static string FilePath => AppDataDirectory.File("interface.json");
 
+    /// <summary>Where runs go when there is nowhere beside the input to write.</summary>
+    public static string StorageRoot { get; } =
+        Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Lego2STL",
+            "runs");
+
     private static readonly JsonSerializerOptions Format = new() { WriteIndented = true };
 
     public static UserSettings Load()

@@ -1073,6 +1073,13 @@ git add src/Lego2STL.Core/Run/ApplicationStorageRunHome.cs src/Lego2STL.Gui/Serv
 git commit -m "feat: a run has a home on a platform with nowhere beside the input to write"
 ```
 
+> **What the real build corrected (Task 5).** One carry-over from Task 2's discovery: the plan says
+> to set `RunHomes.Current` "in `MainActivity.CustomizeAppBuilder` and `AppDelegate.CustomizeAppBuilder`",
+> but Task 2 already found that `CustomizeAppBuilder` lives on `MainApplication` on Android (the
+> `AvaloniaAndroidApplication<App>` subclass), not on `MainActivity` — `AvaloniaMainActivity` carries
+> no such override in this Avalonia version. Set it in `MainApplication.CustomizeAppBuilder` instead;
+> the iOS side is exactly as the plan describes, in `AppDelegate.CustomizeAppBuilder`.
+
 ---
 
 ### Task 6: Results leave by a share sheet

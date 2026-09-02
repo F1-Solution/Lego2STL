@@ -521,7 +521,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
 
         try
         {
-            var runner = new PipelineRunner(Say, new Watcher(Report));
+            var runner = new PipelineRunner(Say, new Watcher(Report), RunHomes.Current);
             var outcome = await runner.RunAsync(settings, _running.Token).ConfigureAwait(true);
 
             Replace(RunDocument.From(
