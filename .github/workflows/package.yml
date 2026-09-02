@@ -95,6 +95,33 @@ jobs:
       - name: Build Core for macos
         run: dotnet build src/Lego2STL.Core/Lego2STL.Core.csproj -c Release -f net10.0-macos26.0
 
+      - name: Build the window for android
+        run: dotnet build src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-android36.0
+
+      - name: Package the APK
+        run: dotnet publish src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-android36.0 -p:TargetFrameworks=net10.0-android36.0
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: src/Lego2STL.Gui/bin/Release/net10.0-android36.0/publish/*.apk
+          if-no-files-found: error
+
+      # The simulator needs no certificate. A device build does, and there is no Apple
+      # Developer Program membership yet, so the signing step below stays switched off
+      # until there are secrets to switch it on with.
+      - name: Build the window for the iOS simulator
+        run: dotnet build src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64
+
+      - name: Sign for a device
+        if: false
+        run: dotnet publish src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-ios26.0 -p:TargetFrameworks=net10.0-ios26.0 -p:RuntimeIdentifier=ios-arm64 -p:CodesignKey="${{ secrets.IOS_SIGNING_IDENTITY }}" -p:CodesignProvision="${{ secrets.IOS_PROVISIONING_PROFILE }}"
+
+      - name: Build the pipeline smoke test
+        run: |
+          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0
+          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64
+
   windows:
     name: windows
     needs: [test, version]

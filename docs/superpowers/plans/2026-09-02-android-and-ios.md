@@ -1795,6 +1795,22 @@ git add .github/workflows/package.yml PROGRESS.md
 git commit -m "ci: build the Android package and the iOS simulator application"
 ```
 
+> **What the real build corrected (Task 9).** Step 2's local check — `dotnet publish
+> src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-android36.0
+> -p:TargetFrameworks=net10.0-android36.0` — hits the same `XAGJS7000` failure Task 8 already
+> found on this machine's `Microsoft.Android.Sdk.Windows` 36.1.69, this time on `Lego2STL.Gui`
+> itself: `GenerateJavaStubs`'s parallel Java-type scan across the four default Android RIDs races
+> to read the shared `Mono.Android.dll` pack file. Reproduced on a clean rebuild (not flaky), and
+> narrowed further: `dotnet build ... -c Debug -f net10.0-android36.0` succeeds; `dotnet build
+> ... -c Release -f net10.0-android36.0` (no publish) fails identically — so it is Release's
+> marshal-method rewriting that trips the race, not `publish` specifically. Nothing in Tasks 1-8
+> touches Android packaging or marshal methods, so this is the same machine-level SDK issue, not
+> a defect in this task's yaml. Step 2 as written cannot be satisfied on this machine; the
+> substitute local signal used instead was `dotnet build Lego2STL.slnx -c Debug` (the Global
+> Constraints build gate), which built the Android target cleanly. The real signal for the Release
+> publish path is CI's `mobile` job, which runs on `macos-latest` and does not share this
+> machine's SDK install.
+
 ---
 
 ### Task 10: CI runs it on an emulator and a simulator
