@@ -32,14 +32,19 @@ public sealed class PipelineRunner
 {
     private readonly Action<string> _log;
     private readonly IProgress<RunProgress>? _progress;
+    private readonly IRunHome _home;
 
     /// <summary>What "stopped while building shapes, 38 of 91" is read from.</summary>
     private RunProgress? _lastProgress;
 
-    public PipelineRunner(Action<string>? log = null, IProgress<RunProgress>? progress = null)
+    public PipelineRunner(
+        Action<string>? log = null,
+        IProgress<RunProgress>? progress = null,
+        IRunHome? home = null)
     {
         _log = log ?? (_ => { });
         _progress = progress;
+        _home = home ?? new BesideTheInputRunHome();
     }
 
     /// <remarks>
@@ -59,7 +64,7 @@ public sealed class PipelineRunner
             return RunOutcome.Failure(settings, string.Join(" ", problems));
         }
 
-        var layout = RunLayout.Plan(settings);
+        var layout = _home.Plan(settings);
         var started = DateTimeOffset.UtcNow;
         var recorded = false;
 
@@ -250,7 +255,7 @@ public sealed class PipelineRunner
         // Worked out before the reading rather than after it, because a page's picture of a
         // part has to be filed while the page is in hand. The folder itself is still made
         // only when there is something to put in it.
-        var layout = RunLayout.Plan(settings)!;
+        var layout = _home.Plan(settings)!;
 
         Report(RunStage.ReadingDocument, 0, pages.Count);
 
@@ -506,7 +511,7 @@ public sealed class PipelineRunner
 
         notes.AddRange(list.Notes);
 
-        var layout = RunLayout.Plan(settings)!;
+        var layout = _home.Plan(settings)!;
         layout.CreateDirectories();
 
         return (list, layout, []);
@@ -523,7 +528,7 @@ public sealed class PipelineRunner
 
         notes.AddRange(list.Notes);
 
-        var layout = RunLayout.Plan(settings)!;
+        var layout = _home.Plan(settings)!;
         layout.CreateDirectories();
 
         return (list, layout, []);
