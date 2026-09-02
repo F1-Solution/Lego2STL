@@ -122,6 +122,51 @@ jobs:
           dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0
           dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64
 
+  mobile-smoke:
+    name: mobile smoke
+    needs: [mobile]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install the mobile workloads
+        run: dotnet workload install android ios
+
+      # One launch and one log line each. Nothing here taps anything, which is what keeps an
+      # emulator job worth having: a mis-timed tap is the usual reason they go flaky.
+      - name: Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          target: google_apis
+          script: |
+            dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -t:Install
+            adb logcat -c
+            adb shell am start -n com.lego2stl.pipelinesmoketest/.MainActivity
+            timeout 180 adb logcat -s Lego2STL:I -m 1 | tee smoke-android.txt
+            grep -q "SMOKE PASS" smoke-android.txt
+
+      - name: iOS
+        run: |
+          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64
+          APP=$(find tests/Lego2STL.MobileSmokeTest/bin/Release/net10.0-ios26.0 -name "*.app" -maxdepth 3 | head -1)
+          xcrun simctl boot "iPhone 16" || true
+          xcrun simctl install booted "$APP"
+          xcrun simctl launch --console-pty booted com.lego2stl.pipelinesmoketest | tee smoke-ios.txt
+          grep -q "SMOKE PASS" smoke-ios.txt
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-smoke-logs
+          path: smoke-*.txt
+          if-no-files-found: ignore
+
   windows:
     name: windows
     needs: [test, version]
