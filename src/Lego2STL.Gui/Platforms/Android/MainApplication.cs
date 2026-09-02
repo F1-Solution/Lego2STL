@@ -17,6 +17,7 @@ public sealed class MainApplication(nint handle, JniHandleOwnership ownership)
     {
         RunHomes.Current = new ApplicationStorageRunHome(UserSettings.StorageRoot);
         Desktop.Handler = new AndroidShareActions();
+        RunDefaults.AllowFullArchive = false;
 
         return base.CustomizeAppBuilder(builder).WithInterFont();
     }

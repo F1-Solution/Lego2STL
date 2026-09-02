@@ -104,6 +104,8 @@ public sealed partial class Strings
             [TextKey.MsgLDrawDownloading] =
                 "Downloading the LDraw library from {0} (about 145 MB, once).",
             [TextKey.MsgLDrawReady] = "LDraw library ready: {0} files, cached at {1}.",
+            [TextKey.MsgLDrawArchiveSkipped] =
+                "Not downloading the whole library here; only the files this run needs.",
 
             // Running.
             [TextKey.MsgPagesInDocument] = "{0}: {1} pages.",

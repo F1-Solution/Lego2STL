@@ -13,6 +13,7 @@ public partial class AppDelegate : AvaloniaAppDelegate<App>
     {
         RunHomes.Current = new ApplicationStorageRunHome(UserSettings.StorageRoot);
         Desktop.Handler = new AppleShareActions();
+        RunDefaults.AllowFullArchive = false;
 
         return base.CustomizeAppBuilder(builder).WithInterFont();
     }

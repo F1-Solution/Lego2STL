@@ -88,6 +88,9 @@ public enum TextKey
     MsgLDrawDownloading,
     MsgLDrawReady,
 
+    /// <summary>Said instead of downloading the whole library, when a run has capped it off.</summary>
+    MsgLDrawArchiveSkipped,
+
     // Running.
     MsgPagesInDocument,
     MsgReadingPages,

@@ -9,6 +9,7 @@ using Lego2STL.Core.Pipeline;
 using Lego2STL.Core.Plates;
 using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
+using Lego2STL.Gui.Services;
 
 namespace Lego2STL.Gui.ViewModels;
 
@@ -263,6 +264,7 @@ public sealed partial class RunOptionsViewModel : ViewModelBase
             LDrawCache = Blank(LDrawCache),
             Offline = Offline,
             IncludeUnofficial = IncludeUnofficial,
+            AllowFullArchive = RunDefaults.AllowFullArchive,
 
             Printer = Printer,
             PlateSize = Blank(PlateSize),

@@ -106,6 +106,9 @@ public sealed partial class Strings
             [TextKey.MsgLDrawDownloading] =
                 "Scarico la libreria LDraw da {0} (circa 145 MB, una volta sola).",
             [TextKey.MsgLDrawReady] = "Libreria LDraw pronta: {0} file, in cache in {1}.",
+            [TextKey.MsgLDrawArchiveSkipped] =
+                "La libreria completa non viene scaricata qui; solo i file necessari a questa "
+                + "elaborazione.",
 
             // Esecuzione.
             [TextKey.MsgPagesInDocument] = "{0}: {1} pagine.",

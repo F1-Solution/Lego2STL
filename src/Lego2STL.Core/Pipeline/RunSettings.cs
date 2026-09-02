@@ -145,6 +145,9 @@ public sealed record RunSettings
 
     public bool IncludeUnofficial { get; init; } = true;
 
+    /// <summary>Whether a run may download the whole library, rather than only the files it needs.</summary>
+    public bool AllowFullArchive { get; init; } = true;
+
     // ---- Plates ------------------------------------------------------------------------
 
     public string Printer { get; init; } = PrintBeds.Default.Name;
@@ -207,6 +210,7 @@ public sealed record RunSettings
         CacheDirectory = LDrawCache,
         Offline = Offline,
         IncludeUnofficial = IncludeUnofficial,
+        AllowFullArchive = AllowFullArchive,
     };
 
     public PackingOptions PackingOptions => new()

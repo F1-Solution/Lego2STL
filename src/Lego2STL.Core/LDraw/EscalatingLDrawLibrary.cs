@@ -26,6 +26,9 @@ public sealed record LDrawSourceOptions
     /// <summary>Where the whole library is downloaded from when it comes to that.</summary>
     public string CompleteArchiveUrl { get; init; } = "https://library.ldraw.org/library/updates/complete.zip";
 
+    /// <summary>Whether the escalation may end in the whole 144 MB library; false on a phone.</summary>
+    public bool AllowFullArchive { get; init; } = true;
+
     public string ResolvedCacheDirectory =>
         CacheDirectory ?? Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -82,7 +85,7 @@ public sealed class EscalatingLDrawLibrary : ILDrawLibrary, IDisposable
 
         // A previously downloaded archive counts as local: no reason to fetch anything.
         var archivePath = CompleteArchivePath();
-        if (_local is null && File.Exists(archivePath))
+        if (_local is null && _options.AllowFullArchive && File.Exists(archivePath))
         {
             _complete = ZipLDrawLibrary.Open(archivePath, _words);
             _owned.Add(_complete);
@@ -137,8 +140,16 @@ public sealed class EscalatingLDrawLibrary : ILDrawLibrary, IDisposable
             if (_perFile.RefusalCount >= _options.RefusalsBeforeFullDownload)
             {
                 _log(_words.Format(TextKey.MsgLDrawRefused, _perFile.RefusalCount));
-                _perFileAbandoned = true;
-                await DownloadCompleteAsync(cancellationToken).ConfigureAwait(false);
+
+                if (_options.AllowFullArchive)
+                {
+                    _perFileAbandoned = true;
+                    await DownloadCompleteAsync(cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    _log(_words[TextKey.MsgLDrawArchiveSkipped]);
+                }
             }
 
             if (fetched is not null)
@@ -153,7 +164,7 @@ public sealed class EscalatingLDrawLibrary : ILDrawLibrary, IDisposable
             }
         }
 
-        if (_complete is null)
+        if (_complete is null && _options.AllowFullArchive)
         {
             await DownloadCompleteAsync(cancellationToken).ConfigureAwait(false);
         }
