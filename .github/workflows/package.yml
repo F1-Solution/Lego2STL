@@ -5,10 +5,11 @@
 # which ship only with macOS. So each is built where it belongs and the results are collected
 # together. None of the three carries .NET 10; each fetches it when the machine has none.
 #
-# Pushing a tag of the form v1.2.0 builds everything and publishes a release. Running it by
-# hand builds the same packages and leaves them as artifacts, without publishing anything.
+# Pushing a tag of the form v1.2.0 builds everything and publishes a release. A push or merge
+# to main, or running it by hand, builds the same packages and leaves them as artifacts,
+# without publishing anything.
 #
-# No version is ever passed in, on either trigger. It comes from one place only: the <Version>
+# No version is ever passed in, on any trigger. It comes from one place only: the <Version>
 # element on Lego2STL.Core.csproj (see packaging/version.sh and CLAUDE.md). A tag still gates
 # whether a run publishes, and the release job checks the tag against that version before it
 # publishes anything, so the two cannot quietly drift apart.
@@ -17,6 +18,7 @@ name: package
 
 on:
   push:
+    branches: [main]
     tags: ['v*']
   workflow_dispatch: {}
 
@@ -56,12 +58,17 @@ jobs:
       # The whole suite runs on Windows, because reading a document needs the recogniser that
       # is part of Windows. Everything it covers is the same code the other systems run.
       #
-      # -p:TargetFrameworks forces every project in the graph to this one framework. Without
-      # it, restore evaluates Core's full TargetFrameworks list - including the android, ios
-      # and macos targets the mobile job below builds - and fails outright if this runner
-      # has not got those workloads installed, which it has no reason to for a job that only
-      # runs the Windows-only test suite.
-      - run: dotnet test --configuration Release --nologo -p:TargetFrameworks=net10.0-windows10.0.19041.0
+      # Only the two real test projects, not the whole solution: Lego2STL.OcrSmokeTest builds
+      # only for the mobile targets and has no Windows entry point, so running against the
+      # solution and forcing every project onto net10.0-windows breaks it.
+      #
+      # -p:TargetFrameworks forces each project onto this one framework. Without it, restore
+      # evaluates Core's full TargetFrameworks list - including the android, ios and macos
+      # targets the mobile job below builds - and fails outright if this runner has not got
+      # those workloads installed, which it has no reason to for a job that only runs the
+      # Windows-only test suite.
+      - run: dotnet test tests/Lego2STL.Tests --configuration Release --nologo -p:TargetFrameworks=net10.0-windows10.0.19041.0
+      - run: dotnet test tests/Lego2STL.UiTests --configuration Release --nologo -p:TargetFrameworks=net10.0-windows10.0.19041.0
 
   mobile:
     name: mobile

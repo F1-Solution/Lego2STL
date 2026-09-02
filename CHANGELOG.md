@@ -5,9 +5,15 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 
 ## [Unreleased]
 
+### Added
+
+- CI also runs on every push or merge to `main`, not only on a version tag or a manual run.
+
 ### Fixed
 
 - The version-lookup step in CI no longer fails with "Permission denied".
+- The Windows test step in CI no longer fails to build; it now runs only the two real test
+  projects instead of the whole solution.
 
 ## [0.2.0] - 2026-09-02
 
