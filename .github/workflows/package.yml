@@ -185,6 +185,9 @@ jobs:
           api-level: 30
           arch: x86_64
           target: google_apis
+          # Above the action's own 600s default: a known source of flakiness on GitHub's
+          # macOS runners even when nothing here is wrong - see ReactiveCircus/android-emulator-runner#160.
+          emulator-boot-timeout: 900
           # android-x64, not arm64: it has to match arch: x86_64 above, or Install puts a build
           # on the emulator it cannot run.
           script: |

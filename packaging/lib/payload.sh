@@ -29,9 +29,15 @@ for project in Cli Gui; do
     # one -f selects - this RID paired with a mobile framework has no runtime pack, which
     # NuGet reports as a Mono runtime pack it cannot find. Forcing TargetFrameworks down to
     # the one this script actually wants avoids evaluating the other four at all.
+    #
+    # ContinuousIntegrationBuild=true, alongside Directory.Build.props' own Deterministic=true:
+    # each RID publishes into its own obj directory, and without this the compiler embeds that
+    # path into the assembly's debug directory, so an otherwise identical build for osx-x64 and
+    # osx-arm64 differs by nothing but that path - which is exactly the mismatch
+    # fuse-universal.sh is right to refuse to paper over on its own.
     dotnet publish "$root/src/Lego2STL.$project/Lego2STL.$project.csproj" \
         -c Release -f "$framework" -r "$rid" \
-        -p:Version="$version" -p:TargetFrameworks="$framework" \
+        -p:Version="$version" -p:TargetFrameworks="$framework" -p:ContinuousIntegrationBuild=true \
         -o "$work/$project" --nologo
 done
 
