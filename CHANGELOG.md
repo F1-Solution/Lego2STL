@@ -22,6 +22,8 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
   assembly.
 - The iOS simulator build steps in CI no longer refuse to run without trimming enabled.
 - The Linux and macOS packaging steps in CI no longer fail with "Permission denied".
+- The iOS build steps in CI no longer fail over an Xcode version newer than the .NET for iOS
+  workload supports.
 
 ## [0.2.0] - 2026-09-02
 
