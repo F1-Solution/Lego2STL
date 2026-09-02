@@ -127,10 +127,11 @@ jobs:
       # Developer Program membership yet, so the signing step below stays switched off
       # until there are secrets to switch it on with.
       #
-      # Unlike Android, iOS refuses a RuntimeIdentifier without trimming at all rather than
-      # just AOT - MtouchLink=None is the SDK's own way to ask for a RID with none.
+      # Unlike Android, iOS refuses a RuntimeIdentifier without PublishTrimmed=true, no way
+      # around it - and MtouchLink=None is what then keeps trimming from actually removing
+      # anything, since this step exists to prove the window compiles, not to trim it.
       - name: Build the window for the iOS simulator
-        run: dotnet build src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:MtouchLink=None
+        run: dotnet build src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:PublishTrimmed=true -p:MtouchLink=None
 
       - name: Sign for a device
         if: false
@@ -142,7 +143,7 @@ jobs:
       - name: Build the pipeline smoke test
         run: |
           dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:RuntimeIdentifier=android-arm64 -p:RunAOTCompilation=false
-          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:MtouchLink=None
+          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:PublishTrimmed=true -p:MtouchLink=None
 
   mobile-smoke:
     name: mobile smoke
@@ -177,7 +178,7 @@ jobs:
 
       - name: iOS
         run: |
-          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:MtouchLink=None
+          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:PublishTrimmed=true -p:MtouchLink=None
           APP=$(find tests/Lego2STL.MobileSmokeTest/bin/Release/net10.0-ios26.0 -name "*.app" -maxdepth 3 | head -1)
           xcrun simctl boot "iPhone 16" || true
           xcrun simctl install booted "$APP"
