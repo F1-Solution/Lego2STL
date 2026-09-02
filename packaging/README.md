@@ -24,7 +24,12 @@ Building the thing people install, for Windows, Linux and macOS.
 ./packaging/build-unix.sh macos universal 1.2.3
 ```
 
-Everything lands in `artifacts/dist`.
+Everything lands in `artifacts/dist`. `-Version`/the trailing argument here is for building one
+package by hand. The real workflow, `packaging/local-windows.ps1` and `packaging/act/run.*`
+never pass one — they read it from `<Version>` on `src/Lego2STL.Core/Lego2STL.Core.csproj` via
+`packaging/version.sh`, so a package built through any of those always carries the version the
+code itself claims. See [README-act.md](../README-act.md#versioning) and
+[CLAUDE.md](../CLAUDE.md).
 
 The Windows installer needs the WiX toolset, which is a .NET tool, and three extensions:
 

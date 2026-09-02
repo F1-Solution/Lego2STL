@@ -24,12 +24,7 @@
 name: package (local)
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: Version to stamp on the packages
-        required: false
-        default: 0.0.0-local
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -55,9 +50,7 @@ jobs:
 
       - name: Work out the version
         id: pick
-        env:
-          RAW: ${{ inputs.version || github.ref_name }}
-        run: ./packaging/version.sh "$RAW"
+        run: ./packaging/version.sh
 
   linux:
     name: linux

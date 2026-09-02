@@ -12,12 +12,13 @@
   test, windows, macos and release jobs are out of reach locally. For the Windows one use
   packaging/local-windows.ps1 instead. See README-act.md.
 
+  The version is never passed in here either - it comes from Lego2STL.Core's <Version>
+  element, same as the real workflow. This script only prints it before building, so a
+  stale csproj is obvious before ten minutes are spent on it.
+
   Needs Docker Desktop running with the Linux engine, and act on the path.
   The first run pulls about 1.1 GB of image and then downloads the .NET SDK inside it, so
   allow ten to fifteen minutes. Later runs are much quicker.
-
-.PARAMETER Version
-  The version to stamp on the packages. Must look like 1.2.0, or 1.2.0-rc1.
 
 .PARAMETER Job
   Run only one job: version, or linux. Omit to run both.
@@ -27,14 +28,12 @@
 
 .EXAMPLE
   ./packaging/act/run.ps1
-  ./packaging/act/run.ps1 -Version 1.2.0
   ./packaging/act/run.ps1 -Job version
   ./packaging/act/run.ps1 -DryRun
 #>
 
 [CmdletBinding()]
 param(
-    [string]$Version = '0.0.0-local',
     [ValidateSet('version', 'linux')]
     [string]$Job,
     [switch]$DryRun,
@@ -94,7 +93,7 @@ if ($actVersion -and [version]$actVersion -lt [version]'0.2.86') {
     Write-Host '    Continuing anyway, as asked.' -ForegroundColor Yellow
 }
 
-# ---- Refuse a version the workflow would refuse, before spending ten minutes on it -----
+# ---- Show the version the code carries, before spending ten minutes on it --------------
 
 # The rule is the shell script the workflow uses. PowerShell cannot run one; see the helper.
 $gitBash = Find-GitBash
@@ -104,11 +103,12 @@ if (-not $gitBash) {
     exit 1
 }
 
-& $gitBash (ConvertTo-BashPath (Join-Path $root 'packaging/version.sh')) $Version | Out-Null
+$versionOutput = & $gitBash (ConvertTo-BashPath (Join-Path $root 'packaging/version.sh'))
 if ($LASTEXITCODE -ne 0) {
-    Problem "'$Version' is not a version the packages can carry. Use 1.2.0, or 1.2.0-rc1."
+    Problem 'Lego2STL.Core has no usable <Version>. See packaging/version.sh.'
     exit 1
 }
+$Version = ($versionOutput | Select-String '^number=(.+)$').Matches[0].Groups[1].Value
 
 # ---- Warn if the two workflows have drifted apart --------------------------------------
 
@@ -127,23 +127,16 @@ if (Compare-Object $realVersions $localVersions) {
 
 # ---- Run --------------------------------------------------------------------------------
 
-# The version goes in the event, not in --input: act reads the event file last and a version
-# passed the other way is silently ignored, so the packages come out numbered 0.0.0-local
-# however the script was called. The file on disk keeps the default; this is a copy of it.
-$event = Join-Path ([System.IO.Path]::GetTempPath()) 'lego2stl-act-event.json'
-@{ inputs = @{ version = $Version } } | ConvertTo-Json | Set-Content $event -Encoding utf8
-
 $arguments = @(
     'workflow_dispatch'
     '-W', $workflow
-    '-e', $event
-    '--input', "version=$Version"
 )
 
 if ($Job) { $arguments += @('-j', $Job) }
 if ($DryRun) { $arguments += '--dryrun' }
 
-Step "Running act$(if ($Job) { " (job: $Job)" }) at version $Version"
+Step "Building at version $Version, read from Lego2STL.Core"
+Step "Running act$(if ($Job) { " (job: $Job)" })"
 Write-Host "    act $($arguments -join ' ')" -ForegroundColor DarkGray
 Write-Host ''
 

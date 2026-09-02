@@ -19,6 +19,16 @@ packages under `.act-artifacts`.
 
 ---
 
+## Versioning
+
+No script here takes a version as a parameter, and neither does the real workflow. The one
+place a version is set is `<Version>` on `src/Lego2STL.Core/Lego2STL.Core.csproj`;
+`packaging/version.sh` reads it, and everything else — the `version` job, the local one, the
+Windows script — calls that rather than holding a copy. See [CLAUDE.md](CLAUDE.md) for the
+rule that keeps it current, and [CHANGELOG.md](CHANGELOG.md) for what each version carried.
+
+---
+
 ## Before the first run
 
 ### act must be 0.2.86 or later
@@ -78,13 +88,15 @@ of [packaging/README.md](packaging/README.md).
 Since there is nothing for act to run the `windows` job in, one script does it directly:
 
 ```powershell
-./packaging/local-windows.ps1 -Version 1.2.3
+./packaging/local-windows.ps1
 ```
 
 That does what the `windows` job does, step for step, against the same scripts: the tests, the
 build, and then a look inside the installer to confirm the .NET runtime is fetched when needed
 rather than carried, and that its fingerprint is the one pinned in `runtime.json`. Pass
-`-SkipTests` to skip the suite, which the workflow runs in a job of its own anyway.
+`-SkipTests` to skip the suite, which the workflow runs in a job of its own anyway. Like
+everything else here, its version comes from `Lego2STL.Core`'s `<Version>` element, not from a
+parameter.
 
 It needs the WiX toolset and its three extensions — see
 [packaging/README.md](packaging/README.md) — and Git for Windows, whose `bash` is what runs
@@ -104,8 +116,7 @@ GitHub runner, because every runner already has .NET.
 ## Options
 
 ```powershell
-./packaging/act/run.ps1                        # both jobs, version 0.0.0-local
-./packaging/act/run.ps1 -Version 1.2.0         # stamp a particular version
+./packaging/act/run.ps1                        # both jobs
 ./packaging/act/run.ps1 -Job version           # just the version job, which takes seconds
 ./packaging/act/run.ps1 -Job linux             # just the build
 ./packaging/act/run.ps1 -DryRun                # list what would run, start nothing
@@ -113,31 +124,23 @@ GitHub runner, because every runner already has .NET.
 ```
 
 ```bash
-./packaging/act/run.sh                         # both jobs, version 0.0.0-local
-./packaging/act/run.sh 1.2.0                   # stamp a particular version
-./packaging/act/run.sh 1.2.0 version           # one job
-./packaging/act/run.sh 0.0.0-local "" --dryrun # anything after the job is passed to act
+./packaging/act/run.sh                         # both jobs
+./packaging/act/run.sh version                 # one job
+./packaging/act/run.sh "" --dryrun             # anything after the job is passed to act
 SKIP_ACT_VERSION_CHECK=1 ./packaging/act/run.sh
 ```
 
-A version is refused here for the same reasons the workflow refuses it, before ten minutes
-are spent finding out: `1.2.0` and `1.2.0-rc1` are versions, `v1.2` and `main` are not. A
-hyphen marks a pre-release.
+Neither script takes a version. Both print the one `Lego2STL.Core` carries before building, so
+a stale `<Version>` is obvious before ten minutes are spent on it — see
+[Versioning](#versioning) below.
 
 ### Running act directly
 
 The scripts are a convenience, not a wrapper you are stuck with. The equivalent by hand:
 
 ```bash
-echo '{ "inputs": { "version": "1.2.0" } }' > /tmp/event.json
-act workflow_dispatch \
-  -W packaging/act/local-package.yml \
-  -e /tmp/event.json
+act workflow_dispatch -W packaging/act/local-package.yml
 ```
-
-The version goes in the event file, not in `--input`. act reads the event last, so a version
-passed the other way is silently ignored and the packages come out numbered `0.0.0-local` —
-which is what `packaging/act/event.json` carries as its default.
 
 `.actrc` supplies the image mappings, the artifact path and `--rm`, so those need not be
 repeated. `act -l -W packaging/act/local-package.yml` lists the jobs without starting
@@ -170,12 +173,11 @@ compare them and say so.
 | `README-act.md` | this |
 | `.actrc` | default flags, so the command line stays short |
 | `packaging/act/local-package.yml` | the subset of the workflow act can run |
-| `packaging/act/event.json` | the `workflow_dispatch` payload, carrying the default version |
 | `packaging/act/run.ps1` | the runner, for PowerShell |
 | `packaging/act/run.sh` | the runner, for a shell |
 | `packaging/local-windows.ps1` | the Windows job, run directly, because act cannot host it |
 | `packaging/lib/find-git-bash.ps1` | finds a `bash` that can read a Windows path, for the two PowerShell scripts |
-| `packaging/version.sh` | shared with the real workflow: turns a tag into a version |
+| `packaging/version.sh` | shared with the real workflow: reads the version off `Lego2STL.Core.csproj` |
 | `packaging/build-unix.sh` | shared with the real workflow: builds the actual package |
 | `packaging/tests/*.test.sh` | the pin, the runtime probe, and the built installer |
 
@@ -194,11 +196,11 @@ By default act copies the repository into the container, so a run cannot disturb
 tree. Adding `--bind` mounts it instead, and the packages then appear in `artifacts/dist` on
 this machine as well — convenient, at the cost of letting the container write here.
 
-Expect, at version `0.0.0-local`, about 15 MB each:
+Expect, at whatever version `Lego2STL.Core` currently carries, about 15 MB each:
 
 ```
-Lego2STL-0.0.0-local-linux-x64.run
-Lego2STL-0.0.0-local-linux-x64.tar.gz
+Lego2STL-0.2.0-linux-x64.run
+Lego2STL-0.2.0-linux-x64.tar.gz
 ```
 
 The linux job also installs both, prints the tarball's file list, and runs the three packaging
@@ -222,9 +224,9 @@ with `docker cp`, and a Windows filesystem has no executable bit to copy. The lo
 has a step that restores it; a hand-run `act` needs `chmod +x` first. A real runner clones
 from git, which does carry the bit, so this never happens there.
 
-**The packages come out numbered `0.0.0-local` however the run was called** — act reads its
-event file last, so a version passed with `--input` alone is ignored. Both runner scripts
-write the version into the event they pass; a hand-run `act` needs the same.
+**The packages come out numbered differently than expected** — the version is read off
+`<Version>` on `src/Lego2STL.Core/Lego2STL.Core.csproj`, not passed in. Check that element,
+not the command line.
 
 **A step fails with exit code 141 having printed everything it was going to** — that is
 `SIGPIPE`, from something piped into a reader that stops early, turned into a failure by

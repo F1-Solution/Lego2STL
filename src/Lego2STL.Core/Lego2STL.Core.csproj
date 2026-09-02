@@ -8,6 +8,14 @@
       own body; appending here adds three more without touching what Cli or Gui inherit.
     -->
     <TargetFrameworks>$(TargetFrameworks);$(MobileTargetFrameworks)</TargetFrameworks>
+
+    <!--
+      The single place the package version is set. packaging/version.sh reads this element
+      directly, so nothing else - not a tag, not a workflow input - carries a version in.
+      Follows SemVer (semver.org): MAJOR.MINOR.PATCH, with an optional -prerelease suffix.
+      See CHANGELOG.md, and the versioning rule in CLAUDE.md, before changing this by hand.
+    -->
+    <Version>0.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

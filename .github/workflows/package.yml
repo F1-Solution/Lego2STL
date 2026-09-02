@@ -7,18 +7,18 @@
 #
 # Pushing a tag of the form v1.2.0 builds everything and publishes a release. Running it by
 # hand builds the same packages and leaves them as artifacts, without publishing anything.
+#
+# No version is ever passed in, on either trigger. It comes from one place only: the <Version>
+# element on Lego2STL.Core.csproj (see packaging/version.sh and CLAUDE.md). A tag still gates
+# whether a run publishes, and the release job checks the tag against that version before it
+# publishes anything, so the two cannot quietly drift apart.
 
 name: package
 
 on:
   push:
     tags: ['v*']
-  workflow_dispatch:
-    inputs:
-      version:
-        description: Version to stamp on the packages
-        required: false
-        default: 0.0.0-dev
+  workflow_dispatch: {}
 
 # Read-only by default. Only the job that publishes the release is given more, and only that
 # job, so a failure anywhere in the build cannot write to the repository.
@@ -41,9 +41,7 @@ jobs:
       # runs under act, so exercising it locally says something about this one.
       - name: Work out the version
         id: pick
-        env:
-          RAW: ${{ inputs.version || github.ref_name }}
-        run: ./packaging/version.sh "$RAW"
+        run: ./packaging/version.sh
 
   test:
     name: test
@@ -260,6 +258,20 @@ jobs:
       contents: write
 
     steps:
+      # The tag decides *whether* to publish; the csproj decides *what version* to publish.
+      # Those two must agree, or the release would carry a number the tag never announced.
+      - name: Make sure the tag matches the version Lego2STL.Core carries
+        env:
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.version.outputs.number }}
+        run: |
+          set -euo pipefail
+          tag_version="${TAG#v}"
+          if [ "$tag_version" != "$VERSION" ]; then
+            echo "::error::Tag $TAG does not match the version Lego2STL.Core carries ($VERSION). Bump <Version> in src/Lego2STL.Core/Lego2STL.Core.csproj to match, or retag." >&2
+            exit 1
+          fi
+
       - uses: actions/download-artifact@v4
         with:
           path: incoming

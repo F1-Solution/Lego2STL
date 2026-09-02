@@ -24,6 +24,8 @@ Download the package for your system, or build one — see [packaging](packaging
 Lego2STL needs **.NET 10**. Each installer puts it in place when the machine has not got it,
 and leaves it alone when it has. The zip and the tarball expect it to be there already.
 
+What changed in each version is in [CHANGELOG.md](CHANGELOG.md).
+
 ---
 
 ## Using it

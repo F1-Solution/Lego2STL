@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
 #
-# Works out the version the packages carry.
+# Works out the version the packages carry, by reading Lego2STL.Core's own <Version> element -
+# the single place a version is set. Nothing passes a version in: not a tag, not a workflow
+# input. A build only ever carries what the code itself says it is.
 #
-#   ./version.sh v1.2.0      -> 1.2.0,      not a pre-release
-#   ./version.sh v1.2.0-rc1  -> 1.2.0-rc1,  a pre-release
-#
-# A tag is written v1.2.0; a version is not. The leading letter is not part of the number, and
-# dotnet refuses the whole string if it is left on, so a build that passes the tag straight
-# through fails at its first publish step for a reason that is nowhere near the cause.
+#   ./version.sh                        -> reads src/Lego2STL.Core/Lego2STL.Core.csproj
+#   ./version.sh path/to/Other.csproj   -> reads a different csproj, for testing this script
 #
 # Both the real workflow and the local one call this rather than each holding their own copy,
 # so that running the local one actually says something about the real one.
@@ -16,19 +14,25 @@
 
 set -euo pipefail
 
-raw="${1:-}"
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+csproj="${1:-$here/../src/Lego2STL.Core/Lego2STL.Core.csproj}"
 
-if [ -z "$raw" ]; then
-  echo "usage: $0 <tag-or-version>" >&2
+if [ ! -f "$csproj" ]; then
+  echo "::error::'$csproj' does not exist." >&2
   exit 2
 fi
 
-number="${raw#v}"
+number="$(grep -oE '<Version>[^<]+</Version>' "$csproj" | head -1 | sed -E 's#</?Version>##g')"
+
+if [ -z "$number" ]; then
+  echo "::error::'$csproj' has no <Version> element. Add one, e.g. <Version>1.2.0</Version>." >&2
+  exit 1
+fi
 
 if ! printf '%s' "$number" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$'; then
   # ::error:: is what makes a workflow show this against the run rather than burying it in a
   # log; outside one it is merely a prefix, so the same line serves both.
-  echo "::error::'$raw' is not a version these packages can carry. Tag it v1.2.0, or v1.2.0-rc1." >&2
+  echo "::error::'$number', read from '$csproj', is not a version these packages can carry. Use 1.2.0, or 1.2.0-rc1." >&2
   exit 1
 fi
 

@@ -12,20 +12,19 @@
   from the outside: that the runtime is fetched when needed rather than carried, from the
   address and with the fingerprint the pin says.
 
-.PARAMETER Version
-  The version to stamp on the packages. Must look like 1.2.0, or 1.2.0-rc1.
+  The version is read from Lego2STL.Core's <Version> element, the same as the real workflow -
+  nothing here takes one as a parameter.
 
 .PARAMETER SkipTests
   Skip the test suite. The workflow runs it in a job of its own before packaging.
 
 .EXAMPLE
   ./packaging/local-windows.ps1
-  ./packaging/local-windows.ps1 -Version 1.2.0
+  ./packaging/local-windows.ps1 -SkipTests
 #>
 
 [CmdletBinding()]
 param(
-    [string]$Version = '0.0.0-local',
     [switch]$SkipTests
 )
 
@@ -66,12 +65,14 @@ if (-not $gitBash) {
 }
 Write-Host "    bash   $gitBash"
 
-# Refuse a version the workflow would refuse, before spending minutes on it.
-& $gitBash (ConvertTo-BashPath (Join-Path $PSScriptRoot 'version.sh')) $Version | Out-Null
+# Read the version, before spending minutes on a build that would only fail on it too.
+$versionOutput = & $gitBash (ConvertTo-BashPath (Join-Path $PSScriptRoot 'version.sh'))
 if ($LASTEXITCODE -ne 0) {
-    Problem "'$Version' is not a version the packages can carry. Use 1.2.0, or 1.2.0-rc1."
+    Problem 'Lego2STL.Core has no usable <Version>. See packaging/version.sh.'
     exit 1
 }
+$Version = ($versionOutput | Select-String '^number=(.+)$').Matches[0].Groups[1].Value
+Write-Host "    version $Version, read from Lego2STL.Core"
 
 # ---- What the workflow's jobs do -------------------------------------------------------
 

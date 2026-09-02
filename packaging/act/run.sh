@@ -2,10 +2,9 @@
 #
 # Runs the buildable part of the packaging workflow locally, in Docker, using act.
 #
-#   ./packaging/act/run.sh                 both jobs, version 0.0.0-local
-#   ./packaging/act/run.sh 1.2.0           both jobs, that version
-#   ./packaging/act/run.sh 1.2.0 linux     only the linux job
-#   ./packaging/act/run.sh 1.2.0 "" --dryrun
+#   ./packaging/act/run.sh                 both jobs
+#   ./packaging/act/run.sh linux           only the linux job
+#   ./packaging/act/run.sh "" --dryrun
 #
 # Builds the Linux installer and tarball, installs what it built both as a machine that has
 # .NET and as one that has none, and runs the packaging tests.
@@ -14,14 +13,17 @@
 # windows, macos and release are out of reach locally. For the Windows one use
 # packaging/local-windows.ps1 instead. See README-act.md.
 #
+# The version is never passed in here either - it comes from Lego2STL.Core's <Version>
+# element, same as the real workflow. This script only prints it before building, so a
+# stale csproj is obvious before ten minutes are spent on it.
+#
 # Needs Docker running with the Linux engine, and act on the path. The first run pulls about
 # 1.1 GB of image and then downloads the .NET SDK inside it, so allow ten to fifteen minutes.
 
 set -euo pipefail
 
-version="${1:-0.0.0-local}"
-job="${2:-}"
-shift $(( $# > 2 ? 2 : $# )) || true
+job="${1:-}"
+shift $(( $# > 0 ? 1 : 0 )) || true
 extra=("$@")
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -74,10 +76,10 @@ if [ -n "$current" ] && [ "$(printf '%s\n%s\n' "$minimum" "$current" | sort -V |
   printf '\033[33m    Continuing anyway, as asked.\033[0m\n'
 fi
 
-# ---- Refuse a version the workflow would refuse, before spending ten minutes on it --------
+# ---- Show the version the code carries, before spending ten minutes on it -----------------
 
-if ! "$root/packaging/version.sh" "$version" >/dev/null 2>&1; then
-  problem "'$version' is not a version the packages can carry. Use 1.2.0, or 1.2.0-rc1."
+if ! version="$("$root/packaging/version.sh" | sed -n 's/^number=//p')"; then
+  problem 'Lego2STL.Core has no usable <Version>. See packaging/version.sh.'
   exit 1
 fi
 
@@ -92,24 +94,16 @@ fi
 
 # ---- Run ------------------------------------------------------------------------------------
 
-# The version goes in the event, not in --input: act reads the event file last and a version
-# passed the other way is silently ignored, so the packages come out numbered 0.0.0-local
-# however the script was called. The file on disk keeps the default; this is a copy of it.
-event="$(mktemp)"
-trap 'rm -f "$event"' EXIT
-printf '{ "inputs": { "version": "%s" } }\n' "$version" > "$event"
-
 arguments=(
   workflow_dispatch
   -W "$workflow"
-  -e "$event"
-  --input "version=$version"
 )
 
 [ -n "$job" ] && arguments+=(-j "$job")
 [ ${#extra[@]} -gt 0 ] && arguments+=("${extra[@]}")
 
-step "Running act${job:+ (job: $job)} at version $version"
+step "Building at version $version, read from Lego2STL.Core"
+step "Running act${job:+ (job: $job)}"
 printf '\033[90m    act %s\033[0m\n\n' "${arguments[*]}"
 
 cd "$root"
