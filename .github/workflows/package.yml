@@ -137,8 +137,14 @@ jobs:
       # Unlike Android, iOS refuses a RuntimeIdentifier without PublishTrimmed=true, no way
       # around it - and MtouchLink=None is what then keeps trimming from actually removing
       # anything, since this step exists to prove the window compiles, not to trim it.
+      #
+      # UseInterpreter=true is not a speed hack here, it is the correct mode: a simulator runs
+      # on the host CPU and can interpret IL like any other machine, so it never needed the
+      # ahead-of-time compile a real device does. Without it, the first run left this step
+      # running for over an hour before it was cancelled by hand - a known hang in the AOT
+      # compiler on projects that pull in SkiaSharp, which Avalonia does.
       - name: Build the window for the iOS simulator
-        run: dotnet build src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:PublishTrimmed=true -p:MtouchLink=None
+        run: dotnet build src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:PublishTrimmed=true -p:MtouchLink=None -p:UseInterpreter=true
 
       - name: Sign for a device
         if: false
@@ -150,7 +156,7 @@ jobs:
       - name: Build the pipeline smoke test
         run: |
           dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:RuntimeIdentifier=android-arm64 -p:RunAOTCompilation=false
-          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:PublishTrimmed=true -p:MtouchLink=None
+          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:PublishTrimmed=true -p:MtouchLink=None -p:UseInterpreter=true
 
   mobile-smoke:
     name: mobile smoke
@@ -190,7 +196,7 @@ jobs:
 
       - name: iOS
         run: |
-          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:PublishTrimmed=true -p:MtouchLink=None
+          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:PublishTrimmed=true -p:MtouchLink=None -p:UseInterpreter=true
           APP=$(find tests/Lego2STL.MobileSmokeTest/bin/Release/net10.0-ios26.0 -name "*.app" -maxdepth 3 | head -1)
           xcrun simctl boot "iPhone 16" || true
           xcrun simctl install booted "$APP"

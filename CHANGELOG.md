@@ -27,6 +27,9 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 - The macOS packaging step no longer refuses to fuse the universal binary over the two
   publishes' `deps.json` files legitimately differing by architecture. **Known limitation:**
   the Intel one is kept as-is, unverified so far on real Apple silicon hardware.
+- The iOS simulator build steps in CI no longer hang for over an hour: they now build with
+  the interpreter, which a simulator supports directly, instead of the ahead-of-time compiler a
+  real device needs.
 
 ## [0.2.0] - 2026-09-02
 
