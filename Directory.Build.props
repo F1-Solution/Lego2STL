@@ -36,13 +36,13 @@
     <IsAndroidTarget Condition="$(TargetFramework.Contains('-android'))">true</IsAndroidTarget>
     <IsApplePlatformTarget>false</IsApplePlatformTarget>
     <IsApplePlatformTarget Condition="$(TargetFramework.Contains('-ios')) OR $(TargetFramework.Contains('-macos'))">true</IsApplePlatformTarget>
-    <!--
-      A property, not a literal repeated in Core.csproj, so the three version suffixes are
-      pinned in exactly one place. Only Lego2STL.Core appends this to its own TargetFrameworks;
-      Lego2STL.Cli and Lego2STL.Gui inherit the plain two-target list above unchanged, because
-      neither has a mobile head yet - that is Phase E's job, not this one's.
-    -->
-    <MobileTargetFrameworks>net10.0-android36.0;net10.0-ios26.0;net10.0-macos26.0</MobileTargetFrameworks>
+    <AndroidTargetFramework>net10.0-android36.0</AndroidTargetFramework>
+    <IosTargetFramework>net10.0-ios26.0</IosTargetFramework>
+    <MacOsTargetFramework>net10.0-macos26.0</MacOsTargetFramework>
+    <!-- Core's three: the recogniser needs macOS, the window does not. -->
+    <MobileTargetFrameworks>$(AndroidTargetFramework);$(IosTargetFramework);$(MacOsTargetFramework)</MobileTargetFrameworks>
+    <!-- The window's two: Avalonia's desktop target already covers macOS through net10.0. -->
+    <GuiMobileTargetFrameworks>$(AndroidTargetFramework);$(IosTargetFramework)</GuiMobileTargetFrameworks>
   </PropertyGroup>
 
   <!--

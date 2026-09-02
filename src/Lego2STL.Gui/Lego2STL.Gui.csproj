@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <TargetFrameworks>$(TargetFrameworks);$(GuiMobileTargetFrameworks)</TargetFrameworks>
     <OutputType>WinExe</OutputType>
+    <OutputType Condition="'$(IsAndroidTarget)' == 'true' OR $(TargetFramework.Contains('-ios'))">Exe</OutputType>
     <!--
       Distinct from the console program's name, and not merely in capitalisation: Windows
       treats file names case-insensitively, so shipping "Lego2STL.exe" beside "lego2stl.exe"
@@ -11,15 +13,27 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest Condition="'$(IsWindowsTarget)' == 'true'">app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets/icon.ico</ApplicationIcon>
+    <ApplicationId>com.lego2stl.app</ApplicationId>
   </PropertyGroup>
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(IsAndroidTarget)' != 'true' AND !$(TargetFramework.Contains('-ios'))">
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsAndroidTarget)' == 'true'">
+    <PackageReference Include="Avalonia.Android" Version="12.1.1" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework.Contains('-ios'))">
+    <PackageReference Include="Avalonia.iOS" Version="12.1.1" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="12.1.1" />
-    <PackageReference Include="Avalonia.Desktop" Version="12.1.1" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.1" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.1" />
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
@@ -28,6 +42,37 @@
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(IsAndroidTarget)' != 'true'">
+    <Compile Remove="Platforms\Android\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="!$(TargetFramework.Contains('-ios'))">
+    <Compile Remove="Platforms\iOS\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsAndroidTarget)' == 'true' OR $(TargetFramework.Contains('-ios'))">
+    <Compile Remove="Program.cs" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(IsAndroidTarget)' == 'true'">
+    <AndroidManifest>Platforms\Android\AndroidManifest.xml</AndroidManifest>
+    <!-- Must equal the manifest's own minSdkVersion exactly, or the SDK refuses with XA1036. -->
+    <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
+    <!-- The manifest's theme and icon resources live beside it, not at the project root. -->
+    <MonoAndroidResourcePrefix>Platforms\Android\Resources</MonoAndroidResourcePrefix>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsAndroidTarget)' == 'true'">
+    <!-- The Android SDK's implicit global usings collide with Avalonia's own Application and Button. -->
+    <Using Remove="Android.App" />
+    <Using Remove="Android.Widget" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="$(TargetFramework.Contains('-ios'))">
+    <!-- Not the default root location, and an unnamed plist is ignored in silence. -->
+    <InfoPlist>Platforms\iOS\Info.plist</InfoPlist>
+  </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Lego2STL.Core\Lego2STL.Core.csproj" />

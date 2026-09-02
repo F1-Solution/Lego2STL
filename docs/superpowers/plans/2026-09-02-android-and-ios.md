@@ -397,6 +397,33 @@ git add Directory.Build.props src/Lego2STL.Gui/Lego2STL.Gui.csproj src/Lego2STL.
 git commit -m "feat: the window builds for Android and iOS"
 ```
 
+> **What the real build corrected (Task 2).** Four things Step 3-5 as written did not survive contact
+> with Avalonia 12.1.1 and the installed Android workload:
+>
+> 1. **`AvaloniaMainActivity<App>` does not exist in 12.1.1.** `AvaloniaMainActivity` is non-generic
+>    now; the `AppBuilder` is built by an `Android.App.Application` subclass instead —
+>    `AvaloniaAndroidApplication<TApp>`, marked `[Application]`. `CustomizeAppBuilder` moved there.
+>    Added `Platforms/Android/MainApplication.cs` alongside `MainActivity.cs`; `MainActivity` is now
+>    just `public sealed class MainActivity : AvaloniaMainActivity;` with the `[Activity]` attribute.
+> 2. **The Android target's implicit global usings collide with Avalonia's own types.** The .NET
+>    Android SDK adds `global using Android.App;` and `global using Android.Widget;` whenever
+>    `ImplicitUsings` is enabled, which makes `Application` (in `App.axaml.cs`) and `Button` (in
+>    `Services/Clip.cs`, `Views/OptionListView.axaml.cs`) ambiguous with Avalonia's own types of the
+>    same name. Fixed with `<Using Remove="Android.App" />` and `<Using Remove="Android.Widget" />`
+>    in an Android-only `ItemGroup`, plus spelling out `Avalonia.Application` as `App`'s base type.
+> 3. **`Icon = "@drawable/icon"` and `Theme = "@style/MyTheme.NoActionBar"` on `[Activity]` name
+>    resources that do not exist anywhere in this repository** — there is no Android resource
+>    folder at all yet. Added `Platforms/Android/Resources/values/styles.xml` (one theme, extending
+>    `android:Theme.Material.NoActionBar`) and `Platforms/Android/Resources/drawable/icon.xml` (a
+>    flat-colour placeholder vector — a real launcher icon is design work, out of scope here).
+>    Because these resources sit beside the manifest rather than at the project root, they also
+>    needed `<MonoAndroidResourcePrefix>Platforms\Android\Resources</MonoAndroidResourcePrefix>` — the
+>    default resource glob only looks under a root-level `Resources\` folder.
+>
+> None of this changes the plan's stated interfaces or file list beyond one added file
+> (`MainApplication.cs`) and two added resource files; it is exactly the shape Avalonia's Android
+> template itself uses, just not the shape this plan's Step 3 assumed.
+
 ---
 
 ### Task 3: The sidebar collapses on a narrow screen

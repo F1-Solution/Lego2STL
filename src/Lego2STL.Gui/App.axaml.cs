@@ -6,7 +6,9 @@ using Lego2STL.Gui.Views;
 
 namespace Lego2STL.Gui;
 
-public partial class App : Application
+// Fully qualified: the Android target's implicit global usings bring in Android.App, whose
+// own Application type would otherwise be ambiguous with Avalonia's.
+public partial class App : Avalonia.Application
 {
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 

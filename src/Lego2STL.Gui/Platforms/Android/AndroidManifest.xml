@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.lego2stl.app">
+  <!-- 24, not the SDK's default of 21: a transitive ML Kit dependency needs 23 or higher. -->
+  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="36" />
+  <uses-permission android:name="android.permission.INTERNET" />
+  <application android:label="Lego2STL" android:allowBackup="true" />
+</manifest>
