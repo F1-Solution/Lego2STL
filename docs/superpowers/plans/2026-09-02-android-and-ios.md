@@ -1217,7 +1217,7 @@ public sealed class AndroidShareActions : IDesktopActions
         }
     }
 
-    public void Reveal(string path) => Open(File.Exists(path) ? path : path);
+    public void Reveal(string path) => Open(path);
 
     private static void Share(string path)
     {
