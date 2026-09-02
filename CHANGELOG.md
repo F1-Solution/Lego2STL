@@ -14,6 +14,9 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 - The version-lookup step in CI no longer fails with "Permission denied".
 - The Windows test step in CI no longer fails to build; it now runs only the two real test
   projects instead of the whole solution.
+- A saved tolerance set in the window's settings screen no longer leaks into other tests run in
+  the same job, which used to make the Windows test step fail intermittently.
+- The Android build step in CI no longer fails with a missing `System.Runtime` assembly.
 
 ## [0.2.0] - 2026-09-02
 

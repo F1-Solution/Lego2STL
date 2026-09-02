@@ -100,8 +100,17 @@ jobs:
       - name: Build Core for macos
         run: dotnet build src/Lego2STL.Core/Lego2STL.Core.csproj -c Release -f net10.0-macos26.0
 
+      # Needs a RuntimeIdentifier, unlike Core just above: this is an app, and Release triggers
+      # Android's [Register] attribute stripping, which cannot resolve the runtime assemblies
+      # it needs without one. The APK step below carries every ABI; a single one here is enough
+      # to prove the window itself compiles for Android.
+      #
+      # A RuntimeIdentifier turns on ahead-of-time compilation by default in Release, which in
+      # turn demands trimming - and this is a build, not the publish that carries both a few
+      # lines down. Off here: this step exists to prove the window compiles, not to produce
+      # something worth installing.
       - name: Build the window for android
-        run: dotnet build src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-android36.0
+        run: dotnet build src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-android36.0 -p:RuntimeIdentifier=android-arm64 -p:RunAOTCompilation=false
 
       - name: Package the APK
         run: dotnet publish src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-android36.0 -p:TargetFrameworks=net10.0-android36.0

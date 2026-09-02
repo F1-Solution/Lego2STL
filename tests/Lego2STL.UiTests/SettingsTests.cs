@@ -27,8 +27,21 @@ namespace Lego2STL.UiTests;
 /// place and read from another.
 /// </remarks>
 [Collection("the history")]
-public sealed class SettingsTests
+public sealed class SettingsTests : IDisposable
 {
+    /// <summary>This assembly shares one settings folder, so the store is emptied, not moved.</summary>
+    public SettingsTests() => Clear();
+
+    public void Dispose() => Clear();
+
+    private static void Clear()
+    {
+        if (File.Exists(TolerancePresets.FilePath))
+        {
+            File.Delete(TolerancePresets.FilePath);
+        }
+    }
+
     [AvaloniaFact]
     public void A_key_typed_here_is_the_key_the_run_is_given()
     {
