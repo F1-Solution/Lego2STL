@@ -317,6 +317,7 @@ public sealed partial class Strings
             [TextKey.UiColourScheme] = "Numerazione colori usata nel documento",
             [TextKey.UiLanguage] = "Lingua",
             [TextKey.UiSettings] = "Impostazioni",
+            [TextKey.UiPages] = "Pagine",
             [TextKey.UiShops] = "Dove comprare un pezzo",
             [TextKey.UiAddShop] = "Aggiungi un negozio",
             [TextKey.UiRemoveShop] = "Togli",

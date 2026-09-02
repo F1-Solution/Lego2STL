@@ -305,6 +305,7 @@ public sealed partial class Strings
             [TextKey.UiColourScheme] = "Colour numbering in the document",
             [TextKey.UiLanguage] = "Language",
             [TextKey.UiSettings] = "Settings",
+            [TextKey.UiPages] = "Pages",
             [TextKey.UiShops] = "Where to buy a part",
             [TextKey.UiAddShop] = "Add a shop",
             [TextKey.UiRemoveShop] = "Remove",

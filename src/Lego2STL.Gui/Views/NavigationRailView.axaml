@@ -1,0 +1,58 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Lego2STL.Gui.ViewModels"
+             xmlns:loc="using:Lego2STL.Gui.Localization"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="600"
+             x:Class="Lego2STL.Gui.Views.NavigationRailView"
+             x:DataType="vm:MainViewModel">
+
+  <DockPanel>
+
+    <Button DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Padding="12,9"
+            Command="{Binding NewRunCommand}"
+            Background="{DynamicResource AppAccent}"
+            Foreground="{DynamicResource AppTextOnAccent}"
+            HorizontalContentAlignment="Center"
+            Content="{Binding [UiNewRun], Source={x:Static loc:Loc.Current}}" />
+
+    <StackPanel DockPanel.Dock="Top">
+
+      <Button Classes="rail" Classes.on="{Binding ShowingRuns}"
+              Command="{Binding ShowRunsCommand}">
+        <StackPanel>
+          <TextBlock Classes="name"
+                     Text="{Binding [UiRailRuns], Source={x:Static loc:Loc.Current}}" />
+          <TextBlock Classes="note" Text="{Binding Runs.Count}" />
+        </StackPanel>
+      </Button>
+
+      <Button Classes="rail" Classes.on="{Binding ShowingSetup}"
+              Command="{Binding ShowSetupCommand}">
+        <StackPanel>
+          <TextBlock Classes="name"
+                     Text="{Binding [UiRailSetup], Source={x:Static loc:Loc.Current}}" />
+          <TextBlock Classes="note" Text="{Binding Setup.ChangedCount}" />
+        </StackPanel>
+      </Button>
+
+      <Button Classes="rail" Classes.on="{Binding ShowingOpenRun}"
+              IsVisible="{Binding OpenRun, Converter={x:Static ObjectConverters.IsNotNull}}"
+              Command="{Binding ShowOpenRunCommand}">
+        <StackPanel>
+          <TextBlock Classes="name" Text="{Binding OpenRun.Name}" />
+          <TextBlock Classes="note" Text="{Binding OpenRun.RailText}" />
+        </StackPanel>
+      </Button>
+
+      <Button Classes="rail" Classes.on="{Binding ShowingSettings}"
+              Command="{Binding ShowSettingsCommand}">
+        <TextBlock Classes="name"
+                   Text="{Binding [UiSettings], Source={x:Static loc:Loc.Current}}" />
+      </Button>
+
+    </StackPanel>
+  </DockPanel>
+
+</UserControl>

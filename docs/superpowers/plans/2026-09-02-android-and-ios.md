@@ -602,6 +602,21 @@ git add src/Lego2STL.Gui/Views src/Lego2STL.Gui/ViewModels/MainViewModel.cs src/
 git commit -m "feat: the rail folds away when the window is as narrow as a phone"
 ```
 
+> **What the real build corrected (Task 3).** Three small things:
+>
+> 1. **`Window` is not `IDisposable`** in this Avalonia version, unlike the plan's `using var window`
+>    in the test snippet. Dropped the `using`, matching Task 1's `MainViewTests`, which never used one.
+> 2. **`MainViewModel` in this codebase already uses CommunityToolkit.Mvvm's partial-property
+>    `[ObservableProperty]` style** (`public partial bool IsCompact { get; set; }`), not the
+>    plan's `[ObservableProperty] private bool _isCompact;` field style. Followed the file's own
+>    established convention instead of the plan's literal snippet; the produced member is identical.
+> 3. **`this.GetObservable(BoundsProperty).Subscribe(lambda)` does not compile.** `IObservable<T>`'s
+>    own instance `Subscribe(IObserver<T>)` wins overload resolution ahead of any `Subscribe(Action<T>)`
+>    extension, because member lookup stops at the first name match regardless of applicability.
+>    Avalonia's own `Observable.Subscribe(Action<T>)` extension exists but its containing class is
+>    `internal`, so it cannot be named from application code either. Fixed by wrapping the lambda in
+>    Avalonia's public `Avalonia.Reactive.AnonymousObserver<T>`.
+
 ---
 
 ### Task 4: A run's folder becomes a decision, not a calculation

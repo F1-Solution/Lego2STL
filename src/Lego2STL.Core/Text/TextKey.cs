@@ -210,6 +210,9 @@ public enum TextKey
     UiLanguage,
     UiSettings,
 
+    /// <summary>The button that opens the rail as a flyout when the window is too narrow to dock it.</summary>
+    UiPages,
+
     /// <summary>The settings card holding the list of shops.</summary>
     UiShops,
 

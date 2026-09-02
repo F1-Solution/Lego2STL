@@ -93,6 +93,10 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     [ObservableProperty]
     public partial RunDocumentViewModel? OpenRun { get; set; }
 
+    /// <summary>True when the window is too narrow to keep the rail beside the page.</summary>
+    [ObservableProperty]
+    public partial bool IsCompact { get; set; }
+
     /// <summary>The one settings object, which the footer and the option list both read.</summary>
     public RunOptionsViewModel Options => Setup.Options;
 

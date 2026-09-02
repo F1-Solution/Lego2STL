@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Lego2STL.Gui.ViewModels"
              xmlns:loc="using:Lego2STL.Gui.Localization"
+             xmlns:views="using:Lego2STL.Gui.Views"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="1040" d:DesignHeight="720"
@@ -71,14 +72,27 @@
 
     <!-- The language belongs everywhere, so it stays findable when the rail cannot be read. -->
     <Border DockPanel.Dock="Top" Padding="16,10,16,6">
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
-        <TextBlock Classes="label"
-                   Text="{Binding [UiLanguage], Source={x:Static loc:Loc.Current}}" />
-        <ComboBox MinWidth="120"
-                  ItemsSource="{x:Static vm:SettingsViewModel.Languages}"
-                  SelectedItem="{Binding SelectedLanguage}"
-                  DisplayMemberBinding="{Binding Name}" />
-      </StackPanel>
+      <DockPanel HorizontalAlignment="Stretch" LastChildFill="False">
+        <Button DockPanel.Dock="Left" Padding="10,6" IsVisible="{Binding IsCompact}"
+                Content="{Binding [UiPages], Source={x:Static loc:Loc.Current}}">
+          <Button.Flyout>
+            <Flyout Placement="BottomEdgeAlignedLeft">
+              <Border Width="240" Padding="8">
+                <views:NavigationRailView />
+              </Border>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8">
+          <TextBlock Classes="label"
+                     Text="{Binding [UiLanguage], Source={x:Static loc:Loc.Current}}" />
+          <ComboBox MinWidth="120"
+                    ItemsSource="{x:Static vm:SettingsViewModel.Languages}"
+                    SelectedItem="{Binding SelectedLanguage}"
+                    DisplayMemberBinding="{Binding Name}" />
+        </StackPanel>
+      </DockPanel>
     </Border>
 
     <!--
@@ -103,53 +117,9 @@
     <!-- What a run can be looked at through, and the way back to setting one up. -->
     <Border DockPanel.Dock="Left" Width="200" Padding="8,6,8,10"
             BorderThickness="0,0,1,0"
-            BorderBrush="{DynamicResource AppCardBorder}">
-      <DockPanel>
-
-        <Button DockPanel.Dock="Bottom" HorizontalAlignment="Stretch" Padding="12,9"
-                Command="{Binding NewRunCommand}"
-                Background="{DynamicResource AppAccent}"
-                Foreground="{DynamicResource AppTextOnAccent}"
-                HorizontalContentAlignment="Center"
-                Content="{Binding [UiNewRun], Source={x:Static loc:Loc.Current}}" />
-
-        <StackPanel DockPanel.Dock="Top">
-
-          <Button Classes="rail" Classes.on="{Binding ShowingRuns}"
-                  Command="{Binding ShowRunsCommand}">
-            <StackPanel>
-              <TextBlock Classes="name"
-                         Text="{Binding [UiRailRuns], Source={x:Static loc:Loc.Current}}" />
-              <TextBlock Classes="note" Text="{Binding Runs.Count}" />
-            </StackPanel>
-          </Button>
-
-          <Button Classes="rail" Classes.on="{Binding ShowingSetup}"
-                  Command="{Binding ShowSetupCommand}">
-            <StackPanel>
-              <TextBlock Classes="name"
-                         Text="{Binding [UiRailSetup], Source={x:Static loc:Loc.Current}}" />
-              <TextBlock Classes="note" Text="{Binding Setup.ChangedCount}" />
-            </StackPanel>
-          </Button>
-
-          <Button Classes="rail" Classes.on="{Binding ShowingOpenRun}"
-                  IsVisible="{Binding OpenRun, Converter={x:Static ObjectConverters.IsNotNull}}"
-                  Command="{Binding ShowOpenRunCommand}">
-            <StackPanel>
-              <TextBlock Classes="name" Text="{Binding OpenRun.Name}" />
-              <TextBlock Classes="note" Text="{Binding OpenRun.RailText}" />
-            </StackPanel>
-          </Button>
-
-          <Button Classes="rail" Classes.on="{Binding ShowingSettings}"
-                  Command="{Binding ShowSettingsCommand}">
-            <TextBlock Classes="name"
-                       Text="{Binding [UiSettings], Source={x:Static loc:Loc.Current}}" />
-          </Button>
-
-        </StackPanel>
-      </DockPanel>
+            BorderBrush="{DynamicResource AppCardBorder}"
+            IsVisible="{Binding !IsCompact}">
+      <views:NavigationRailView />
     </Border>
 
     <!--
