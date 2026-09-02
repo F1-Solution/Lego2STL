@@ -11,6 +11,9 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 
 ### Fixed
 
+- The mobile smoke test's Android emulator step in CI no longer spends 15 minutes failing to
+  boot an emulator whose architecture doesn't match the runner, and now fails within 20 minutes
+  instead of running for hours if it genuinely hangs.
 - The version-lookup step in CI no longer fails with "Permission denied".
 - The Windows test step in CI no longer fails to build; it now runs only the two real test
   projects instead of the whole solution.

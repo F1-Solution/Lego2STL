@@ -162,6 +162,9 @@ jobs:
     name: mobile smoke
     needs: [mobile]
     runs-on: macos-latest
+    # A genuine hang (stuck build, unresponsive emulator) should fail fast instead of
+    # running for hours - GitHub's default job timeout is 360 minutes.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -183,15 +186,17 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 30
-          arch: x86_64
+          # macos-latest runners are Apple Silicon (aarch64): the emulator needs an arm64
+          # system image, or QEMU2 fails to boot it outright.
+          arch: arm64
           target: google_apis
           # Above the action's own 600s default: a known source of flakiness on GitHub's
           # macOS runners even when nothing here is wrong - see ReactiveCircus/android-emulator-runner#160.
           emulator-boot-timeout: 900
-          # android-x64, not arm64: it has to match arch: x86_64 above, or Install puts a build
+          # android-arm64, not x64: it has to match arch: arm64 above, or Install puts a build
           # on the emulator it cannot run.
           script: |
-            dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:RuntimeIdentifier=android-x64 -p:RunAOTCompilation=false -t:Install
+            dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:RuntimeIdentifier=android-arm64 -p:RunAOTCompilation=false -t:Install
             adb logcat -c
             adb shell am start -n com.lego2stl.pipelinesmoketest/.MainActivity
             timeout 180 adb logcat -s Lego2STL:I -m 1 | tee smoke-android.txt
