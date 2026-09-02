@@ -16,7 +16,10 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
   projects instead of the whole solution.
 - A saved tolerance set in the window's settings screen no longer leaks into other tests run in
   the same job, which used to make the Windows test step fail intermittently.
-- The Android build step in CI no longer fails with a missing `System.Runtime` assembly.
+- Choosing Italian in the window and leaving it, in a test, no longer leaves the window's saved
+  language stuck in Italian for tests that open a fresh window afterwards.
+- The Android build and packaging steps in CI no longer fail with a missing `System.Runtime`
+  assembly.
 
 ## [0.2.0] - 2026-09-02
 

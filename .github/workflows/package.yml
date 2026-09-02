@@ -102,23 +102,25 @@ jobs:
 
       # Needs a RuntimeIdentifier, unlike Core just above: this is an app, and Release triggers
       # Android's [Register] attribute stripping, which cannot resolve the runtime assemblies
-      # it needs without one. The APK step below carries every ABI; a single one here is enough
-      # to prove the window itself compiles for Android.
+      # it needs without one. arm64 is enough to prove the window itself compiles for Android.
       #
       # A RuntimeIdentifier turns on ahead-of-time compilation by default in Release, which in
-      # turn demands trimming - and this is a build, not the publish that carries both a few
-      # lines down. Off here: this step exists to prove the window compiles, not to produce
-      # something worth installing.
+      # turn demands trimming - not set on this project, and not worth setting for a step whose
+      # only job is proving the window compiles. Off here and on the APK step below for the
+      # same reason.
       - name: Build the window for android
         run: dotnet build src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-android36.0 -p:RuntimeIdentifier=android-arm64 -p:RunAOTCompilation=false
 
+      # arm64 only: real phones are what this ships to, and every one of them still being sold
+      # is arm64. The RuntimeIdentifier moves the publish output under a folder named for it,
+      # which is why the artifact path below carries it too.
       - name: Package the APK
-        run: dotnet publish src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-android36.0 -p:TargetFrameworks=net10.0-android36.0
+        run: dotnet publish src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-android36.0 -p:TargetFrameworks=net10.0-android36.0 -p:RuntimeIdentifier=android-arm64 -p:RunAOTCompilation=false
 
       - uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: src/Lego2STL.Gui/bin/Release/net10.0-android36.0/publish/*.apk
+          path: src/Lego2STL.Gui/bin/Release/net10.0-android36.0/android-arm64/publish/*.apk
           if-no-files-found: error
 
       # The simulator needs no certificate. A device build does, and there is no Apple
@@ -131,9 +133,12 @@ jobs:
         if: false
         run: dotnet publish src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-ios26.0 -p:TargetFrameworks=net10.0-ios26.0 -p:RuntimeIdentifier=ios-arm64 -p:CodesignKey="${{ secrets.IOS_SIGNING_IDENTITY }}" -p:CodesignProvision="${{ secrets.IOS_PROVISIONING_PROFILE }}"
 
+      # A compile check, same as the window above: arm64 stands in for whichever ABI a real
+      # device or emulator needs, and the mobile smoke job below builds its own copy for the
+      # emulator's actual architecture.
       - name: Build the pipeline smoke test
         run: |
-          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0
+          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:RuntimeIdentifier=android-arm64 -p:RunAOTCompilation=false
           dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64
 
   mobile-smoke:
@@ -158,8 +163,10 @@ jobs:
           api-level: 30
           arch: x86_64
           target: google_apis
+          # android-x64, not arm64: it has to match arch: x86_64 above, or Install puts a build
+          # on the emulator it cannot run.
           script: |
-            dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -t:Install
+            dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:RuntimeIdentifier=android-x64 -p:RunAOTCompilation=false -t:Install
             adb logcat -c
             adb shell am start -n com.lego2stl.pipelinesmoketest/.MainActivity
             timeout 180 adb logcat -s Lego2STL:I -m 1 | tee smoke-android.txt

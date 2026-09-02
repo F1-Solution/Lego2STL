@@ -108,7 +108,9 @@ public sealed class WindowTests
         }
         finally
         {
-            Loc.Current.Use(DisplayLanguage.English);
+            // Through the setter, not Loc.Current.Use directly: the setter is what wrote
+            // Italian into the window's saved preferences, and only it writes English back.
+            model.SelectedLanguage = Loc.Choices.First(c => c.Language == DisplayLanguage.English);
         }
     }
 
@@ -126,7 +128,9 @@ public sealed class WindowTests
         }
         finally
         {
-            Loc.Current.Use(DisplayLanguage.English);
+            // Through the setter, not Loc.Current.Use directly: the setter is what wrote
+            // Italian into the window's saved preferences, and only it writes English back.
+            model.SelectedLanguage = Loc.Choices.First(c => c.Language == DisplayLanguage.English);
         }
     }
 
@@ -254,7 +258,9 @@ public sealed class WindowTests
         }
         finally
         {
-            Loc.Current.Use(DisplayLanguage.English);
+            // Through the setter, not Loc.Current.Use directly: the setter is what wrote
+            // Italian into the window's saved preferences, and only it writes English back.
+            model.SelectedLanguage = Loc.Choices.First(c => c.Language == DisplayLanguage.English);
         }
     }
 
