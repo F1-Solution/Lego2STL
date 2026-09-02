@@ -9,6 +9,11 @@
 # Anything that differs and is not a Mach-O binary is an error rather than a guess: it means
 # something in the build is not reproducible, and quietly picking one of the two would ship
 # whichever the loop happened to reach first.
+#
+# *.deps.json is the one deliberate exception: a framework-dependent, RID-specific publish
+# embeds its own RID in the file (as part of the runtime target name), so the two payloads'
+# copies never match by design, not by accident. The Intel one is kept - TODO: this has not
+# been confirmed correct on real Apple silicon hardware; revisit before relying on it.
 set -euo pipefail
 
 x64="${1:?usage: fuse-universal.sh <x64> <arm64> <out>}"
@@ -49,6 +54,14 @@ mkdir -p "$out"
         esac
         continue
     fi
+
+    case "$relative" in
+        *.deps.json)
+            echo "    KNOWN LIMITATION: $relative differs by RID as expected; keeping the Intel one (unverified on Apple silicon)" >&2
+            cp "$left" "$target"
+            continue
+            ;;
+    esac
 
     echo "$relative differs between the two builds and is not a program." >&2
     echo "Something in the build is not reproducible; refusing to pick one." >&2

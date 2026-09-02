@@ -24,6 +24,9 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 - The Linux and macOS packaging steps in CI no longer fail with "Permission denied".
 - The iOS build steps in CI no longer fail over an Xcode version newer than the .NET for iOS
   workload supports.
+- The macOS packaging step no longer refuses to fuse the universal binary over the two
+  publishes' `deps.json` files legitimately differing by architecture. **Known limitation:**
+  the Intel one is kept as-is, unverified so far on real Apple silicon hardware.
 
 ## [0.2.0] - 2026-09-02
 
