@@ -126,8 +126,11 @@ jobs:
       # The simulator needs no certificate. A device build does, and there is no Apple
       # Developer Program membership yet, so the signing step below stays switched off
       # until there are secrets to switch it on with.
+      #
+      # Unlike Android, iOS refuses a RuntimeIdentifier without trimming at all rather than
+      # just AOT - MtouchLink=None is the SDK's own way to ask for a RID with none.
       - name: Build the window for the iOS simulator
-        run: dotnet build src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64
+        run: dotnet build src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:MtouchLink=None
 
       - name: Sign for a device
         if: false
@@ -139,7 +142,7 @@ jobs:
       - name: Build the pipeline smoke test
         run: |
           dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:RuntimeIdentifier=android-arm64 -p:RunAOTCompilation=false
-          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64
+          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:MtouchLink=None
 
   mobile-smoke:
     name: mobile smoke
@@ -174,7 +177,7 @@ jobs:
 
       - name: iOS
         run: |
-          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64
+          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:MtouchLink=None
           APP=$(find tests/Lego2STL.MobileSmokeTest/bin/Release/net10.0-ios26.0 -name "*.app" -maxdepth 3 | head -1)
           xcrun simctl boot "iPhone 16" || true
           xcrun simctl install booted "$APP"

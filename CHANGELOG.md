@@ -20,6 +20,8 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
   language stuck in Italian for tests that open a fresh window afterwards.
 - The Android build and packaging steps in CI no longer fail with a missing `System.Runtime`
   assembly.
+- The iOS simulator build steps in CI no longer refuse to run without trimming enabled.
+- The Linux and macOS packaging steps in CI no longer fail with "Permission denied".
 
 ## [0.2.0] - 2026-09-02
 
