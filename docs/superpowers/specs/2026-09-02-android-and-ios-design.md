@@ -69,7 +69,7 @@ Everything inside `MainWindow.axaml` moves into a new `Views/MainView.axaml`, a 
 
 - `IClassicDesktopStyleApplicationLifetime` — a `MainWindow` wrapping the view, as today,
   including the `ShutdownRequested` disposal that already exists.
-- `ISingleViewApplicationLifetime` — `MainView` alone, as `MainView`.
+- `ISingleViewApplicationLifetime` — `MainView` alone, assigned to its `MainView` property.
 
 This is the only structural change to existing XAML, and it is what makes phone parity a fact
 about one layout rather than a promise about two.
@@ -166,7 +166,7 @@ otherwise would be a lie the earlier phases did not tell either.
 
 | Risk | What it would mean |
 |---|---|
-| Avalonia 12.1.1's Android or iOS backend behaves differently from the desktop one on some control the four screens use | Fix that control, not fork the layout. Found by the first emulator run, which is the argument for building the smoke head early rather than last. |
+| Avalonia 12.1.1's Android or iOS backend behaves differently from the desktop one on some control the screens use | Fix that control, not fork the layout. Found by the first emulator run, which is the argument for building the smoke head early rather than last. |
 | The workload and restore trap D hit — a missing workload failing restore for every project referencing the changed one | Now applies to `Lego2STL.Gui` as well as Core, so `Cli`, `Tests` and `UiTests` all feel it. The mitigation is D's: `-p:TargetFrameworks=` on every packaging call, and `-f` alongside it for `publish`. |
 | An emulator job slower or flakier than hoped | It is one launch and one log line, not a tap sequence. If it still proves unreliable it moves to a nightly rather than growing retries. |
 | A run on a phone wanting more memory than a phone has | The reference run is 175 shapes; nothing here changes the pipeline's memory behaviour. Measured on the first real device run, not designed around in advance. |
