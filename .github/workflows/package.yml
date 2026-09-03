@@ -204,13 +204,20 @@ jobs:
           # Nothing here taps or looks at the UI, so animations are irrelevant - and disabling
           # them is exactly the adb exchange that failed with "Broken pipe" last run.
           disable-animations: false
-          # android-x64, not arm64: it has to match arch: x86_64 above, or Install puts a build
-          # on the emulator it cannot run.
+          # android-x64, not arm64: it has to match arch: x86_64 above, or a plain adb install
+          # puts a build on the emulator it cannot run.
           # -p:TargetFrameworks pins the project to just this one: it multi-targets android,
           # ios and macos, and without this override MSBuild still needs a workload installed
           # for every one of them, not just the one -f is building.
+          # A plain publish, not -t:Install: that target unconditionally uninstalls any existing
+          # copy first, which fails with DELETE_FAILED_INTERNAL_ERROR on a fresh emulator with
+          # nothing installed yet - and the actual install never runs after that. adb install
+          # directly, same as the iOS job installs its .app manually rather than through a
+          # build target.
           script: |
-            dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:TargetFrameworks=net10.0-android36.0 -p:RuntimeIdentifier=android-x64 -p:RunAOTCompilation=false -t:Install
+            dotnet publish tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:TargetFrameworks=net10.0-android36.0 -p:RuntimeIdentifier=android-x64 -p:RunAOTCompilation=false
+            APK=$(find tests/Lego2STL.MobileSmokeTest/bin/Release/net10.0-android36.0/android-x64/publish -name "*.apk" | head -1)
+            adb install -r "$APK"
             adb logcat -c
             adb shell am start -n com.lego2stl.pipelinesmoketest/.MainActivity
             timeout 180 adb logcat -s Lego2STL:I -m 1 | tee smoke-android.txt
