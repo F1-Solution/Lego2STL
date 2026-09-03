@@ -151,18 +151,65 @@ jobs:
         run: dotnet publish src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-ios26.0 -p:TargetFrameworks=net10.0-ios26.0 -p:RuntimeIdentifier=ios-arm64 -p:CodesignKey="${{ secrets.IOS_SIGNING_IDENTITY }}" -p:CodesignProvision="${{ secrets.IOS_PROVISIONING_PROFILE }}"
 
       # A compile check, same as the window above: arm64 stands in for whichever ABI a real
-      # device or emulator needs, and the mobile smoke job below builds its own copy for the
-      # emulator's actual architecture.
+      # device or emulator needs, and the android-smoke/ios-smoke jobs below build their own
+      # copy for the emulator's/simulator's actual architecture.
       - name: Build the pipeline smoke test
         run: |
           dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:RuntimeIdentifier=android-arm64 -p:RunAOTCompilation=false
           dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:PublishTrimmed=true -p:MtouchLink=None -p:UseInterpreter=true
 
-  mobile-smoke:
-    name: mobile smoke
+  android-smoke:
+    name: android smoke
+    needs: [mobile]
+    # Intel, not macos-latest (Apple Silicon): GitHub's arm64 macOS runners don't support
+    # nested Hypervisor.framework acceleration, so no Android emulator - x86_64 or
+    # arm64-v8a - can boot on them. Intel runners still accelerate x86_64 images fine.
+    runs-on: macos-13
+    # A genuine hang (stuck build, unresponsive emulator) should fail fast instead of
+    # running for hours - GitHub's default job timeout is 360 minutes.
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install the mobile workloads
+        run: dotnet workload install android
+
+      # One launch and one log line each. Nothing here taps anything, which is what keeps an
+      # emulator job worth having: a mis-timed tap is the usual reason they go flaky.
+      - name: Android
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          target: google_apis
+          # Above the action's own 600s default: a known source of flakiness on GitHub's
+          # macOS runners even when nothing here is wrong - see ReactiveCircus/android-emulator-runner#160.
+          emulator-boot-timeout: 900
+          # android-x64, not arm64: it has to match arch: x86_64 above, or Install puts a build
+          # on the emulator it cannot run.
+          script: |
+            dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:RuntimeIdentifier=android-x64 -p:RunAOTCompilation=false -t:Install
+            adb logcat -c
+            adb shell am start -n com.lego2stl.pipelinesmoketest/.MainActivity
+            timeout 180 adb logcat -s Lego2STL:I -m 1 | tee smoke-android.txt
+            grep -q "SMOKE PASS" smoke-android.txt
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-smoke-logs
+          path: smoke-android.txt
+          if-no-files-found: ignore
+
+  ios-smoke:
+    name: ios smoke
     needs: [mobile]
     runs-on: macos-latest
-    # A genuine hang (stuck build, unresponsive emulator) should fail fast instead of
+    # A genuine hang (stuck build, unresponsive simulator) should fail fast instead of
     # running for hours - GitHub's default job timeout is 360 minutes.
     timeout-minutes: 20
     steps:
@@ -178,29 +225,7 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Install the mobile workloads
-        run: dotnet workload install android ios
-
-      # One launch and one log line each. Nothing here taps anything, which is what keeps an
-      # emulator job worth having: a mis-timed tap is the usual reason they go flaky.
-      - name: Android
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 30
-          # macos-latest runners are Apple Silicon (aarch64): the emulator needs an arm64
-          # system image, or QEMU2 fails to boot it outright.
-          arch: arm64-v8a
-          target: google_apis
-          # Above the action's own 600s default: a known source of flakiness on GitHub's
-          # macOS runners even when nothing here is wrong - see ReactiveCircus/android-emulator-runner#160.
-          emulator-boot-timeout: 900
-          # android-arm64, not x64: it has to match arch: arm64 above, or Install puts a build
-          # on the emulator it cannot run.
-          script: |
-            dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:RuntimeIdentifier=android-arm64 -p:RunAOTCompilation=false -t:Install
-            adb logcat -c
-            adb shell am start -n com.lego2stl.pipelinesmoketest/.MainActivity
-            timeout 180 adb logcat -s Lego2STL:I -m 1 | tee smoke-android.txt
-            grep -q "SMOKE PASS" smoke-android.txt
+        run: dotnet workload install ios
 
       - name: iOS
         run: |
@@ -214,8 +239,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: mobile-smoke-logs
-          path: smoke-*.txt
+          name: ios-smoke-logs
+          path: smoke-ios.txt
           if-no-files-found: ignore
 
   windows:

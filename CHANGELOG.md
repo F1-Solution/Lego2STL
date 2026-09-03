@@ -11,8 +11,9 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 
 ### Fixed
 
-- The mobile smoke test's Android emulator step in CI no longer spends 15 minutes failing to
-  boot an emulator whose architecture doesn't match the runner, and now fails within 20 minutes
+- The Android smoke test in CI now runs on an Intel macOS runner, where the emulator can
+  actually use hardware acceleration; the ARM-based default runner cannot boot it at all. The
+  Android and iOS smoke tests are now separate CI jobs, and each fails within 20 minutes
   instead of running for hours if it genuinely hangs.
 - The version-lookup step in CI no longer fails with "Permission denied".
 - The Windows test step in CI no longer fails to build; it now runs only the two real test
