@@ -215,8 +215,13 @@ jobs:
           # directly, same as the iOS job installs its .app manually rather than through a
           # build target.
           script: |
-            dotnet publish tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:TargetFrameworks=net10.0-android36.0 -p:RuntimeIdentifier=android-x64 -p:RunAOTCompilation=false
-            APK=$(find tests/Lego2STL.MobileSmokeTest/bin/Release/net10.0-android36.0/android-x64/publish -name "*.apk" | head -1)
+            dotnet publish tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:TargetFrameworks=net10.0-android36.0 -p:RuntimeIdentifier=android-x64 -p:RunAOTCompilation=false -p:AndroidPackageFormat=apk
+            APK=$(find tests/Lego2STL.MobileSmokeTest/bin/Release/net10.0-android36.0 -name "*.apk" | head -1)
+            if [ -z "$APK" ]; then
+              echo "No .apk found under tests/Lego2STL.MobileSmokeTest/bin/Release/net10.0-android36.0:"
+              find tests/Lego2STL.MobileSmokeTest/bin/Release/net10.0-android36.0
+              exit 1
+            fi
             adb install -r "$APK"
             adb logcat -c
             adb shell am start -n com.lego2stl.pipelinesmoketest/.MainActivity
