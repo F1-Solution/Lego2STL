@@ -15,7 +15,7 @@
       Follows SemVer (semver.org): MAJOR.MINOR.PATCH, with an optional -prerelease suffix.
       See CHANGELOG.md, and the versioning rule in CLAUDE.md, before changing this by hand.
     -->
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

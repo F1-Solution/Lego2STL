@@ -25,8 +25,14 @@ build script — reads it from there through `packaging/version.sh`. See
 
 A change that touches only documentation, tests, or CI configuration with no effect on what
 ships still gets a changelog line if a person would notice it (a new CI check, a renamed
-script); it does not need one for a pure typo fix or comment edit, and does not need a version
-bump for either — a version describes what the *product* does, not the repository.
+script); a pure typo fix or comment edit does not need one.
 
-A tag `vX.Y.Z` pushed to trigger a release must equal `<Version>` at the point of the tag; the
-`release` job checks this and refuses to publish otherwise.
+**Every push to `main` publishes a release**, tagged `vX.Y.Z` from `<Version>` at that commit,
+by the `release` job itself — nothing is tagged by hand. Because of that, `<Version>` must be
+unique across *commits* on `main`, not just across product changes: the `version` job refuses
+to build at all when `vX.Y.Z` already exists, so every commit pushed to `main` needs its own
+bump, with no exception for CI-only or documentation-only changes — there is simply no such
+thing as a commit on `main` that does not produce a release. This is also what stops the second
+workflow run that pushing the tag itself fires straight back at this workflow (`refs/tags/v*` is
+still a trigger): by then the tag it would need already exists, so it fails at the same check
+instead of building and releasing all over again.

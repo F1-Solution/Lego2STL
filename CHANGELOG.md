@@ -5,15 +5,24 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-02
+
 ### Added
 
+- Android and iOS applications, built on the same window and view models as desktop.
+- CI packages the Android APK and an iOS simulator build, smoke-tests both on a booted
+  emulator and simulator, and includes both as downloadable release assets - the iOS one
+  unsigned and simulator-only, since there is no Apple Developer Program membership yet.
+- The package version is now read from `Lego2STL.Core`'s `<Version>` element instead of being
+  passed in as a tag or a workflow input.
 - CI also runs on every push or merge to `main`, not only on a version tag or a manual run.
-- Every release now includes an installable Android `.apk`, and an unsigned, simulator-only
-  iOS build (there is no Apple Developer Program membership yet, so nothing further to ship
-  for a real iOS device).
 
 ### Changed
 
+- A run's folder lives in the app's own storage rather than beside the input document, on
+  platforms where a picked document has no folder to sit beside.
+- Results leave a phone through the OS share sheet.
+- A phone downloads only the LDraw geometry its own parts list needs, never the whole library.
 - Every CI run that reaches the release step now tags the commit `vX.Y.Z`, from
   `Lego2STL.Core`'s own `<Version>`, and publishes a GitHub release from it - not only a run
   triggered by a hand-pushed tag. A version that was already released fails CI immediately
@@ -55,23 +64,6 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
   the Intel copy of each such file is kept as-is, unverified so far on real Apple silicon
   hardware — see `README-GAPS.md`.
 - The Android emulator step in CI gets more time to boot before giving up.
-
-## [0.2.0] - 2026-09-02
-
-### Added
-
-- Android and iOS applications, built on the same window and view models as desktop.
-- CI packages the Android APK and an iOS simulator build, and smoke-tests both on a booted
-  emulator and simulator.
-- The package version is now read from `Lego2STL.Core`'s `<Version>` element instead of being
-  passed in as a tag or a workflow input.
-
-### Changed
-
-- A run's folder lives in the app's own storage rather than beside the input document, on
-  platforms where a picked document has no folder to sit beside.
-- Results leave a phone through the OS share sheet.
-- A phone downloads only the LDraw geometry its own parts list needs, never the whole library.
 
 ## [0.1.0] - 2026-08-23
 
