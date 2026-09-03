@@ -15,6 +15,8 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
   actually use hardware acceleration; the ARM-based default runner cannot boot it at all. The
   Android and iOS smoke tests are now separate CI jobs, each installing only the workload it
   needs, and each fails within 20 minutes instead of running for hours if it genuinely hangs.
+- The iOS smoke test in CI no longer fails to boot a simulator when the runner's Xcode doesn't
+  happen to have a device provisioned under the exact name it was looking for.
 - The version-lookup step in CI no longer fails with "Permission denied".
 - The Windows test step in CI no longer fails to build; it now runs only the two real test
   projects instead of the whole solution.

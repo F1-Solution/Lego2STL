@@ -237,7 +237,10 @@ jobs:
         run: |
           dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:TargetFrameworks=net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:PublishTrimmed=true -p:MtouchLink=None -p:UseInterpreter=true
           APP=$(find tests/Lego2STL.MobileSmokeTest/bin/Release/net10.0-ios26.0 -name "*.app" -maxdepth 3 | head -1)
-          xcrun simctl boot "iPhone 16" || true
+          # By UDID, not a hardcoded device name like "iPhone 16": the exact simulator names
+          # available shift with the Xcode version, and a stale name fails outright.
+          UDID=$(xcrun simctl list devices available | grep -m1 "iPhone" | grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}')
+          xcrun simctl boot "$UDID"
           xcrun simctl install booted "$APP"
           xcrun simctl launch --console-pty booted com.lego2stl.pipelinesmoketest | tee smoke-ios.txt
           grep -q "SMOKE PASS" smoke-ios.txt
