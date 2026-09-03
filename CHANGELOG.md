@@ -11,10 +11,10 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 
 ### Fixed
 
-- The Android smoke test in CI now runs on an Intel macOS runner, where the emulator can
-  actually use hardware acceleration; the ARM-based default runner cannot boot it at all. The
-  Android and iOS smoke tests are now separate CI jobs, each installing only the workload it
-  needs, and each fails within 20 minutes instead of running for hours if it genuinely hangs.
+- The Android smoke test in CI now runs on a Linux runner with KVM acceleration; no macOS
+  runner GitHub currently offers can actually boot the emulator. The Android and iOS smoke
+  tests are now separate CI jobs, each installing only the workload it needs, and each fails
+  within 20 minutes instead of running for hours if it genuinely hangs.
 - The iOS smoke test in CI no longer fails to boot a simulator when the runner's Xcode doesn't
   happen to have a device provisioned under the exact name it was looking for.
 - The iOS smoke test in CI no longer keeps running for the rest of its 20-minute timeout after

@@ -161,10 +161,12 @@ jobs:
   android-smoke:
     name: android smoke
     needs: [mobile]
-    # Intel, not macos-latest (Apple Silicon): GitHub's arm64 macOS runners don't support
-    # nested Hypervisor.framework acceleration, so no Android emulator - x86_64 or
-    # arm64-v8a - can boot on them. Intel runners still accelerate x86_64 images fine.
-    runs-on: macos-13
+    # Linux with KVM, not macOS: GitHub's Apple Silicon macOS runners don't support nested
+    # Hypervisor.framework acceleration (no Android emulator can boot on them), and Intel
+    # macOS runners are no longer available to pick that up instead - a run queued for one
+    # for over two hours and never got a runner. KVM-accelerated Linux is the emulator
+    # action's own primary recommendation, and needs no Xcode either.
+    runs-on: ubuntu-latest
     # A genuine hang (stuck build, unresponsive emulator) should fail fast instead of
     # running for hours - GitHub's default job timeout is 360 minutes.
     timeout-minutes: 20
@@ -242,10 +244,17 @@ jobs:
           UDID=$(xcrun simctl list devices available | grep -m1 "iPhone" | grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}')
           xcrun simctl boot "$UDID"
           xcrun simctl install booted "$APP"
-          # --console-pty stays attached to the app's console forever, so it never exits
-          # on its own even after the app has printed and finished - bound it like the
-          # Android side bounds its own logcat wait.
-          timeout 120 xcrun simctl launch --console-pty booted com.lego2stl.pipelinesmoketest | tee smoke-ios.txt
+          # --console-pty stays attached to the app's console forever, so it never exits on
+          # its own even after the app has printed and finished. macOS's bash has no
+          # "timeout" command to bound it with (that's GNU coreutils, not BSD), so poll the
+          # output file instead and kill the launch once it has what it needs.
+          xcrun simctl launch --console-pty booted com.lego2stl.pipelinesmoketest > smoke-ios.txt 2>&1 &
+          LAUNCH_PID=$!
+          for _ in $(seq 1 120); do
+            grep -q "SMOKE PASS" smoke-ios.txt && break
+            sleep 1
+          done
+          kill "$LAUNCH_PID" 2>/dev/null || true
           grep -q "SMOKE PASS" smoke-ios.txt
 
       - uses: actions/upload-artifact@v4
