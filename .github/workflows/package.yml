@@ -191,8 +191,11 @@ jobs:
           emulator-boot-timeout: 900
           # android-x64, not arm64: it has to match arch: x86_64 above, or Install puts a build
           # on the emulator it cannot run.
+          # -p:TargetFrameworks pins the project to just this one: it multi-targets android,
+          # ios and macos, and without this override MSBuild still needs a workload installed
+          # for every one of them, not just the one -f is building.
           script: |
-            dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:RuntimeIdentifier=android-x64 -p:RunAOTCompilation=false -t:Install
+            dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-android36.0 -p:TargetFrameworks=net10.0-android36.0 -p:RuntimeIdentifier=android-x64 -p:RunAOTCompilation=false -t:Install
             adb logcat -c
             adb shell am start -n com.lego2stl.pipelinesmoketest/.MainActivity
             timeout 180 adb logcat -s Lego2STL:I -m 1 | tee smoke-android.txt
@@ -228,8 +231,11 @@ jobs:
         run: dotnet workload install ios
 
       - name: iOS
+        # -p:TargetFrameworks pins the project to just this one: it multi-targets android,
+        # ios and macos, and without this override MSBuild still needs a workload installed
+        # for every one of them, not just the one -f is building.
         run: |
-          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:PublishTrimmed=true -p:MtouchLink=None -p:UseInterpreter=true
+          dotnet build tests/Lego2STL.MobileSmokeTest -c Release -f net10.0-ios26.0 -p:TargetFrameworks=net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:PublishTrimmed=true -p:MtouchLink=None -p:UseInterpreter=true
           APP=$(find tests/Lego2STL.MobileSmokeTest/bin/Release/net10.0-ios26.0 -name "*.app" -maxdepth 3 | head -1)
           xcrun simctl boot "iPhone 16" || true
           xcrun simctl install booted "$APP"
