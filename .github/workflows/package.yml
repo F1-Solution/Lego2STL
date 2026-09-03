@@ -140,6 +140,13 @@ jobs:
       - name: Package the APK
         run: dotnet publish src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-android36.0 -p:TargetFrameworks=net10.0-android36.0 -p:RuntimeIdentifier=android-arm64 -p:RunAOTCompilation=false
 
+      # Renamed to match every other package's own naming, and to drop "-Signed" - that just
+      # means self-signed with a throwaway debug key, not signed for the Play Store.
+      - name: Rename the APK
+        env:
+          VERSION: ${{ needs.version.outputs.number }}
+        run: mv src/Lego2STL.Gui/bin/Release/net10.0-android36.0/android-arm64/publish/*.apk "src/Lego2STL.Gui/bin/Release/net10.0-android36.0/android-arm64/publish/Lego2STL-$VERSION-android-arm64.apk"
+
       - uses: actions/upload-artifact@v4
         with:
           name: android-apk
@@ -161,6 +168,23 @@ jobs:
       # compiler on projects that pull in SkiaSharp, which Avalonia does.
       - name: Build the window for the iOS simulator
         run: dotnet build src/Lego2STL.Gui/Lego2STL.Gui.csproj -c Release -f net10.0-ios26.0 -p:RuntimeIdentifier=iossimulator-arm64 -p:PublishTrimmed=true -p:MtouchLink=None -p:UseInterpreter=true
+
+      # Zipped because a release asset has to be a single file, and a .app is a directory.
+      # Simulator-only and unsigned, same as the build above: with no Apple Developer Program
+      # membership yet, this cannot run on a real device - only in Simulator.app.
+      - name: Zip the iOS simulator build
+        env:
+          VERSION: ${{ needs.version.outputs.number }}
+        run: |
+          set -euo pipefail
+          cd src/Lego2STL.Gui/bin/Release/net10.0-ios26.0/iossimulator-arm64
+          zip -r -y "Lego2STL-$VERSION-ios-simulator-arm64.zip" *.app
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-simulator-app
+          path: src/Lego2STL.Gui/bin/Release/net10.0-ios26.0/iossimulator-arm64/*.zip
+          if-no-files-found: error
 
       - name: Sign for a device
         if: false
@@ -385,7 +409,13 @@ jobs:
 
   release:
     name: release
-    needs: [version, windows, linux, macos]
+    # mobile, not just windows/linux/macos: without it, release can run before mobile has
+    # finished and publish without the Android APK or iOS simulator build at all - which is
+    # exactly what happened the first time this ran on every push instead of a hand-pushed
+    # tag pushed well after every other job had long finished. android-smoke and ios-smoke
+    # are added for the same reason completion always waits on validation: a release should
+    # not go out for a commit the smoke tests have not actually passed on.
+    needs: [version, windows, linux, macos, mobile, android-smoke, ios-smoke]
 
     runs-on: ubuntu-latest
     permissions:
@@ -437,15 +467,21 @@ jobs:
 
           notes=$(mktemp)
           {
-            echo "Needs **.NET 10**. Each installer puts it in place when the machine has not"
-            echo "got it, and leaves it alone when it has. The zip and tarball expect it to be"
-            echo "there already."
+            echo "Needs **.NET 10**. Each desktop installer puts it in place when the machine"
+            echo "has not got it, and leaves it alone when it has. The zip and tarball expect"
+            echo "it to be there already."
             echo
             echo "| System | Install with | Or unpack |"
             echo "|---|---|---|"
             echo "| Windows | \`.exe\` | \`.zip\` |"
             echo "| Linux | \`.run\` | \`.tar.gz\` |"
             echo "| macOS | \`.pkg\` (any Mac) | \`.zip\` |"
+            echo
+            echo "The Android \`.apk\` installs on a real device (enable \"install unknown"
+            echo "apps\" for whatever you use to move it over - it's self-signed, not signed"
+            echo "for the Play Store). The iOS build is simulator-only and unsigned: with no"
+            echo "Apple Developer Program membership yet, it cannot run on a real device -"
+            echo "unzip it into Simulator.app instead."
           } > "$notes"
 
           flags=(--generate-notes --notes-file "$notes" --title "Lego2STL $VERSION")

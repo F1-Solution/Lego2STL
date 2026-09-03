@@ -8,13 +8,17 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 ### Added
 
 - CI also runs on every push or merge to `main`, not only on a version tag or a manual run.
+- Every release now includes an installable Android `.apk`, and an unsigned, simulator-only
+  iOS build (there is no Apple Developer Program membership yet, so nothing further to ship
+  for a real iOS device).
 
 ### Changed
 
 - Every CI run that reaches the release step now tags the commit `vX.Y.Z`, from
   `Lego2STL.Core`'s own `<Version>`, and publishes a GitHub release from it - not only a run
   triggered by a hand-pushed tag. A version that was already released fails CI immediately
-  instead of building a second time under the same tag.
+  instead of building a second time under the same tag. A release now also waits on the
+  Android and iOS smoke tests passing, not just on the desktop packages being built.
 
 ### Fixed
 
