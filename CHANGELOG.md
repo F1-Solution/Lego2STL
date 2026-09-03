@@ -17,6 +17,8 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
   needs, and each fails within 20 minutes instead of running for hours if it genuinely hangs.
 - The iOS smoke test in CI no longer fails to boot a simulator when the runner's Xcode doesn't
   happen to have a device provisioned under the exact name it was looking for.
+- The iOS smoke test in CI no longer keeps running for the rest of its 20-minute timeout after
+  the app has already printed success.
 - The version-lookup step in CI no longer fails with "Permission denied".
 - The Windows test step in CI no longer fails to build; it now runs only the two real test
   projects instead of the whole solution.

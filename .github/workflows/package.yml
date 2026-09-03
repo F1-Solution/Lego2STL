@@ -242,7 +242,10 @@ jobs:
           UDID=$(xcrun simctl list devices available | grep -m1 "iPhone" | grep -oE '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}')
           xcrun simctl boot "$UDID"
           xcrun simctl install booted "$APP"
-          xcrun simctl launch --console-pty booted com.lego2stl.pipelinesmoketest | tee smoke-ios.txt
+          # --console-pty stays attached to the app's console forever, so it never exits
+          # on its own even after the app has printed and finished - bound it like the
+          # Android side bounds its own logcat wait.
+          timeout 120 xcrun simctl launch --console-pty booted com.lego2stl.pipelinesmoketest | tee smoke-ios.txt
           grep -q "SMOKE PASS" smoke-ios.txt
 
       - uses: actions/upload-artifact@v4
