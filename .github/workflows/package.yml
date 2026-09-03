@@ -180,6 +180,16 @@ jobs:
       - name: Install the mobile workloads
         run: dotnet workload install android
 
+      # The runner's own user isn't in the kvm group by default, so /dev/kvm exists but is
+      # not actually usable - the emulator silently falls back to unaccelerated software
+      # emulation, which boots in minutes instead of seconds and is prone to adb dropping
+      # the connection under load. See ReactiveCircus/android-emulator-runner's own README.
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
       # One launch and one log line each. Nothing here taps anything, which is what keeps an
       # emulator job worth having: a mis-timed tap is the usual reason they go flaky.
       - name: Android
@@ -191,6 +201,9 @@ jobs:
           # Above the action's own 600s default: a known source of flakiness on GitHub's
           # macOS runners even when nothing here is wrong - see ReactiveCircus/android-emulator-runner#160.
           emulator-boot-timeout: 900
+          # Nothing here taps or looks at the UI, so animations are irrelevant - and disabling
+          # them is exactly the adb exchange that failed with "Broken pipe" last run.
+          disable-animations: false
           # android-x64, not arm64: it has to match arch: x86_64 above, or Install puts a build
           # on the emulator it cannot run.
           # -p:TargetFrameworks pins the project to just this one: it multi-targets android,
