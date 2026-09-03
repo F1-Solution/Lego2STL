@@ -5,14 +5,14 @@
 # which ship only with macOS. So each is built where it belongs and the results are collected
 # together. None of the three carries .NET 10; each fetches it when the machine has none.
 #
-# Pushing a tag of the form v1.2.0 builds everything and publishes a release. A push or merge
-# to main, or running it by hand, builds the same packages and leaves them as artifacts,
-# without publishing anything.
+# Every run that reaches the release job - a push or merge to main, or running it by hand -
+# tags the commit vX.Y.Z and publishes a release. Nothing tags a commit by hand: the release
+# job creates and pushes that tag itself, from the version it built. Pushing that tag fires
+# this workflow again on refs/tags/v*, and the version job's own check stops that second run
+# immediately, since the tag it would need to create already exists.
 #
 # No version is ever passed in, on any trigger. It comes from one place only: the <Version>
-# element on Lego2STL.Core.csproj (see packaging/version.sh and CLAUDE.md). A tag still gates
-# whether a run publishes, and the release job checks the tag against that version before it
-# publishes anything, so the two cannot quietly drift apart.
+# element on Lego2STL.Core.csproj (see packaging/version.sh and CLAUDE.md).
 
 name: package
 
@@ -44,6 +44,22 @@ jobs:
       - name: Work out the version
         id: pick
         run: ./packaging/version.sh
+
+      # Every run that gets this far tags and releases (see the release job), so a version
+      # that was already released must not build again - it would tag a second commit with a
+      # tag that already points at the first one. This is also what stops the second run that
+      # pushing that very tag fires right back at this workflow: by then the tag already
+      # exists, so it stops here instead of building and releasing all over again.
+      - name: Make sure this version has not been released yet
+        env:
+          VERSION: ${{ steps.pick.outputs.number }}
+        run: |
+          set -euo pipefail
+          tag="v$VERSION"
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null; then
+            echo "::error::Tag $tag already exists - version $VERSION was already released. Bump <Version> in src/Lego2STL.Core/Lego2STL.Core.csproj before pushing again." >&2
+            exit 1
+          fi
 
   test:
     name: test
@@ -371,28 +387,12 @@ jobs:
     name: release
     needs: [version, windows, linux, macos]
 
-    # Only a tag publishes. Running the workflow by hand builds the same packages and leaves
-    # them as artifacts, so the build can be exercised without announcing anything.
-    if: startsWith(github.ref, 'refs/tags/v')
-
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      # The tag decides *whether* to publish; the csproj decides *what version* to publish.
-      # Those two must agree, or the release would carry a number the tag never announced.
-      - name: Make sure the tag matches the version Lego2STL.Core carries
-        env:
-          TAG: ${{ github.ref_name }}
-          VERSION: ${{ needs.version.outputs.number }}
-        run: |
-          set -euo pipefail
-          tag_version="${TAG#v}"
-          if [ "$tag_version" != "$VERSION" ]; then
-            echo "::error::Tag $TAG does not match the version Lego2STL.Core carries ($VERSION). Bump <Version> in src/Lego2STL.Core/Lego2STL.Core.csproj to match, or retag." >&2
-            exit 1
-          fi
+      - uses: actions/checkout@v4
 
       - uses: actions/download-artifact@v4
         with:
@@ -411,12 +411,25 @@ jobs:
           echo "Publishing:"
           ls -lh dist
 
+      # Only after the packages above are confirmed present: a commit that fails to tag
+      # cleanly is recoverable by re-running, but a tag pushed for packages that turned out
+      # incomplete is not - it already claims that version.
+      - name: Tag this commit
+        env:
+          VERSION: ${{ needs.version.outputs.number }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
+
       # The release is made with the tool GitHub ships rather than a third-party action, so
       # nothing outside this repository gets a token that can write to it.
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
+          TAG: v${{ needs.version.outputs.number }}
           VERSION: ${{ needs.version.outputs.number }}
           PRERELEASE: ${{ needs.version.outputs.prerelease }}
         run: |

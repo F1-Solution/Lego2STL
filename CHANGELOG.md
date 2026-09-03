@@ -9,6 +9,13 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 
 - CI also runs on every push or merge to `main`, not only on a version tag or a manual run.
 
+### Changed
+
+- Every CI run that reaches the release step now tags the commit `vX.Y.Z`, from
+  `Lego2STL.Core`'s own `<Version>`, and publishes a GitHub release from it - not only a run
+  triggered by a hand-pushed tag. A version that was already released fails CI immediately
+  instead of building a second time under the same tag.
+
 ### Fixed
 
 - The Android smoke test in CI now runs on a Linux runner with KVM acceleration properly
