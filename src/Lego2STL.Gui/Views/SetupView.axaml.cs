@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using Lego2STL.Gui.Services;
 using Lego2STL.Gui.ViewModels;
 
 namespace Lego2STL.Gui.Views;
@@ -19,6 +20,7 @@ public partial class SetupView : UserControl
     public SetupView()
     {
         InitializeComponent();
+        this.CopiesWhatItsButtonsCarry();
 
         PickDocument.Click += async (_, _) =>
             await ChooseFileAsync("pdf", path => Model!.Options.DocumentPath = path);

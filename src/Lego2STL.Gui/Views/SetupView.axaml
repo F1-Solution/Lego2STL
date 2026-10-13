@@ -28,7 +28,7 @@
                      Text="{Binding Problem}" />
         </Border>
 
-        <Grid ColumnDefinitions="*,Auto">
+        <Grid ColumnDefinitions="*,Auto,Auto">
           <StackPanel Grid.Column="0" Spacing="2">
             <TextBlock Foreground="{DynamicResource AppTextSecondary}"
                        Text="{Binding [UiRunFolder], Source={x:Static loc:Loc.Current}}" />
@@ -37,7 +37,14 @@
                        Text="{Binding PlannedFolder}" />
           </StackPanel>
 
-          <Button Grid.Column="1" MinWidth="140" Padding="16,8"
+          <!-- The equivalent command, as a button at the end of the options rather than a docked line (#3). -->
+          <Button Grid.Column="1" Classes="copy" Margin="12,0,0,0" Padding="12,8"
+                  VerticalAlignment="Bottom"
+                  Tag="{Binding CommandLine}"
+                  ToolTip.Tip="{Binding CommandLine}"
+                  Content="{Binding [UiCopyCommand], Source={x:Static loc:Loc.Current}}" />
+
+          <Button Grid.Column="2" Margin="8,0,0,0" MinWidth="140" Padding="16,8"
                   VerticalAlignment="Bottom"
                   IsEnabled="{Binding CanStart}"
                   Command="{Binding StartCommand}"
@@ -56,20 +63,21 @@
         <TextBlock Classes="heading"
                    Text="{Binding [UiInputKind], Source={x:Static loc:Loc.Current}}" />
 
-        <StackPanel Spacing="6">
-          <RadioButton GroupName="kind"
+        <!-- One wrapping row rather than a column, so a 720 px high screen keeps room for the options (#3). -->
+        <WrapPanel>
+          <RadioButton GroupName="kind" Margin="0,0,20,0"
                        IsChecked="{Binding Options.IsDocument, Mode=OneWay}"
                        Command="{Binding Options.SetDocumentCommand}"
                        Content="{Binding [UiInputDocument], Source={x:Static loc:Loc.Current}}" />
-          <RadioButton GroupName="kind"
+          <RadioButton GroupName="kind" Margin="0,0,20,0"
                        IsChecked="{Binding Options.IsPartsList, Mode=OneWay}"
                        Command="{Binding Options.SetPartsListCommand}"
                        Content="{Binding [UiInputPartsList], Source={x:Static loc:Loc.Current}}" />
-          <RadioButton GroupName="kind"
+          <RadioButton GroupName="kind" Margin="0,0,20,0"
                        IsChecked="{Binding Options.IsSetNumber, Mode=OneWay}"
                        Command="{Binding Options.SetSetNumberCommand}"
                        Content="{Binding [UiInputSetNumber], Source={x:Static loc:Loc.Current}}" />
-        </StackPanel>
+        </WrapPanel>
 
         <!-- A document. -->
         <StackPanel Spacing="8" Margin="0,18,0,0" IsVisible="{Binding Options.IsDocument}">
@@ -82,28 +90,35 @@
                     Content="{Binding [UiBrowse], Source={x:Static loc:Loc.Current}}" />
           </Grid>
 
-          <TextBlock Classes="group"
-                     Text="{Binding [UiPageRange], Source={x:Static loc:Loc.Current}}" />
-          <Grid ColumnDefinitions="*,Auto">
-            <TextBox Grid.Column="0" Text="{Binding Options.Pages}"
-                     PlaceholderText="{Binding [UiPageRangeHint], Source={x:Static loc:Loc.Current}}" />
-            <Button Grid.Column="1" Margin="8,0,0,0"
-                    Command="{Binding ScanPagesCommand}"
-                    IsEnabled="{Binding !Scanning}"
-                    Content="{Binding [UiScanPages], Source={x:Static loc:Loc.Current}}" />
-          </Grid>
+          <!-- Side by side where there is room, one above the other where there is not. -->
+          <WrapPanel>
+            <StackPanel Width="400" Margin="0,0,24,0">
+              <TextBlock Classes="group"
+                         Text="{Binding [UiPageRange], Source={x:Static loc:Loc.Current}}" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBox Grid.Column="0" Text="{Binding Options.Pages}"
+                         PlaceholderText="{Binding [UiPageRangeHint], Source={x:Static loc:Loc.Current}}" />
+                <Button Grid.Column="1" Margin="8,0,0,0"
+                        Command="{Binding ScanPagesCommand}"
+                        IsEnabled="{Binding !Scanning}"
+                        Content="{Binding [UiScanPages], Source={x:Static loc:Loc.Current}}" />
+              </Grid>
+            </StackPanel>
+
+            <StackPanel>
+              <TextBlock Classes="group"
+                         Text="{Binding [UiColourScheme], Source={x:Static loc:Loc.Current}}" />
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <ComboBox HorizontalAlignment="Left" MinWidth="220"
+                          ItemsSource="{x:Static vm:RunOptionsViewModel.ColorSchemes}"
+                          SelectedItem="{Binding Options.ColorScheme}" />
+                <!-- Named, not merely described: the flag is how this is asked for from a terminal. -->
+                <TextBlock Classes="hint" VerticalAlignment="Center" Text="--color-scheme" />
+              </StackPanel>
+            </StackPanel>
+          </WrapPanel>
           <TextBlock Classes="hint" IsVisible="{Binding Scanning}"
                      Text="{Binding [UiScanning], Source={x:Static loc:Loc.Current}}" />
-
-          <TextBlock Classes="group"
-                     Text="{Binding [UiColourScheme], Source={x:Static loc:Loc.Current}}" />
-          <StackPanel Orientation="Horizontal" Spacing="10">
-            <ComboBox HorizontalAlignment="Left" MinWidth="220"
-                      ItemsSource="{x:Static vm:RunOptionsViewModel.ColorSchemes}"
-                      SelectedItem="{Binding Options.ColorScheme}" />
-            <!-- Named, not merely described: the flag is how this is asked for from a terminal. -->
-            <TextBlock Classes="hint" VerticalAlignment="Center" Text="--color-scheme" />
-          </StackPanel>
 
         </StackPanel>
 

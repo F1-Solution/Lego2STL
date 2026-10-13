@@ -9,6 +9,10 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 
 - Bambu Lab printer quick start guides and manuals, and a link to the Bambu Lab wiki, kept in `docs/bambulab/` as reference.
 
+### Changed
+
+- The setup screen offers the equivalent command line as a "Copy command" button beside Start instead of a line docked under the window, and keeps the options visible at 1280 x 720.
+
 ### Fixed
 
 - The `Lego2STL.json` process preset now imports in Bambu Studio instead of failing with "There are 0 configs imported".

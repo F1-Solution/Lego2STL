@@ -95,25 +95,6 @@
       </DockPanel>
     </Border>
 
-    <!--
-      The command that would do the same thing, while a run is being described. A run's own
-      page carries the line that run stored, so an old run is repeatable as it actually was.
-    -->
-    <Border DockPanel.Dock="Bottom" Padding="16,10"
-            BorderThickness="0,1,0,0"
-            BorderBrush="{DynamicResource AppCardBorder}"
-            IsVisible="{Binding ShowingSetup}">
-      <StackPanel>
-        <TextBlock Classes="hint"
-                   Text="{Binding [UiEquivalentCommand], Source={x:Static loc:Loc.Current}}" />
-        <SelectableTextBlock Margin="0,2,0,0"
-                             FontFamily="Cascadia Mono,Consolas,Menlo,DejaVu Sans Mono,monospace"
-                             TextWrapping="Wrap"
-                             Foreground="{DynamicResource AppTextSecondary}"
-                             Text="{Binding Setup.CommandLine}" />
-      </StackPanel>
-    </Border>
-
     <!-- What a run can be looked at through, and the way back to setting one up. -->
     <Border DockPanel.Dock="Left" Width="200" Padding="8,6,8,10"
             BorderThickness="0,0,1,0"
