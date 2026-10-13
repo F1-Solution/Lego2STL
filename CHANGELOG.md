@@ -5,6 +5,10 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 
 ## [Unreleased]
 
+### Added
+
+- Bambu Lab printer quick start guides and manuals, and a link to the Bambu Lab wiki, kept in `docs/bambulab/` as reference.
+
 ## [0.2.0] - 2026-09-02
 
 ### Added
