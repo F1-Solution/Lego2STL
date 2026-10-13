@@ -87,6 +87,49 @@ public sealed class PrintNotesTests
         block.Should().NotContain(Strings.English[TextKey.PrintNotesCalibration]);
     }
 
+    /// <summary>
+    /// Every setting is named the way Bambu Studio names it, under the page that shows it.
+    /// </summary>
+    /// <remarks>
+    /// Issue #4: "Nozzle temperature", "Part cooling fan", "Max volumetric speed" and "Walls" were
+    /// looked for in the process preset and not found, because the first three live in the
+    /// filament preset and the fourth is labelled "Wall loops". Labels checked against Bambu
+    /// Studio's PrintConfig.cpp, Tab.cpp and its Italian catalogue on 2026-10-13.
+    /// </remarks>
+    [Theory]
+    [InlineData("Process > Strength > Walls", "Wall loops")]
+    [InlineData("Filament > Print temperature", "Nozzle - Other layers")]
+    [InlineData("Filament > Volumetric speed limitation", "Max volumetric speed")]
+    [InlineData("Filament > Cooling > Part cooling fan", "Initial layer fan")]
+    public void English_names_match_Bambu_Studio(string place, string label)
+    {
+        var block = PrintNotes.Settings(Strings.English);
+
+        block.Should().Contain(place).And.Contain(label);
+    }
+
+    /// <summary>An Italian run names the settings as an Italian Bambu Studio shows them.</summary>
+    [Theory]
+    [InlineData("Processo > Resistenza > Pareti", "Loop pareti")]
+    [InlineData("Filamento > Temperatura stampa", "Nozzle - Altri layer")]
+    [InlineData("Filamento > Limitazione velocità volumetrica", "Massima velocità volumetrica")]
+    [InlineData("Filamento > Raffreddamento > Ventola di raffreddamento oggetto", "Ventola layer iniziale")]
+    public void Italian_names_match_Bambu_Studio(string place, string label)
+    {
+        var block = PrintNotes.Settings(Strings.Italian);
+
+        block.Should().Contain(place).And.Contain(label);
+        block.Should().NotContain("Wall loops");
+    }
+
+    /// <summary>The names that were never on any Bambu Studio screen are gone.</summary>
+    [Theory]
+    [InlineData("Nozzle temperature, first layer")]
+    [InlineData("Bed temperature, first layer")]
+    [InlineData("  Walls ")]
+    public void Names_Bambu_Studio_does_not_use_are_not_written(string invented) =>
+        PrintNotes.Settings(Strings.English).Should().NotContain(invented);
+
     /// <summary>The whole sheet still contains the block, because it is made of it.</summary>
     [Fact]
     public void The_whole_sheet_contains_the_block_verbatim() =>

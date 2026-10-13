@@ -16,6 +16,7 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 ### Fixed
 
 - The `Lego2STL.json` process preset now imports in Bambu Studio instead of failing with "There are 0 configs imported".
+- The printing notes name every setting as Bambu Studio shows it, in English or Italian to match the run, under the process or filament page where it lives.
 
 ## [0.2.0] - 2026-09-02
 

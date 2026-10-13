@@ -593,6 +593,10 @@ public sealed partial class Strings
                 + "wrong preset: choose the profile in the slicer whose name ends in your nozzle "
                 + "size, and set the values below on top of it.",
             [TextKey.PrintNotesSettings] = "Settings",
+            [TextKey.PrintNotesWhereToFind] =
+                "Each setting is listed under the page where Bambu Studio shows it. Temperatures, "
+                + "the fan and the volumetric speed belong to the filament preset, not the process "
+                + "preset; set the bed temperatures on the row of the plate you print on.",
             [TextKey.PrintNotesCalibration] = "Calibrate first",
             [TextKey.PrintNotesCalibrationSteps] =
                 "Wash the plate with warm water and washing-up liquid and dry it without touching "

@@ -617,6 +617,11 @@ public sealed partial class Strings
                 + "preset sbagliato: scegli nello slicer il profilo il cui nome finisce con la "
                 + "misura del tuo ugello, e applicaci sopra i valori qui sotto.",
             [TextKey.PrintNotesSettings] = "Impostazioni",
+            [TextKey.PrintNotesWhereToFind] =
+                "Ogni impostazione è elencata sotto la pagina in cui Bambu Studio la mostra. Le "
+                + "temperature, la ventola e la velocità volumetrica appartengono al preset del "
+                + "filamento, non a quello di processo; imposta le temperature del piano sulla riga "
+                + "del piano su cui stampi.",
             [TextKey.PrintNotesCalibration] = "Prima calibra",
             [TextKey.PrintNotesCalibrationSteps] =
                 "Lava il piano con acqua calda e detersivo per piatti e asciugalo senza toccare la "
