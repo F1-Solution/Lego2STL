@@ -94,16 +94,48 @@ public static class ThreeMfWriter
     {
         ArgumentNullException.ThrowIfNull(plate);
 
+        return Write(plate.Name, [plate], 0f);
+    }
+
+    /// <summary>
+    /// Several plates in one file, each in its own colour, laid side by side along X (#5).
+    /// </summary>
+    /// <param name="stride">How far apart the plates' origins sit, so that no two overlap.</param>
+    public static byte[] Write(string name, IReadOnlyList<PlateContents> plates, float stride)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNull(plates);
+
+        // One plate is described exactly as on its own, so it produces the same bytes.
+        var description = plates.Count == 1
+            ? $"{plates[0].ColorName} ({plates[0].Rgb})"
+            : string.Join(", ", plates.Select(p => p.ColorName).Distinct(StringComparer.Ordinal));
+
         using var buffer = new MemoryStream();
 
         using (var archive = new ZipArchive(buffer, ZipArchiveMode.Create, leaveOpen: true))
         {
             AddEntry(archive, "[Content_Types].xml", ContentTypes());
             AddEntry(archive, "_rels/.rels", Relationships());
-            AddEntry(archive, ModelPath, Model(plate));
+            AddEntry(archive, ModelPath, Model(name, description, plates, stride));
         }
 
         return buffer.ToArray();
+    }
+
+    public static async Task WriteFileAsync(
+        string path,
+        string name,
+        IReadOnlyList<PlateContents> plates,
+        float stride,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
+
+        await File.WriteAllBytesAsync(path, Write(name, plates, stride), cancellationToken)
+            .ConfigureAwait(false);
     }
 
     public static async Task WriteFileAsync(
@@ -162,7 +194,8 @@ public static class ThreeMfWriter
             w.WriteEndElement();
         });
 
-    private static string Model(PlateContents plate) =>
+    private static string Model(
+        string name, string description, IReadOnlyList<PlateContents> plates, float stride) =>
         WriteXml(w =>
         {
             w.WriteStartElement("model", CoreNamespace);
@@ -170,50 +203,64 @@ public static class ThreeMfWriter
             w.WriteAttributeString("xml", "lang", null, "en-US");
             w.WriteAttributeString("xmlns", MaterialPrefix, null, MaterialNamespace);
 
-            WriteMetadata(w, "Title", plate.Name);
+            WriteMetadata(w, "Title", name);
             WriteMetadata(w, "Designer", "Lego2STL");
-            WriteMetadata(w, "Description", $"{plate.ColorName} ({plate.Rgb})");
+            WriteMetadata(w, "Description", description);
 
             w.WriteStartElement("resources", CoreNamespace);
 
-            // One colour for the whole plate: everything on it is the same colour, which is
-            // the point of grouping plates by colour in the first place.
+            // One colour per plate: everything on a plate is the same colour, which is the
+            // point of grouping plates by colour in the first place. A combined file lists
+            // each plate's colour in plate order, and every part points at its own plate's.
             w.WriteStartElement("basematerials", CoreNamespace);
             w.WriteAttributeString("id", Number(MaterialResourceId));
-            w.WriteStartElement("base", CoreNamespace);
-            w.WriteAttributeString("name", plate.ColorName);
-            w.WriteAttributeString("displaycolor", DisplayColor(plate.Rgb));
-            w.WriteEndElement();
+            foreach (var plate in plates)
+            {
+                w.WriteStartElement("base", CoreNamespace);
+                w.WriteAttributeString("name", plate.ColorName);
+                w.WriteAttributeString("displaycolor", DisplayColor(plate.Rgb));
+                w.WriteEndElement();
+            }
+
             w.WriteEndElement();
 
             w.WriteStartElement(MaterialPrefix, "colorgroup", MaterialNamespace);
             w.WriteAttributeString("id", Number(ColorResourceId));
-            w.WriteStartElement(MaterialPrefix, "color", MaterialNamespace);
-            w.WriteAttributeString("color", DisplayColor(plate.Rgb));
-            w.WriteEndElement();
+            foreach (var plate in plates)
+            {
+                w.WriteStartElement(MaterialPrefix, "color", MaterialNamespace);
+                w.WriteAttributeString("color", DisplayColor(plate.Rgb));
+                w.WriteEndElement();
+            }
+
             w.WriteEndElement();
 
             var objectId = ColorResourceId;
-            var ids = new List<int>(plate.Objects.Count);
+            var placed = new List<(int Id, PlateObject Part, Vector2 Offset)>();
 
-            foreach (var part in plate.Objects)
+            for (var p = 0; p < plates.Count; p++)
             {
-                objectId++;
-                ids.Add(objectId);
-                WriteObject(w, objectId, part);
+                var offset = new Vector2(stride * p, 0f);
+
+                foreach (var part in plates[p].Objects)
+                {
+                    objectId++;
+                    placed.Add((objectId, part, offset));
+                    WriteObject(w, objectId, part, p);
+                }
             }
 
             w.WriteEndElement();   // resources
 
             w.WriteStartElement("build", CoreNamespace);
 
-            for (var i = 0; i < plate.Objects.Count; i++)
+            foreach (var (id, part, offset) in placed)
             {
-                foreach (var position in plate.Objects[i].Positions)
+                foreach (var position in part.Positions)
                 {
                     w.WriteStartElement("item", CoreNamespace);
-                    w.WriteAttributeString("objectid", Number(ids[i]));
-                    w.WriteAttributeString("transform", Translation(position));
+                    w.WriteAttributeString("objectid", Number(id));
+                    w.WriteAttributeString("transform", Translation(position + offset));
                     w.WriteEndElement();
                 }
             }
@@ -230,14 +277,14 @@ public static class ThreeMfWriter
         w.WriteEndElement();
     }
 
-    private static void WriteObject(XmlWriter w, int id, PlateObject part)
+    private static void WriteObject(XmlWriter w, int id, PlateObject part, int colorIndex)
     {
         w.WriteStartElement("object", CoreNamespace);
         w.WriteAttributeString("id", Number(id));
         w.WriteAttributeString("name", part.PartNumber);
         w.WriteAttributeString("type", "model");
         w.WriteAttributeString("pid", Number(ColorResourceId));
-        w.WriteAttributeString("pindex", "0");
+        w.WriteAttributeString("pindex", Number(colorIndex));
 
         w.WriteStartElement("mesh", CoreNamespace);
 

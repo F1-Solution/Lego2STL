@@ -228,4 +228,44 @@ public sealed class ThreeMfWriterTests
         ModelIn(ThreeMfWriter.Write(plate))
             .Descendants(XName.Get("triangle", Core)).Should().HaveCount(4);
     }
+
+    /// <summary>
+    /// Every plate in one file, each still in its own colour (#5).
+    /// </summary>
+    /// <remarks>
+    /// One colour group carries every plate's colour, and each part points at its own plate's
+    /// entry, so a slicer opening the combined file shows the whole set already coloured.
+    /// </remarks>
+    [Fact]
+    public void A_combined_file_keeps_each_plate_in_its_own_colour()
+    {
+        var red = new PlateContents(
+            "red.3mf", "Red", Rgb24.Parse("#C91A09"), [new PlateObject("3001", Tetrahedron(), [Vector2.Zero])]);
+
+        var model = ModelIn(ThreeMfWriter.Write("all.3mf", [Plate(), red], 300f));
+
+        var colours = model.Descendants(XName.Get("color", Material))
+            .Select(c => c.Attribute("color")!.Value);
+        colours.Should().Equal("#05131DFF", "#C91A09FF");
+
+        model.Descendants(XName.Get("object", Core))
+            .Select(o => (o.Attribute("name")!.Value, o.Attribute("pindex")!.Value))
+            .Should().Equal(("3705", "0"), ("3001", "1"));
+    }
+
+    /// <summary>Plates sit side by side, one stride apart, so no two overlap.</summary>
+    [Fact]
+    public void A_combined_file_lays_the_plates_side_by_side()
+    {
+        var model = ModelIn(ThreeMfWriter.Write("all.3mf", [Plate(new Vector2(10, 20)), Plate(new Vector2(10, 20))], 300f));
+
+        model.Descendants(XName.Get("item", Core))
+            .Select(i => i.Attribute("transform")!.Value)
+            .Should().Equal("1 0 0 0 1 0 0 0 1 10 20 0", "1 0 0 0 1 0 0 0 1 310 20 0");
+    }
+
+    /// <summary>One plate written through the combined path is the same file as on its own.</summary>
+    [Fact]
+    public void A_single_plate_is_unchanged_by_the_combined_path() =>
+        ThreeMfWriter.Write("black.3mf", [Plate()], 300f).Should().Equal(ThreeMfWriter.Write(Plate()));
 }

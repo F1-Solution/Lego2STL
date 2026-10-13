@@ -137,6 +137,9 @@ public enum TextKey
     MsgClosedAndOpen,
     MsgProducedNothing,
     MsgWrotePlates,
+
+    /// <summary>Names the file that holds every plate together.</summary>
+    MsgWroteAllPlates,
     MsgWrotePrintSettings,
     MsgNoPlatesRequested,
     MsgPlatesMissingParts,

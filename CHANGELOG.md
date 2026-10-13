@@ -8,6 +8,7 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 ### Added
 
 - Bambu Lab printer quick start guides and manuals, and a link to the Bambu Lab wiki, kept in `docs/bambulab/` as reference.
+- Beside the per-colour plates, an `all.3mf` holds every plate together, side by side, each in its own colour.
 
 ### Changed
 
