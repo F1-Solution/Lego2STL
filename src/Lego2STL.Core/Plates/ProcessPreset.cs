@@ -27,6 +27,9 @@ namespace Lego2STL.Core.Plates;
 /// </remarks>
 public static class ProcessPreset
 {
+    /// <summary>The Bambu Lab profile bundle version the preset declares, as Bambu Studio's own exports do.</summary>
+    private const string SlicerVersion = "02.08.00.09";
+
     /// <summary>
     /// What each printer's preset inherits from, and how many slots its per-extruder settings take.
     /// </summary>
@@ -86,10 +89,15 @@ public static class ProcessPreset
             return null;
         }
 
+        var name = $"Lego2STL 0.16mm @BBL {printer!.Trim()}";
+
         var preset = new JsonObject
         {
+            // The importer drops a file without a parseable version or a print_settings_id (#2).
+            ["version"] = SlicerVersion,
             ["type"] = "process",
-            ["name"] = $"Lego2STL 0.16mm @BBL {printer!.Trim()}",
+            ["name"] = name,
+            ["print_settings_id"] = name,
             ["from"] = "User",
             ["is_custom_defined"] = "1",
             ["inherits"] = machine.Base,
