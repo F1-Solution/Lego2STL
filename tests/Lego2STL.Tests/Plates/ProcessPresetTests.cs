@@ -69,6 +69,28 @@ public sealed class ProcessPresetTests
     }
 
     /// <summary>
+    /// The two keys Bambu Studio's importer refuses a file without.
+    /// </summary>
+    /// <remarks>
+    /// Issue #2: without them the slicer reports "There are 0 configs imported". The importer
+    /// drops a file whose "version" does not parse as at least major.minor, and it decides the
+    /// preset is a process preset from "print_settings_id" alone - "type" is never consulted.
+    /// Checked against PresetBundle::import_json_presets on 2026-10-13.
+    /// </remarks>
+    [Theory]
+    [InlineData("A1")]
+    [InlineData("P1S")]
+    [InlineData("H2D")]
+    public void The_importer_s_required_keys_are_present(string printer)
+    {
+        var preset = Parsed(printer);
+
+        preset.GetProperty("version").GetString().Should().MatchRegex(@"^\d+\.\d+(\.\d+){0,2}$");
+        preset.GetProperty("print_settings_id").GetString()
+            .Should().Be(preset.GetProperty("name").GetString());
+    }
+
+    /// <summary>
     /// A per-extruder setting carries one value per slot the base carries, which is not always one.
     /// </summary>
     /// <remarks>

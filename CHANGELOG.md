@@ -9,6 +9,10 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 
 - Bambu Lab printer quick start guides and manuals, and a link to the Bambu Lab wiki, kept in `docs/bambulab/` as reference.
 
+### Fixed
+
+- The `Lego2STL.json` process preset now imports in Bambu Studio instead of failing with "There are 0 configs imported".
+
 ## [0.2.0] - 2026-09-02
 
 ### Added
