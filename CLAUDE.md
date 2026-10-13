@@ -36,3 +36,13 @@ thing as a commit on `main` that does not produce a release. This is also what s
 workflow run that pushing the tag itself fires straight back at this workflow (`refs/tags/v*` is
 still a trigger): by then the tag it would need already exists, so it fails at the same check
 instead of building and releasing all over again.
+
+## Bambu Lab references
+
+Before changing anything that talks to Bambu Studio or a Bambu Lab printer - the printing
+notes, the process preset, the plate files, bed sizes - check it against:
+
+- the [Bambu Lab wiki](https://wiki.bambulab.com/it/home), for Bambu Studio's menus, settings
+  and their names;
+- the per-printer quick start guides and manuals in [docs/bambulab/](docs/bambulab/README.md),
+  stored with Git LFS.

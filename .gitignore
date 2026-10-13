@@ -16,6 +16,8 @@ artifacts/
 # Large third-party data, not ours to redistribute
 DB Lego/
 *.pdf
+# Bambu Lab's own public manuals, kept as reference on request (issue #1).
+!docs/bambulab/*.pdf
 ldraw-cache/
 *.zip
 
