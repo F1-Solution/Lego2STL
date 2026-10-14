@@ -700,6 +700,11 @@ public sealed class PipelineRunner
         }
 
         _log(words.Format(TextKey.MsgWrotePlates, plates.Plates.Count, layout.PlateDirectory));
+
+        if (plates.Plates.Count > 0)
+        {
+            _log(words.Format(TextKey.MsgWroteAllPlates, PlateBuilder.AllPlatesFileName));
+        }
         _log(words.Format(TextKey.MsgWrotePrintSettings, layout.PrintNotesPath));
         return plates;
     }

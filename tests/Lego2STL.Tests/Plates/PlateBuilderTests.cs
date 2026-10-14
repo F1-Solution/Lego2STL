@@ -156,4 +156,50 @@ public sealed class PlateBuilderTests : IDisposable
             new Triangle(new Vector3(0, 0, z), new Vector3(x, y, z), new Vector3(x, 0, z)),
             new Triangle(new Vector3(0, 0, z), new Vector3(0, y, z), new Vector3(x, y, z)),
         ]);
+
+    /// <summary>
+    /// Beside the plates, one file holding all of them (#5).
+    /// </summary>
+    /// <remarks>
+    /// Not counted as a plate: it is a copy of the others for opening the whole set at once, so
+    /// the report and the catalogue keep pointing at the per-colour files.
+    /// </remarks>
+    [Fact]
+    public async Task Every_plate_is_also_written_together_as_all()
+    {
+        var list = new PartsList(
+            [
+                new PartEntry(1, "3005", 11, "Black", Rgb24.Parse("#05131D"), 2),
+                new PartEntry(2, "3001", 5, "Red", Rgb24.Parse("#C91A09"), 3),
+            ],
+            []);
+        var shapes = new Dictionary<string, IndexedMesh>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["3005"] = Tetrahedron(),
+            ["3001"] = Tetrahedron(),
+        };
+
+        var result = await PlateBuilder.WriteAsync(list, shapes, _directory);
+
+        result.Plates.Select(p => p.FileName).Should().NotContain(PlateBuilder.AllPlatesFileName);
+
+        var all = Path.Combine(_directory, PlateBuilder.AllPlatesFileName);
+        File.Exists(all).Should().BeTrue();
+
+        using var archive = System.IO.Compression.ZipFile.OpenRead(all);
+        using var model = archive.GetEntry("3D/3dmodel.model")!.Open();
+        var items = System.Xml.Linq.XDocument.Load(model).Descendants()
+            .Count(e => e.Name.LocalName == "item");
+
+        items.Should().Be(result.PieceCount);
+    }
+
+    [Fact]
+    public async Task No_plates_means_no_all_file()
+    {
+        await PlateBuilder.WriteAsync(
+            ListOf(("64870", 3)), new Dictionary<string, IndexedMesh>(StringComparer.OrdinalIgnoreCase), _directory);
+
+        File.Exists(Path.Combine(_directory, PlateBuilder.AllPlatesFileName)).Should().BeFalse();
+    }
 }

@@ -11,8 +11,9 @@ namespace Lego2STL.Core.Plates;
 /// </param>
 public sealed record PlateItem(string Label, IndexedMesh Mesh, int Quantity);
 
-/// <summary>A plate file that was written.</summary>
-public sealed record WrittenPlate(string FileName, int Number, int PieceCount, string Footprint);
+/// <summary>A plate file that was written, and what was written into it.</summary>
+public sealed record WrittenPlate(
+    string FileName, int Number, int PieceCount, string Footprint, PlateContents Contents);
 
 /// <summary>What one call produced: the files, and whatever no bed could take.</summary>
 public sealed record PlateWriteResult(
@@ -95,15 +96,14 @@ public static class PlateWriter
             cancellationToken.ThrowIfCancellationRequested();
 
             var name = PlateFileName.For(fileStem, plate.Number, packed.Plates.Count);
+            var contents = Contents(name, colorName, rgb, plate, meshes);
 
             await ThreeMfWriter
-                .WriteFileAsync(
-                    Path.Combine(directory, name),
-                    Contents(name, colorName, rgb, plate, meshes),
-                    cancellationToken)
+                .WriteFileAsync(Path.Combine(directory, name), contents, cancellationToken)
                 .ConfigureAwait(false);
 
-            written.Add(new WrittenPlate(name, plate.Number, plate.PieceCount, plate.DescribeUsed()));
+            written.Add(new WrittenPlate(
+                name, plate.Number, plate.PieceCount, plate.DescribeUsed(), contents));
         }
 
         return new PlateWriteResult(written, skipped);

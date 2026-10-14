@@ -160,6 +160,7 @@ public sealed partial class Strings
                 "{0} closed, {1} with open edges (a slicer will repair those, and the report lists them).",
             [TextKey.MsgProducedNothing] = "{0} part(s) produced nothing:",
             [TextKey.MsgWrotePlates] = "Wrote {0} plate file(s) to {1}",
+            [TextKey.MsgWroteAllPlates] = "Every plate together, side by side: {0}",
             [TextKey.MsgWrotePrintSettings] = "Wrote how to print them to {0}",
             [TextKey.MsgNoPlatesRequested] = "Plates were not asked for.",
             [TextKey.MsgPlatesMissingParts] =

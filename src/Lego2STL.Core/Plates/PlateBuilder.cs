@@ -66,6 +66,15 @@ public sealed record PlateBuildResult(
 /// </remarks>
 public static class PlateBuilder
 {
+    /// <summary>The file beside the plates that holds every one of them together (#5).</summary>
+    public const string AllPlatesFileName = "all.3mf";
+
+    /// <summary>
+    /// How far apart plates sit in the combined file, as a share of the bed's width: a fifth of a
+    /// bed between neighbours, the same gap Bambu Studio leaves between its own plates.
+    /// </summary>
+    private const float AllPlatesStride = 1.2f;
+
     public static async Task<PlateBuildResult> WriteAsync(
         PartsList list,
         IReadOnlyDictionary<string, IndexedMesh> shapesByPart,
@@ -85,6 +94,7 @@ public static class PlateBuilder
 
         var written = new List<BuiltPlate>();
         var skipped = new List<SkippedPart>();
+        var contents = new List<PlateContents>();
 
         foreach (var colorGroup in GroupByColor(list))
         {
@@ -120,6 +130,7 @@ public static class PlateBuilder
 
             foreach (var plate in result.Plates)
             {
+                contents.Add(plate.Contents);
                 written.Add(new BuiltPlate(
                     plate.FileName,
                     colorName,
@@ -129,6 +140,19 @@ public static class PlateBuilder
                     plate.PieceCount,
                     plate.Footprint));
             }
+        }
+
+        // Not one of the plates: a copy of them all, for opening the whole set at once.
+        if (contents.Count > 0)
+        {
+            await ThreeMfWriter
+                .WriteFileAsync(
+                    Path.Combine(directory, AllPlatesFileName),
+                    AllPlatesFileName,
+                    contents,
+                    o.Bed.Width * AllPlatesStride,
+                    cancellationToken)
+                .ConfigureAwait(false);
         }
 
         return new PlateBuildResult(written, skipped);

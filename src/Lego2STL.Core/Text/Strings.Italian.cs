@@ -165,6 +165,7 @@ public sealed partial class Strings
                 "{0} chiuse, {1} con spigoli aperti (uno slicer le ripara, e il resoconto le elenca).",
             [TextKey.MsgProducedNothing] = "{0} pezzi non hanno prodotto nulla:",
             [TextKey.MsgWrotePlates] = "Scritti {0} piani di stampa in {1}",
+            [TextKey.MsgWroteAllPlates] = "Tutti i piani insieme, affiancati: {0}",
             [TextKey.MsgWrotePrintSettings] = "Come stamparli scritto in {0}",
             [TextKey.MsgNoPlatesRequested] = "I piani di stampa non sono stati richiesti.",
             [TextKey.MsgPlatesMissingParts] =
