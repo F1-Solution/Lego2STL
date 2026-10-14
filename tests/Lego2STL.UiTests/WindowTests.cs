@@ -163,7 +163,11 @@ public sealed class WindowTests
         window.CaptureRenderedFrame();
 
         model.Options.CommandLine.Should().Contain("--clearance 0.15").And.Contain("--no-repair");
-        Texts(window).Should().Contain(t => t.Contains("--clearance 0.15"));
+
+        // The command travels on the setup screen's copy button rather than a docked line (#3).
+        window.GetLogicalDescendants().OfType<Button>()
+            .Where(b => b.Classes.Contains("copy"))
+            .Should().Contain(b => (b.Tag as string)!.Contains("--clearance 0.15"));
     }
 
     [AvaloniaFact]
