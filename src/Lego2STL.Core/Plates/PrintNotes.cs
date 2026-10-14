@@ -20,37 +20,88 @@ namespace Lego2STL.Core.Plates;
 /// </remarks>
 public static class PrintNotes
 {
+    /// <summary>One setting, as Bambu Studio labels it in English and in Italian, and its value.</summary>
+    private sealed record Setting(string LabelEn, string LabelIt, string ValueEn, string ValueIt)
+    {
+        public Setting(string labelEn, string labelIt, string value)
+            : this(labelEn, labelIt, value, value)
+        {
+        }
+    }
+
+    /// <summary>A group of settings, and the page and group the slicer shows them under.</summary>
+    private sealed record Group(string PlaceEn, string PlaceIt, Setting[] Settings);
+
     /// <summary>
-    /// The starting profile.
+    /// The starting profile, grouped and labelled the way Bambu Studio shows it.
     /// </summary>
     /// <remarks>
     /// Literal values, because these are advice rather than anything derived: they describe a
-    /// spool this tool has never seen. The setting names are left in the slicer's own English
-    /// because they are what the reader is hunting for on screen.
+    /// spool this tool has never seen. The labels are the slicer's own, not this tool's words,
+    /// because they are what the reader is hunting for on screen - checked against Bambu Studio's
+    /// PrintConfig.cpp, Tab.cpp and Italian catalogue on 2026-10-13 (#4).
     /// </remarks>
-    private static readonly (string Setting, string Value)[] Profile =
+    private static readonly Group[] Profile =
     [
-        ("Nozzle temperature", "215 C"),
-        ("Nozzle temperature, first layer", "220 C"),
-        ("Bed temperature", "55 C"),
-        ("Bed temperature, first layer", "60 C"),
-        ("Part cooling fan", "0% first layer, 100% from the third"),
-        ("Layer height", "0.16 mm"),
-        ("First layer height", "0.20 mm"),
-        ("First layer speed", "20 mm/s"),
-        ("Outer wall speed", "35 mm/s"),
-        ("Inner wall speed", "50 mm/s"),
-        ("Top surface speed", "30 mm/s"),
-        ("Small perimeter speed", "70% of the outer wall, about 25 mm/s"),
-        ("Sparse infill speed", "60 mm/s"),
-        ("Max volumetric speed", "10 mm3/s"),
-        ("Walls", "3"),
-        ("Top shell layers", "5"),
-        ("Bottom shell layers", "5"),
-        ("Sparse infill", "15% gyroid"),
-        ("Elephant foot compensation", "0.15 mm"),
-        ("Brim", "auto"),
-        ("Supports", "off"),
+        new("Process > Quality > Layer height", "Processo > Qualità > Altezza layer",
+        [
+            new("Layer height", "Altezza layer", "0.16 mm"),
+            new("Initial layer height", "Altezza layer iniziale", "0.20 mm"),
+        ]),
+        new("Process > Quality > Precision", "Processo > Qualità > Precisione",
+        [
+            new("Elephant foot compensation", "Compensazione zampa d'elefante", "0.15 mm"),
+        ]),
+        new("Process > Strength > Walls", "Processo > Resistenza > Pareti",
+        [
+            new("Wall loops", "Loop pareti", "3"),
+        ]),
+        new("Process > Strength > Top/bottom shells", "Processo > Resistenza > Gusci superiori/inferiori",
+        [
+            new("Top shell layers", "Layer guscio superiore", "5"),
+            new("Bottom shell layers", "Layer guscio inferiore", "5"),
+        ]),
+        new("Process > Strength > Sparse infill", "Processo > Resistenza > Riempimento",
+        [
+            new("Sparse infill density", "Densità riempimento", "15%"),
+            new("Sparse infill pattern", "Trama riempimento", "Gyroid", "Giroide"),
+        ]),
+        new("Process > Speed > Initial layer speed", "Processo > Velocità > Velocità layer iniziale",
+        [
+            new("Initial layer", "Layer iniziale", "20 mm/s"),
+        ]),
+        new("Process > Speed > Other layers speed", "Processo > Velocità > Velocità altri layer",
+        [
+            new("Outer wall", "Parete esterna", "35 mm/s"),
+            new("Inner wall", "Parete interna", "50 mm/s"),
+            new("Top surface", "Superficie superiore", "30 mm/s"),
+            new("Small perimeters", "Perimetri piccoli", "70% (about 25 mm/s)", "70% (circa 25 mm/s)"),
+            new("Sparse infill", "Riempimento", "60 mm/s"),
+        ]),
+        new("Process > Support > Support", "Processo > Supporto > Supporto",
+        [
+            new("Enable support", "Abilita supporti", "off", "disattivato"),
+        ]),
+        new("Process > Others > Bed adhension", "Processo > Altro > Adesione al piano",
+        [
+            new("Brim type", "Tipo brim", "Auto", "Automatico"),
+        ]),
+        new("Filament > Print temperature", "Filamento > Temperatura stampa",
+        [
+            new("Nozzle - Initial layer", "Nozzle - Layer iniziale", "220 C"),
+            new("Nozzle - Other layers", "Nozzle - Altri layer", "215 C"),
+            new("<your plate> - Initial layer", "<il tuo piano> - Layer iniziale", "60 C"),
+            new("<your plate> - Other layers", "<il tuo piano> - Altri layer", "55 C"),
+        ]),
+        new("Filament > Volumetric speed limitation", "Filamento > Limitazione velocità volumetrica",
+        [
+            new("Max volumetric speed", "Massima velocità volumetrica", "10 mm3/s"),
+        ]),
+        new("Filament > Cooling > Part cooling fan", "Filamento > Raffreddamento > Ventola di raffreddamento oggetto",
+        [
+            new("Initial layer fan - For the first ... layers", "Ventola layer iniziale - Per il primo ... layers", "1"),
+            new("Min/Max fan speed threshold - Fan speed", "Velocità minima/massima ventola - Velocità ventola", "100%"),
+        ]),
     ];
 
     /// <summary>The sheet, for this printer, in these words.</summary>
@@ -102,9 +153,22 @@ public static class PrintNotes
         var block = new StringBuilder();
         block.AppendLine(words[TextKey.PrintNotesSettings]).AppendLine();
 
-        foreach (var (setting, value) in Profile)
+        var italian = words.Language == DisplayLanguage.Italian;
+        block.AppendLine(words[TextKey.PrintNotesWhereToFind]);
+
+        var width = Profile.SelectMany(g => g.Settings)
+            .Max(x => (italian ? x.LabelIt : x.LabelEn).Length) + 2;
+
+        foreach (var group in Profile)
         {
-            block.Append("  ").Append(setting.PadRight(34)).AppendLine(value);
+            block.AppendLine().Append("  ").AppendLine(italian ? group.PlaceIt : group.PlaceEn);
+
+            foreach (var x in group.Settings)
+            {
+                block.Append("    ")
+                    .Append((italian ? x.LabelIt : x.LabelEn).PadRight(width))
+                    .AppendLine(italian ? x.ValueIt : x.ValueEn);
+            }
         }
 
         return block.ToString();

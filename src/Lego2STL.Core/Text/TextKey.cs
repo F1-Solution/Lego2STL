@@ -502,6 +502,9 @@ public enum TextKey
     /// <summary>The heading over the table of settings.</summary>
     PrintNotesSettings,
 
+    /// <summary>Says each setting is listed where Bambu Studio shows it.</summary>
+    PrintNotesWhereToFind,
+
     /// <summary>The heading over the calibration sequence.</summary>
     PrintNotesCalibration,
 
