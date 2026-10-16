@@ -44,6 +44,9 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
             ElementMap = _saved.ElementMap,
             OutputDirectory = _saved.OutputDirectory,
             Printer = _saved.Printer ?? PrintBeds.Default.Name,
+            ProjectFormat = ProjectFormats.TryParse(_saved.ProjectFormat, out var format)
+                ? format
+                : ProjectFormats.Default,
 
             // Found the same way the command line finds it, so a key already given to the
             // terminal - in the file or in the environment - is one the window starts with

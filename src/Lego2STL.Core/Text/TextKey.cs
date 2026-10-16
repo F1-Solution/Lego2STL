@@ -446,6 +446,7 @@ public enum TextKey
     HelpOptPrinter,
     HelpOptPlateSize,
     HelpOptPlateSpacing,
+    HelpOptProjectFormat,
     HelpOptQuiet,
     HelpOptLog,
     HelpOptKind,
@@ -476,6 +477,13 @@ public enum TextKey
     LabelOptTolerances,
     LabelOptWeldTolerance,
     LabelOptPlateSpacing,
+    LabelOptProjectFormat,
+
+    /// <summary>The three project formats, as the settings menu names them (#12).</summary>
+    UiProjectFormatBambu,
+    UiProjectFormatOrca,
+    UiProjectFormatPlain,
+    ErrUnknownProjectFormat,
     LabelOptOutputDir,
     LabelOptElementMap,
     LabelOptLDrawDir,

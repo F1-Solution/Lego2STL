@@ -39,6 +39,10 @@ public sealed class UserSettings
     [JsonPropertyName("printer")]
     public string? Printer { get; set; }
 
+    /// <summary>Which slicer all.3mf is written for, as the command line names it (#12).</summary>
+    [JsonPropertyName("projectFormat")]
+    public string? ProjectFormat { get; set; }
+
     /// <summary>Which numbering the catalogue last showed.</summary>
     [JsonPropertyName("partNumbering")]
     public string? PartNumbering { get; set; }

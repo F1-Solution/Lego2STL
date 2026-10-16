@@ -8,9 +8,9 @@ namespace Lego2STL.Core.Plates;
 /// </summary>
 /// <remarks>
 /// <para>
-/// A preset and not a project file. The 3MF stays a plate any reader understands: writing a
-/// slicer's own project format into it would trade away the one thing this tool's 3MF was written
-/// for, which is that it depends on no library and so has nothing to go stale.
+/// A preset and not a project file. Each colour's 3MF stays a plate any reader understands; only
+/// all.3mf is written as a slicer project, and it names the slicer's presets rather than carrying
+/// any, so nothing in it goes stale (#12).
 /// </para>
 /// <para>
 /// It asserts only what this tool knows. It knows the bed, because it packs onto one, and it knows

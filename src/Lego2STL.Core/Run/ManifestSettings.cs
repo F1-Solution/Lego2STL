@@ -1,5 +1,6 @@
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Pipeline;
+using Lego2STL.Core.Plates;
 using Lego2STL.Core.Text;
 
 namespace Lego2STL.Core.Run;
@@ -65,6 +66,8 @@ public sealed record ManifestSettings
 
     public double PlateSpacing { get; init; }
 
+    public ProjectFormat ProjectFormat { get; init; }
+
     public DisplayLanguage Language { get; init; }
 
     /// <summary>Masked, always. See <see cref="RunSettings.MaskApiKey"/>.</summary>
@@ -105,6 +108,7 @@ public sealed record ManifestSettings
             Printer = settings.Printer,
             PlateSize = settings.PlateSize,
             PlateSpacing = settings.PlateSpacing,
+            ProjectFormat = settings.ProjectFormat,
             Language = settings.Language,
             ApiKey = RunSettings.MaskApiKey(settings.ApiKey),
             Quiet = settings.Quiet,
@@ -148,6 +152,7 @@ public sealed record ManifestSettings
             Printer = Printer ?? defaults.Printer,
             PlateSize = PlateSize,
             PlateSpacing = PlateSpacing,
+            ProjectFormat = ProjectFormat,
             Language = Language,
             ApiKey = string.Equals(ApiKey, RunSettings.MaskedApiKey, StringComparison.Ordinal)
                 ? null

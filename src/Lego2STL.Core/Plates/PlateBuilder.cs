@@ -81,6 +81,7 @@ public static class PlateBuilder
         string directory,
         PackingOptions? options = null,
         DisplayLanguage language = DisplayLanguages.Fallback,
+        SlicerProject? project = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(list);
@@ -142,16 +143,20 @@ public static class PlateBuilder
             }
         }
 
-        // Not one of the plates: a copy of them all, for opening the whole set at once.
-        if (contents.Count > 0)
+        // Not one of the plates: a copy of them all, as a slicer project when it can hold them (#12).
+        var allPath = Path.Combine(directory, AllPlatesFileName);
+
+        if (contents.Count > 0 && project is not null && contents.Count <= SlicerProject.PlateLimit)
+        {
+            await ThreeMfWriter
+                .WriteFileAsync(allPath, AllPlatesFileName, contents, project, cancellationToken)
+                .ConfigureAwait(false);
+        }
+        else if (contents.Count > 0)
         {
             await ThreeMfWriter
                 .WriteFileAsync(
-                    Path.Combine(directory, AllPlatesFileName),
-                    AllPlatesFileName,
-                    contents,
-                    o.Bed.Width * AllPlatesStride,
-                    cancellationToken)
+                    allPath, AllPlatesFileName, contents, o.Bed.Width * AllPlatesStride, cancellationToken)
                 .ConfigureAwait(false);
         }
 

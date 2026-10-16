@@ -57,6 +57,24 @@
         </Grid>
       </Border>
 
+      <!-- Which slicer the file holding every plate is written for (#12). -->
+      <Border Classes="card">
+        <Grid ColumnDefinitions="Auto,Auto,*">
+          <StackPanel Grid.Column="0" Classes="name">
+            <TextBlock Classes="label"
+                       Text="{Binding [LabelOptProjectFormat], Source={x:Static loc:Loc.Current}}" />
+            <TextBlock Classes="flag" Text="--project-format" />
+          </StackPanel>
+          <ComboBox Grid.Column="1" MinWidth="200" VerticalAlignment="Center"
+                    ItemsSource="{Binding ProjectFormatChoices}"
+                    SelectedItem="{Binding SelectedProjectFormat}" />
+          <TextBlock Grid.Column="2" Classes="help" Margin="12,0,0,0"
+                     VerticalAlignment="Center" TextWrapping="Wrap"
+                     Foreground="{DynamicResource AppTextSecondary}"
+                     Text="{Binding [HelpOptProjectFormat], Source={x:Static loc:Loc.Current}}" />
+        </Grid>
+      </Border>
+
       <!-- The key for looking a set up. Named here and never printed into the shown command. -->
       <Border Classes="card">
         <Grid ColumnDefinitions="Auto,*,Auto">
