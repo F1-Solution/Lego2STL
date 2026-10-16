@@ -163,6 +163,15 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
 
     public bool CanContinue => NeedsDecision && File.Exists(Document.PartsListPath);
 
+    /// <summary>
+    /// Whether continuing goes on without the parts that produced no shape, since rebuilding an
+    /// unchanged list could only ask about them again (#11).
+    /// </summary>
+    private bool ContinuesWithoutThem => Document.Failed.Count > 0;
+
+    public string ContinueText => Loc.Current.Text(
+        ContinuesWithoutThem ? TextKey.UiContinueWithoutThem : TextKey.UiContinueFromPartsList);
+
     public bool HasPrintNotes => File.Exists(Document.PrintNotesPath);
 
     public bool HasPreset => File.Exists(Document.PresetPath);
@@ -433,12 +442,12 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
     /// a second copy beside it.
     /// </remarks>
     [RelayCommand]
-    private void ContinueFromPartsList() => Again();
+    private void ContinueFromPartsList() => Again(ContinuesWithoutThem);
 
     [RelayCommand]
-    private void RunItAgain() => Again();
+    private void RunItAgain() => Again(skipMissingShapes: false);
 
-    private void Again()
+    private void Again(bool skipMissingShapes)
     {
         if (!File.Exists(Document.PartsListPath))
         {
@@ -452,6 +461,11 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
             SetNumber = null,
             Pages = null,
         };
+
+        if (skipMissingShapes)
+        {
+            settings = settings with { SkipMissingShapes = true };
+        }
 
         ContinueRequested?.Invoke(this, settings);
     }
@@ -598,6 +612,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
                      nameof(Document), nameof(StatusText), nameof(RailText), nameof(Progress),
                      nameof(NeedsDecision), nameof(Failing), nameof(HasProblem), nameof(ProblemText),
                      nameof(NoticeText), nameof(HasNotice), nameof(CanRunItAgain), nameof(CanContinue),
+                     nameof(ContinueText),
                      nameof(StoppedAt), nameof(CommandLine), nameof(Busy), nameof(VisibleParts),
                      nameof(HasPartsThatDoNotFit), nameof(DoesNotFitText), nameof(TryASmallerScaleText),
                  })
@@ -636,6 +651,7 @@ public sealed partial class RunDocumentViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(RailText));
         OnPropertyChanged(nameof(NoticeText));
         OnPropertyChanged(nameof(StoppedAt));
+        OnPropertyChanged(nameof(ContinueText));
         OnPropertyChanged(nameof(HasPartsThatDoNotFit));
         OnPropertyChanged(nameof(DoesNotFitText));
         OnPropertyChanged(nameof(TryASmallerScaleText));

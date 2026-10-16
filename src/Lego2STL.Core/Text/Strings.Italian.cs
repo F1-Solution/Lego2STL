@@ -418,6 +418,7 @@ public sealed partial class Strings
             [TextKey.UiOpenPreset] = "Preset slicer",
             [TextKey.UiRunCalibration] = "Costruisci un piatto di calibrazione",
             [TextKey.UiContinueFromPartsList] = "Continua dall'elenco pezzi",
+            [TextKey.UiContinueWithoutThem] = "Continua senza questi pezzi",
 
             // Trovare la strada fra le opzioni.
             [TextKey.UiSearchOptions] = "Cerca fra le opzioni",
@@ -503,6 +504,8 @@ public sealed partial class Strings
                 "Non chiude le giunzioni dove un vertice cade a metà dello spigolo di un altro.",
             [TextKey.HelpOptPrintEverything] =
                 "Costruisce ogni pezzo, compresi quelli non stampabili come l'elettronica.",
+            [TextKey.HelpOptSkipMissingShapes] =
+                "Porta a termine l'esecuzione anche se alcuni pezzi non hanno una forma nella libreria. Restano fuori dai piani e il resoconto li elenca comunque.",
             [TextKey.HelpOptWeldTolerance] =
                 "Quanto devono essere vicini due vertici per contare come lo stesso punto, in unità sorgente dove un'unità vale 0,4 mm. Non millimetri: i vertici vengono fusi prima che la forma sia convertita.",
             [TextKey.HelpOptLDrawCache] =
@@ -544,6 +547,7 @@ public sealed partial class Strings
             [TextKey.LabelOptNoRepair] = "Lascia i buchi nella superficie",
             [TextKey.LabelOptNoSeamRepair] = "Lascia aperte le giunzioni",
             [TextKey.LabelOptPrintEverything] = "Stampa tutto",
+            [TextKey.LabelOptSkipMissingShapes] = "Salta i pezzi senza forma",
             [TextKey.LabelOptOffline] = "Lavora senza rete",
             [TextKey.LabelOptNoUnofficial] = "Solo libreria ufficiale",
             [TextKey.LabelOptScale] = "Scala",

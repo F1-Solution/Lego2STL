@@ -104,7 +104,7 @@
           <Button Command="{Binding OpenPartsListCommand}"
                   Content="{Binding [UiOpenPartsList], Source={x:Static loc:Loc.Current}}" />
           <Button Command="{Binding ContinueFromPartsListCommand}"
-                  Content="{Binding [UiContinueFromPartsList], Source={x:Static loc:Loc.Current}}" />
+                  Content="{Binding ContinueText}" />
         </StackPanel>
       </StackPanel>
     </Border>

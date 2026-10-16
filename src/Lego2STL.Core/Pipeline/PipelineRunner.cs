@@ -623,7 +623,8 @@ public sealed class PipelineRunner
 
         var outcome = new RunOutcome
         {
-            Result = failed.Count > 0 ? RunResult.Unverified : RunResult.Complete,
+            // Missing shapes leave the run for someone to decide on, unless they already have (#11).
+            Result = failed.Count > 0 && !settings.SkipMissingShapes ? RunResult.Unverified : RunResult.Complete,
             Settings = settings,
             Layout = layout,
             PartsList = list,
@@ -663,7 +664,7 @@ public sealed class PipelineRunner
         // A plate missing the parts that failed is still worth having - the pieces that did
         // come out are printable now - so it gets built. What must not happen is its looking
         // finished: the count is said here, the report names them, and the run stays
-        // unverified.
+        // unverified unless missing shapes were explicitly accepted.
         if (failed.Count > 0)
         {
             _log(words.Format(TextKey.MsgPlatesMissingParts, failed.Count));

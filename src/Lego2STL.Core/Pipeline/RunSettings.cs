@@ -133,6 +133,11 @@ public sealed record RunSettings
     /// </summary>
     public bool PrintEverything { get; init; }
 
+    /// <summary>
+    /// Finish as complete even when some parts produced no shape; the report still names them (#11).
+    /// </summary>
+    public bool SkipMissingShapes { get; init; }
+
     public double WeldTolerance { get; init; } = VertexWelder.DefaultToleranceUnits;
 
     // ---- Shape library -----------------------------------------------------------------
@@ -399,6 +404,11 @@ public sealed record RunSettings
         if (PrintEverything)
         {
             parts.Add("--print-everything");
+        }
+
+        if (SkipMissingShapes)
+        {
+            parts.Add("--skip-missing-shapes");
         }
 
         if (Math.Abs(WeldTolerance - defaults.WeldTolerance) > 1e-9)
