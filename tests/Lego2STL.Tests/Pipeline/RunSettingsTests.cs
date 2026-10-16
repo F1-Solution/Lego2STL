@@ -2,6 +2,7 @@ using FluentAssertions;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Ocr;
 using Lego2STL.Core.Pipeline;
+using Lego2STL.Core.Plates;
 using Lego2STL.Core.Text;
 
 namespace Lego2STL.Tests.Pipeline;
@@ -78,6 +79,7 @@ public sealed class RunSettingsTests
             IncludeUnofficial = false,
             Printer = "A1mini",
             PlateSpacing = 5,
+            ProjectFormat = ProjectFormat.Plain,
             Language = DisplayLanguage.Italian,
             Quiet = true,
         }.ToCommandLine();
@@ -93,6 +95,7 @@ public sealed class RunSettingsTests
         command.Should().Contain("--no-unofficial");
         command.Should().Contain("--printer A1mini");
         command.Should().Contain("--plate-spacing 5");
+        command.Should().Contain("--project-format 3mf");
         command.Should().Contain("--lang it");
         command.Should().Contain("--quiet");
     }

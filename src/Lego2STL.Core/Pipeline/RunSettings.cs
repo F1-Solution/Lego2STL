@@ -160,6 +160,9 @@ public sealed record RunSettings
     /// <summary>A bed size in millimetres, used in place of <see cref="Printer"/> when set.</summary>
     public string? PlateSize { get; init; }
 
+    /// <summary>Which slicer the file holding every plate is written for (#12).</summary>
+    public ProjectFormat ProjectFormat { get; init; } = ProjectFormats.Default;
+
     public double PlateSpacing { get; init; } = 3.0;
 
     // ---- Behaviour ---------------------------------------------------------------------
@@ -470,6 +473,12 @@ public sealed record RunSettings
         {
             parts.Add("--plate-spacing");
             parts.Add(Format(PlateSpacing));
+        }
+
+        if (ProjectFormat != defaults.ProjectFormat)
+        {
+            parts.Add("--project-format");
+            parts.Add(ProjectFormat.Name());
         }
     }
 

@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using Lego2STL.Core.Catalogue;
 using Lego2STL.Core.Colors;
 using Lego2STL.Core.Geometry;
@@ -146,6 +147,14 @@ internal sealed class PipelineOptions
             DefaultValueFactory = _ => 3.0,
         };
 
+        ProjectFormat = new Option<ProjectFormat>("--project-format")
+        {
+            Description = words[TextKey.HelpOptProjectFormat],
+            HelpName = string.Join('|', ProjectFormats.Names),
+            DefaultValueFactory = _ => ProjectFormats.Default,
+            CustomParser = result => ParseProjectFormat(result, words),
+        };
+
         // ---- Behaviour -----------------------------------------------------------------
 
         ApiKey = new Option<string?>("--api-key") { Description = words[TextKey.HelpOptApiKey] };
@@ -203,6 +212,8 @@ internal sealed class PipelineOptions
 
     public Option<double> PlateSpacing { get; }
 
+    public Option<ProjectFormat> ProjectFormat { get; }
+
     public Option<string?> ApiKey { get; }
 
     public Option<bool> Quiet { get; }
@@ -226,7 +237,7 @@ internal sealed class PipelineOptions
             KeepOrigin, Scale, Clearance, Tolerances, NoRepair, NoSeamRepair, WeldTolerance,
             PrintEverything, SkipMissingShapes,
             LDrawDirectory, LDrawCache, Offline, NoUnofficial,
-            Printer, PlateSize, PlateSpacing,
+            Printer, PlateSize, PlateSpacing, ProjectFormat,
             ApiKey, Quiet, LogFile,
         })
         {
@@ -287,12 +298,33 @@ internal sealed class PipelineOptions
             Printer = parseResult.GetValue(Printer) ?? PrintBeds.Default.Name,
             PlateSize = parseResult.GetValue(PlateSize),
             PlateSpacing = parseResult.GetValue(PlateSpacing),
+            ProjectFormat = parseResult.GetValue(ProjectFormat),
 
             Language = parseResult.GetValue(CommonOptions.Language),
             ApiKey = parseResult.GetValue(ApiKey),
             Quiet = parseResult.GetValue(Quiet),
             LogFile = parseResult.GetValue(LogFile)?.FullName,
         };
+    }
+
+    private static ProjectFormat ParseProjectFormat(ArgumentResult result, Strings words)
+    {
+        if (result.Tokens.Count == 0)
+        {
+            return ProjectFormats.Default;
+        }
+
+        var text = result.Tokens[0].Value;
+
+        if (ProjectFormats.TryParse(text, out var format))
+        {
+            return format;
+        }
+
+        result.AddError(words.Format(
+            TextKey.ErrUnknownProjectFormat, text, string.Join(", ", ProjectFormats.Names)));
+
+        return ProjectFormats.Default;
     }
 
     private static char ParseDelimiter(string? text)

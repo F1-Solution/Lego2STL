@@ -45,14 +45,28 @@ public sealed partial class ShopRowViewModel : ObservableObject
     public Shop ToShop() => new(Name, Url, Search);
 }
 
+/// <summary>One project format, as the settings menu names it (#12).</summary>
+public sealed record ProjectFormatChoice(ProjectFormat Format)
+{
+    public string Name => Loc.Current.Text(Format switch
+    {
+        ProjectFormat.OrcaSlicer => TextKey.UiProjectFormatOrca,
+        ProjectFormat.Plain => TextKey.UiProjectFormatPlain,
+        _ => TextKey.UiProjectFormatBambu,
+    });
+
+    public override string ToString() => Name;
+}
+
 /// <summary>
 /// What belongs to this machine rather than to this run.
 /// </summary>
 /// <remarks>
-/// Four settings, and each has exactly one home: a key, where the log goes, whether the run
-/// says anything on screen, and which language the window is in. Nothing here also appears on
-/// the setup screen, which is what removed the second language menu the window used to carry
-/// and with it the chance of setting a thing in one place and reading it from another.
+/// Five settings, and each has exactly one home: a key, where the log goes, whether the run
+/// says anything on screen, which language the window is in, and which slicer all.3mf is for.
+/// Nothing here also appears on the setup screen, which is what removed the second language menu
+/// the window used to carry and with it the chance of setting a thing in one place and reading it
+/// from another.
 /// </remarks>
 public sealed partial class SettingsViewModel : ViewModelBase
 {
@@ -129,6 +143,32 @@ public sealed partial class SettingsViewModel : ViewModelBase
             Loc.Current.Use(value.Language);
 
             _saved.Language = value.Language.Tag();
+            _saved.Save();
+
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ProjectFormatChoices));
+            OnPropertyChanged(nameof(SelectedProjectFormat));
+        }
+    }
+
+    /// <summary>The formats, built afresh on every read so that a change of language re-words them.</summary>
+    public IReadOnlyList<ProjectFormatChoice> ProjectFormatChoices =>
+        [.. ProjectFormats.All.Select(format => new ProjectFormatChoice(format))];
+
+    /// <summary>Which slicer all.3mf is written for, remembered as soon as it is chosen (#12).</summary>
+    public ProjectFormatChoice SelectedProjectFormat
+    {
+        get => new(Options.ProjectFormat);
+        set
+        {
+            if (value is null || value.Format == Options.ProjectFormat)
+            {
+                return;
+            }
+
+            Options.ProjectFormat = value.Format;
+
+            _saved.ProjectFormat = value.Format.Name();
             _saved.Save();
 
             OnPropertyChanged();

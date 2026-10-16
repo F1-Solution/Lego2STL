@@ -268,4 +268,48 @@ public sealed class ThreeMfWriterTests
     [Fact]
     public void A_single_plate_is_unchanged_by_the_combined_path() =>
         ThreeMfWriter.Write("black.3mf", [Plate()], 300f).Should().Equal(ThreeMfWriter.Write(Plate()));
+
+    /// <summary>
+    /// As a slicer project, the file carries the slicer's plates and presets and says it is one (#12).
+    /// </summary>
+    [Fact]
+    public void A_project_carries_the_slicers_plates_and_presets()
+    {
+        var project = SlicerProject.For(ProjectFormat.BambuStudio, "A1", PrintBeds.A1)!;
+        var bytes = ThreeMfWriter.Write("all.3mf", [Plate(), Plate()], project);
+
+        using var archive = new ZipArchive(new MemoryStream(bytes), ZipArchiveMode.Read);
+        archive.Entries.Select(e => e.FullName).Should().Contain(
+            ["Metadata/model_settings.config", "Metadata/project_settings.config"]);
+
+        ModelIn(bytes).Root!.Elements(XName.Get("metadata", Core))
+            .Should().Contain(m => (string?)m.Attribute("name") == "Application"
+                                   && m.Value.StartsWith("BambuStudio-", StringComparison.Ordinal));
+    }
+
+    /// <summary>Each plate's parts are moved to where the slicer puts that plate.</summary>
+    [Fact]
+    public void A_project_puts_each_plate_on_the_slicers_grid()
+    {
+        var project = SlicerProject.For(ProjectFormat.BambuStudio, "A1", PrintBeds.A1)!;
+        var plates = Enumerable.Range(0, 3).Select(_ => Plate(new Vector2(10, 20))).ToList();
+
+        ModelIn(ThreeMfWriter.Write("all.3mf", plates, project))
+            .Descendants(XName.Get("item", Core))
+            .Select(i => i.Attribute("transform")!.Value)
+            .Should().Equal(
+                "1 0 0 0 1 0 0 0 1 10 20 0",
+                "1 0 0 0 1 0 0 0 1 317.2 20 0",
+                "1 0 0 0 1 0 0 0 1 10 -287.2 0");
+    }
+
+    /// <summary>A plain combined file stays a plain 3MF, with nothing a slicer would read as its own.</summary>
+    [Fact]
+    public void A_plain_combined_file_carries_no_project()
+    {
+        using var archive = new ZipArchive(
+            new MemoryStream(ThreeMfWriter.Write("all.3mf", [Plate(), Plate()], 300f)), ZipArchiveMode.Read);
+
+        archive.Entries.Select(e => e.FullName).Should().NotContain(e => e.StartsWith("Metadata/", StringComparison.Ordinal));
+    }
 }

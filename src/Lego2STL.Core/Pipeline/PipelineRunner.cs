@@ -678,6 +678,7 @@ public sealed class PipelineRunner
                 layout.PlateDirectory,
                 settings.PackingOptions,
                 settings.Language,
+                SlicerProject.For(settings.ProjectFormat, settings.Printer, settings.Bed),
                 cancellationToken)
             .ConfigureAwait(false);
 

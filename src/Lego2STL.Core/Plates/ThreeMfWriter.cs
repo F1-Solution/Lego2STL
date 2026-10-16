@@ -77,6 +77,12 @@ public static class ThreeMfWriter
 
     private const string ModelPath = "3D/3dmodel.model";
 
+    /// <summary>Where a Bambu Studio or OrcaSlicer project keeps its plates (#12).</summary>
+    internal const string ModelSettingsPath = "Metadata/model_settings.config";
+
+    /// <summary>Where a Bambu Studio or OrcaSlicer project keeps the presets it names (#12).</summary>
+    internal const string ProjectSettingsPath = "Metadata/project_settings.config";
+
     /// <summary>The base material's id. Every resource in the file needs a distinct one.</summary>
     private const int MaterialResourceId = 1;
 
@@ -103,13 +109,37 @@ public static class ThreeMfWriter
     /// <param name="stride">How far apart the plates' origins sit, so that no two overlap.</param>
     public static byte[] Write(string name, IReadOnlyList<PlateContents> plates, float stride)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(plates);
+
+        return Write(name, plates, [.. plates.Select((_, p) => new Vector2(stride * p, 0f))], null);
+    }
+
+    /// <summary>
+    /// Several plates as a slicer project, each on the slicer plate of its own (#12).
+    /// </summary>
+    public static byte[] Write(string name, IReadOnlyList<PlateContents> plates, SlicerProject project)
+    {
+        ArgumentNullException.ThrowIfNull(plates);
+        ArgumentNullException.ThrowIfNull(project);
+
+        return Write(
+            name, plates, [.. plates.Select((_, p) => project.PlateOrigin(p, plates.Count))], project);
+    }
+
+    private static byte[] Write(
+        string name,
+        IReadOnlyList<PlateContents> plates,
+        IReadOnlyList<Vector2> offsets,
+        SlicerProject? project)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
         // One plate is described exactly as on its own, so it produces the same bytes.
         var description = plates.Count == 1
             ? $"{plates[0].ColorName} ({plates[0].Rgb})"
             : string.Join(", ", plates.Select(p => p.ColorName).Distinct(StringComparer.Ordinal));
+
+        var placed = Place(plates);
 
         using var buffer = new MemoryStream();
 
@@ -117,7 +147,18 @@ public static class ThreeMfWriter
         {
             AddEntry(archive, "[Content_Types].xml", ContentTypes());
             AddEntry(archive, "_rels/.rels", Relationships());
-            AddEntry(archive, ModelPath, Model(name, description, plates, stride));
+            AddEntry(archive, ModelPath, Model(name, description, plates, placed, offsets, project));
+
+            if (project is not null)
+            {
+                var (filaments, plateFilament) = project.Filaments(plates);
+                var objects = placed
+                    .Select(p => new ProjectObject(p.Id, p.Part.PartNumber, p.Plate, p.Part.Positions.Count))
+                    .ToList();
+
+                AddEntry(archive, ModelSettingsPath, project.ModelSettings(plates, objects, plateFilament));
+                AddEntry(archive, ProjectSettingsPath, project.ProjectSettings(filaments));
+            }
         }
 
         return buffer.ToArray();
@@ -135,6 +176,21 @@ public static class ThreeMfWriter
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
 
         await File.WriteAllBytesAsync(path, Write(name, plates, stride), cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public static async Task WriteFileAsync(
+        string path,
+        string name,
+        IReadOnlyList<PlateContents> plates,
+        SlicerProject project,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
+
+        await File.WriteAllBytesAsync(path, Write(name, plates, project), cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -194,14 +250,41 @@ public static class ThreeMfWriter
             w.WriteEndElement();
         });
 
+    /// <summary>Every shape on every plate, with the object id it is written under.</summary>
+    private static List<(int Id, PlateObject Part, int Plate)> Place(IReadOnlyList<PlateContents> plates)
+    {
+        var placed = new List<(int Id, PlateObject Part, int Plate)>();
+        var objectId = ColorResourceId;
+
+        for (var p = 0; p < plates.Count; p++)
+        {
+            foreach (var part in plates[p].Objects)
+            {
+                placed.Add((++objectId, part, p));
+            }
+        }
+
+        return placed;
+    }
+
     private static string Model(
-        string name, string description, IReadOnlyList<PlateContents> plates, float stride) =>
+        string name,
+        string description,
+        IReadOnlyList<PlateContents> plates,
+        IReadOnlyList<(int Id, PlateObject Part, int Plate)> placed,
+        IReadOnlyList<Vector2> offsets,
+        SlicerProject? project) =>
         WriteXml(w =>
         {
             w.WriteStartElement("model", CoreNamespace);
             w.WriteAttributeString("unit", "millimeter");
             w.WriteAttributeString("xml", "lang", null, "en-US");
             w.WriteAttributeString("xmlns", MaterialPrefix, null, MaterialNamespace);
+
+            foreach (var (key, value) in project?.ModelMetadata() ?? [])
+            {
+                WriteMetadata(w, key, value);
+            }
 
             WriteMetadata(w, "Title", name);
             WriteMetadata(w, "Designer", "Lego2STL");
@@ -235,32 +318,22 @@ public static class ThreeMfWriter
 
             w.WriteEndElement();
 
-            var objectId = ColorResourceId;
-            var placed = new List<(int Id, PlateObject Part, Vector2 Offset)>();
-
-            for (var p = 0; p < plates.Count; p++)
+            foreach (var (id, part, plate) in placed)
             {
-                var offset = new Vector2(stride * p, 0f);
-
-                foreach (var part in plates[p].Objects)
-                {
-                    objectId++;
-                    placed.Add((objectId, part, offset));
-                    WriteObject(w, objectId, part, p);
-                }
+                WriteObject(w, id, part, plate);
             }
 
             w.WriteEndElement();   // resources
 
             w.WriteStartElement("build", CoreNamespace);
 
-            foreach (var (id, part, offset) in placed)
+            foreach (var (id, part, plate) in placed)
             {
                 foreach (var position in part.Positions)
                 {
                     w.WriteStartElement("item", CoreNamespace);
                     w.WriteAttributeString("objectid", Number(id));
-                    w.WriteAttributeString("transform", Translation(position + offset));
+                    w.WriteAttributeString("transform", Translation(position + offsets[plate]));
                     w.WriteEndElement();
                 }
             }
@@ -340,7 +413,7 @@ public static class ThreeMfWriter
     private static string Number(int value) =>
         value.ToString(CultureInfo.InvariantCulture);
 
-    private static string WriteXml(Action<XmlWriter> body)
+    internal static string WriteXml(Action<XmlWriter> body)
     {
         var settings = new XmlWriterSettings
         {

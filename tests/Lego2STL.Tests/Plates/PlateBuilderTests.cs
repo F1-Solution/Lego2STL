@@ -194,6 +194,64 @@ public sealed class PlateBuilderTests : IDisposable
         items.Should().Be(result.PieceCount);
     }
 
+    /// <summary>
+    /// Given a slicer project, the file holding every plate is that project, one slicer plate per
+    /// colour plate (#12).
+    /// </summary>
+    [Fact]
+    public async Task Every_plate_together_is_a_slicer_project_when_asked_for()
+    {
+        var list = new PartsList(
+            [
+                new PartEntry(1, "3005", 11, "Black", Rgb24.Parse("#05131D"), 2),
+                new PartEntry(2, "3001", 5, "Red", Rgb24.Parse("#C91A09"), 3),
+            ],
+            []);
+        var shapes = new Dictionary<string, IndexedMesh>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["3005"] = Tetrahedron(),
+            ["3001"] = Tetrahedron(),
+        };
+
+        await PlateBuilder.WriteAsync(
+            list, shapes, _directory, project: SlicerProject.For(ProjectFormat.BambuStudio, "A1", PrintBeds.A1));
+
+        using var archive = System.IO.Compression.ZipFile.OpenRead(
+            Path.Combine(_directory, PlateBuilder.AllPlatesFileName));
+        using var settings = archive.GetEntry("Metadata/model_settings.config")!.Open();
+
+        System.Xml.Linq.XDocument.Load(settings).Root!.Elements("plate").Should().HaveCount(2);
+    }
+
+    /// <summary>
+    /// The slicers stop at 36 plates, so a set that needs more is written as the plain file
+    /// rather than a project they would cut short.
+    /// </summary>
+    [Fact]
+    public async Task More_plates_than_a_slicer_holds_are_written_plain()
+    {
+        var count = SlicerProject.PlateLimit + 1;
+        var list = new PartsList(
+            [
+                .. Enumerable.Range(0, count).Select(i => new PartEntry(
+                    i + 1, "3001", 1000 + i, $"Colour {i}", new Rgb24((byte)i, (byte)(2 * i), 7), 1)),
+            ],
+            []);
+        var shapes = new Dictionary<string, IndexedMesh>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["3001"] = Tetrahedron(),
+        };
+
+        var result = await PlateBuilder.WriteAsync(
+            list, shapes, _directory, project: SlicerProject.For(ProjectFormat.BambuStudio, "A1", PrintBeds.A1));
+
+        result.Plates.Should().HaveCount(count);
+
+        using var archive = System.IO.Compression.ZipFile.OpenRead(
+            Path.Combine(_directory, PlateBuilder.AllPlatesFileName));
+        archive.GetEntry("Metadata/model_settings.config").Should().BeNull();
+    }
+
     [Fact]
     public async Task No_plates_means_no_all_file()
     {

@@ -136,6 +136,10 @@ public sealed partial class RunOptionsViewModel : ViewModelBase
     [ObservableProperty]
     public partial double PlateSpacing { get; set; } = 3.0;
 
+    /// <summary>Which slicer all.3mf is written for, chosen on the settings screen (#12).</summary>
+    [ObservableProperty]
+    public partial ProjectFormat ProjectFormat { get; set; } = ProjectFormats.Default;
+
     // ---- Behaviour ---------------------------------------------------------------------
 
     [ObservableProperty]
@@ -273,6 +277,7 @@ public sealed partial class RunOptionsViewModel : ViewModelBase
             Printer = Printer,
             PlateSize = Blank(PlateSize),
             PlateSpacing = PlateSpacing,
+            ProjectFormat = ProjectFormat,
 
             Language = Language,
             ApiKey = Blank(ApiKey),

@@ -498,6 +498,8 @@ public sealed partial class Strings
             [TextKey.HelpOptPlateSize] =
                 "A bed size in millimetres instead of a printer name, e.g. 220x220 or 300x300x400.",
             [TextKey.HelpOptPlateSpacing] = "Millimetres to leave between parts on a plate.",
+            [TextKey.HelpOptProjectFormat] =
+                "Which slicer all.3mf is written for: bambu (Bambu Studio) or orca (OrcaSlicer) open each colour as a plate of its own, and 3mf is a plain file any slicer opens, with every plate side by side.",
             [TextKey.HelpOptQuiet] =
                 "Say only what matters: warnings, failures and where things were written.",
             [TextKey.HelpOptLog] = "Also write everything said during the run to this file.",
@@ -534,6 +536,11 @@ public sealed partial class Strings
             [TextKey.LabelOptTolerances] = "Saved tolerance",
             [TextKey.LabelOptWeldTolerance] = "Corner merging",
             [TextKey.LabelOptPlateSpacing] = "Gap between parts",
+            [TextKey.LabelOptProjectFormat] = "Project format",
+            [TextKey.UiProjectFormatBambu] = "Bambu Studio",
+            [TextKey.UiProjectFormatOrca] = "OrcaSlicer",
+            [TextKey.UiProjectFormatPlain] = "3MF (any slicer)",
+            [TextKey.ErrUnknownProjectFormat] = "'{0}' is not a project format. Use one of: {1}.",
             [TextKey.LabelOptOutputDir] = "Run folder",
             [TextKey.LabelOptElementMap] = "Element table",
             [TextKey.LabelOptLDrawDir] = "Shape library",

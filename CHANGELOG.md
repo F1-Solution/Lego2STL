@@ -19,6 +19,7 @@ Every notable change, by version. Follows [Keep a Changelog](https://keepachange
 - The `Lego2STL.json` process preset now imports in Bambu Studio instead of failing with "There are 0 configs imported".
 - The printing notes name every setting as Bambu Studio shows it, in English or Italian to match the run, under the process or filament page where it lives.
 - Continuing a run past parts with no shape in the library no longer asks about them again and again: "Continue without these parts" finishes the run without them, as the new `--skip-missing-shapes` option does from the command line (#11).
+- `all.3mf` now opens in Bambu Studio as a project with each colour on a plate of its own, instead of every part in one row with no plates; the new `--project-format` option (Settings: "Project format") writes it for OrcaSlicer, or as a plain 3MF for any other slicer (#12).
 
 ## [0.2.0] - 2026-09-02
 

@@ -517,6 +517,8 @@ public sealed partial class Strings
                 "Una dimensione del piano in millimetri invece del nome di una stampante, ad esempio 220x220 oppure 300x300x400.",
             [TextKey.HelpOptPlateSpacing] =
                 "Millimetri da lasciare fra un pezzo e l'altro sul piano.",
+            [TextKey.HelpOptProjectFormat] =
+                "Per quale slicer viene scritto all.3mf: bambu (Bambu Studio) o orca (OrcaSlicer) aprono ogni colore come un piatto a sé, mentre 3mf è un file semplice che apre qualsiasi slicer, con tutti i piani affiancati.",
             [TextKey.HelpOptQuiet] =
                 "Dice solo l'essenziale: avvisi, errori e dove sono state scritte le cose.",
             [TextKey.HelpOptLog] =
@@ -555,6 +557,11 @@ public sealed partial class Strings
             [TextKey.LabelOptTolerances] = "Tolleranza salvata",
             [TextKey.LabelOptWeldTolerance] = "Fusione dei vertici",
             [TextKey.LabelOptPlateSpacing] = "Spazio fra i pezzi",
+            [TextKey.LabelOptProjectFormat] = "Formato del progetto",
+            [TextKey.UiProjectFormatBambu] = "Bambu Studio",
+            [TextKey.UiProjectFormatOrca] = "OrcaSlicer",
+            [TextKey.UiProjectFormatPlain] = "3MF (qualsiasi slicer)",
+            [TextKey.ErrUnknownProjectFormat] = "'{0}' non è un formato di progetto. Usare uno fra: {1}.",
             [TextKey.LabelOptOutputDir] = "Cartella dei risultati",
             [TextKey.LabelOptElementMap] = "Tabella degli elementi",
             [TextKey.LabelOptLDrawDir] = "Libreria delle forme",

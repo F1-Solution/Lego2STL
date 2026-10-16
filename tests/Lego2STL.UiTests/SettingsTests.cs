@@ -7,6 +7,7 @@ using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.LogicalTree;
 using FluentAssertions;
+using Lego2STL.Core.Plates;
 using Lego2STL.Core.Rebrickable;
 using Lego2STL.Core.Run;
 using Lego2STL.Core.Text;
@@ -134,6 +135,31 @@ public sealed class SettingsTests : IDisposable
         finally
         {
             settings.SelectedLanguage = SettingsViewModel.Languages.First(c => c.Language == DisplayLanguage.English);
+        }
+    }
+
+    /// <summary>The slicer all.3mf is written for is chosen here, reaches the run and is remembered (#12).</summary>
+    [AvaloniaFact]
+    public void Choosing_a_project_format_reaches_the_run_and_is_remembered()
+    {
+        var settings = ASettingsScreen(out var options, out var saved);
+
+        settings.SelectedProjectFormat.Format.Should().Be(ProjectFormat.BambuStudio);
+
+        try
+        {
+            settings.SelectedProjectFormat =
+                settings.ProjectFormatChoices.Single(c => c.Format == ProjectFormat.OrcaSlicer);
+
+            options.ToSettings().ProjectFormat.Should().Be(ProjectFormat.OrcaSlicer);
+            options.CommandLine.Should().Contain("--project-format orca");
+            saved.ProjectFormat.Should().Be("orca");
+            UserSettings.Load().ProjectFormat.Should().Be("orca");
+        }
+        finally
+        {
+            settings.SelectedProjectFormat =
+                settings.ProjectFormatChoices.Single(c => c.Format == ProjectFormat.BambuStudio);
         }
     }
 

@@ -115,6 +115,11 @@ a list written in one is read in another.
 Each plate is named after its colour, in the same language, and carries that colour so a
 slicer opens it already looking like the finished model.
 
+Beside them, `all.3mf` holds every plate at once. By default it is a Bambu Studio project, so
+each colour opens as a plate of its own with the printer's presets already chosen;
+`--project-format orca` writes it for OrcaSlicer, and `--project-format 3mf` as a plain file any
+slicer opens, with the plates side by side. The window has the same choice under Settings.
+
 **Read the report.** It names every shape that is not closed, every retired part number whose
 shape came from a replacement, and every part too big for the plate. None of that should be
 discovered at the printer.
