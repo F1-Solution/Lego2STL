@@ -24,7 +24,8 @@ public sealed class OptionRowTests
     private static readonly string[] TheTwenty =
     [
         "--csv-only", "--no-plates", "--ascii", "--keep-origin",
-        "--no-repair", "--no-seam-repair", "--print-everything", "--offline", "--no-unofficial",
+        "--no-repair", "--no-seam-repair", "--print-everything", "--skip-missing-shapes",
+        "--offline", "--no-unofficial",
         "--scale", "--clearance", "--tolerances", "--weld-tolerance", "--plate-spacing",
         "--output-dir", "--element-map", "--ldraw-dir", "--ldraw-cache",
         "--plate-size",
@@ -36,7 +37,7 @@ public sealed class OptionRowTests
     {
         var rows = new OptionRowsViewModel(new RunOptionsViewModel());
 
-        rows.Rows.Should().HaveCount(21);
+        rows.Rows.Should().HaveCount(22);
         rows.Rows.Select(row => row.Flag).Should().BeEquivalentTo(TheTwenty);
         rows.Rows.Select(row => row.Flag).Should().OnlyHaveUniqueItems();
     }
@@ -142,7 +143,7 @@ public sealed class OptionRowTests
         var rows = new OptionRowsViewModel(options) { ChangedOnly = true };
 
         rows.Rows.Where(row => row.IsVisible).Select(row => row.Flag).Should().Equal("--clearance");
-        rows.HiddenCount.Should().Be(20, "an option set three runs ago must not sit invisible in silence");
+        rows.HiddenCount.Should().Be(21, "an option set three runs ago must not sit invisible in silence");
     }
 
     /// <summary>
@@ -165,7 +166,7 @@ public sealed class OptionRowTests
     {
         var rows = new OptionRowsViewModel(new RunOptionsViewModel()) { ChangedOnly = true };
 
-        rows.Rows.Should().HaveCount(21, "filtering hides rows; it does not throw them away");
+        rows.Rows.Should().HaveCount(22, "filtering hides rows; it does not throw them away");
         rows.Rows.Should().OnlyContain(row => row.IsVisible == false);
     }
 

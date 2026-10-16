@@ -78,6 +78,57 @@ public sealed class RunDocumentViewTests
         page.ProblemText.Should().Contain("3705").And.Contain("no shape file");
     }
 
+    /// <summary>
+    /// The loop in #11: continuing rebuilt the same list, the same part had no shape again, and
+    /// the same question came back. Continuing now goes on without those parts.
+    /// </summary>
+    [AvaloniaFact]
+    public void Continuing_past_parts_with_no_shape_goes_on_without_them()
+    {
+        using var page = RunDocumentViewModel.Of(ADocumentWithItsPartsList() with
+        {
+            Status = RunStatus.NeedsDecision,
+            Failed = [new ManifestFailure("65746", "no shape file for this part number")],
+        });
+
+        RunSettings? asked = null;
+        page.ContinueRequested += (_, settings) => asked = settings;
+
+        page.CanContinue.Should().BeTrue();
+        page.ContinueText.Should().Be(Loc.Current.Text(TextKey.UiContinueWithoutThem));
+
+        page.ContinueFromPartsListCommand.Execute(null);
+
+        asked.Should().NotBeNull();
+        asked!.Kind.Should().Be(InputKind.PartsList);
+        asked.SkipMissingShapes.Should().BeTrue("rebuilding the same list could only ask again");
+    }
+
+    /// <summary>Entries that were not read are answered in the list, so continuing skips nothing.</summary>
+    [AvaloniaFact]
+    public void Continuing_after_unread_entries_still_reports_missing_shapes()
+    {
+        using var page = RunDocumentViewModel.Of(ADocumentWithItsPartsList() with
+        {
+            Status = RunStatus.NeedsDecision,
+            Unread =
+            [
+                new ManifestUnread(
+                    4, "(10,20)-(60,40)", "4x", null, null, null, "the quantity could not be read"),
+            ],
+        });
+
+        RunSettings? asked = null;
+        page.ContinueRequested += (_, settings) => asked = settings;
+
+        page.ContinueText.Should().Be(Loc.Current.Text(TextKey.UiContinueFromPartsList));
+
+        page.ContinueFromPartsListCommand.Execute(null);
+
+        asked.Should().NotBeNull();
+        asked!.SkipMissingShapes.Should().BeFalse();
+    }
+
     [AvaloniaFact]
     public void A_run_that_finished_has_nothing_to_answer_for()
     {
@@ -313,5 +364,13 @@ public sealed class RunDocumentViewTests
     {
         var layout = RunLayout.At(ARunFolder());
         return RunDocument.From(ARecordOf(layout), layout);
+    }
+
+    /// <summary>A document whose parts list is on the disk, which is what continuing reads.</summary>
+    private static RunDocument ADocumentWithItsPartsList()
+    {
+        var document = ADocument();
+        File.WriteAllText(document.PartsListPath, "id;part;colour\n");
+        return document;
     }
 }

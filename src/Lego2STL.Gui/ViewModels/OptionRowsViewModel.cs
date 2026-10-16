@@ -140,6 +140,10 @@ public sealed partial class OptionRowsViewModel : ViewModelBase
                 TextKey.HelpOptPrintEverything,
                 () => o.PrintEverything, v => o.PrintEverything = v, fresh.PrintEverything),
 
+            new ToggleOptionRow("--skip-missing-shapes", TextKey.LabelOptSkipMissingShapes,
+                TextKey.HelpOptSkipMissingShapes,
+                () => o.SkipMissingShapes, v => o.SkipMissingShapes = v, fresh.SkipMissingShapes),
+
             new ToggleOptionRow("--offline", TextKey.LabelOptOffline, TextKey.HelpOptOffline,
                 () => o.Offline, v => o.Offline = v, fresh.Offline),
 

@@ -55,6 +55,28 @@ public sealed class PipelineManifestTests
         manifest.Failed.Should().OnlyContain(failure => failure.Reason.Length > 0);
     }
 
+    /// <summary>
+    /// Once someone has chosen to go on without the parts that have no shape, those parts no
+    /// longer hold the run up - otherwise continuing would ask the same question for ever (#11).
+    /// </summary>
+    [Fact]
+    public async Task A_run_told_to_skip_missing_shapes_is_complete_and_still_names_them()
+    {
+        using var settingsFolder = new AppDataFolder();
+        var settings = AListToBuildFrom() with { Stages = RunStages.Shapes, SkipMissingShapes = true };
+
+        var outcome = await new PipelineRunner().RunAsync(settings);
+
+        outcome.Result.Should().Be(RunResult.Complete);
+
+        var manifest = TheRecordOf(outcome);
+
+        manifest.Status.Should().Be(RunStatus.Complete);
+        manifest.Failed.Should().HaveCount(3, "the report and the page still say what is missing");
+        manifest.Settings.SkipMissingShapes.Should().BeTrue();
+        manifest.CommandLine.Should().Contain("--skip-missing-shapes");
+    }
+
     [Fact]
     public async Task A_run_that_never_started_names_no_folder_and_records_nothing()
     {

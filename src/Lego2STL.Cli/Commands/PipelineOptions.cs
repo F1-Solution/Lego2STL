@@ -97,6 +97,11 @@ internal sealed class PipelineOptions
             Description = words[TextKey.HelpOptPrintEverything],
         };
 
+        SkipMissingShapes = new Option<bool>("--skip-missing-shapes")
+        {
+            Description = words[TextKey.HelpOptSkipMissingShapes],
+        };
+
         WeldTolerance = new Option<double>("--weld-tolerance")
         {
             Description = words[TextKey.HelpOptWeldTolerance],
@@ -180,6 +185,8 @@ internal sealed class PipelineOptions
 
     public Option<bool> PrintEverything { get; }
 
+    public Option<bool> SkipMissingShapes { get; }
+
     public Option<double> WeldTolerance { get; }
 
     public Option<DirectoryInfo?> LDrawDirectory { get; }
@@ -217,7 +224,7 @@ internal sealed class PipelineOptions
         {
             IncludeSpares, CsvOnly, NoPlates, OutputDirectory, Delimiter, Ascii,
             KeepOrigin, Scale, Clearance, Tolerances, NoRepair, NoSeamRepair, WeldTolerance,
-            PrintEverything,
+            PrintEverything, SkipMissingShapes,
             LDrawDirectory, LDrawCache, Offline, NoUnofficial,
             Printer, PlateSize, PlateSpacing,
             ApiKey, Quiet, LogFile,
@@ -269,6 +276,7 @@ internal sealed class PipelineOptions
             FillGaps = !parseResult.GetValue(NoRepair),
             NoSeamRepair = parseResult.GetValue(NoSeamRepair),
             PrintEverything = parseResult.GetValue(PrintEverything),
+            SkipMissingShapes = parseResult.GetValue(SkipMissingShapes),
             WeldTolerance = parseResult.GetValue(WeldTolerance),
 
             LDrawDirectory = parseResult.GetValue(LDrawDirectory)?.FullName,

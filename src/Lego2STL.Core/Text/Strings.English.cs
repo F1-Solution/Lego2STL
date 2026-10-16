@@ -403,6 +403,7 @@ public sealed partial class Strings
             [TextKey.UiOpenPreset] = "Slicer preset",
             [TextKey.UiRunCalibration] = "Build a calibration plate",
             [TextKey.UiContinueFromPartsList] = "Continue from the parts list",
+            [TextKey.UiContinueWithoutThem] = "Continue without these parts",
 
             // Finding a way through the options.
             [TextKey.UiSearchOptions] = "Search the options",
@@ -486,6 +487,8 @@ public sealed partial class Strings
                 "Skip closing seams where a corner lies part-way along another edge.",
             [TextKey.HelpOptPrintEverything] =
                 "Build every part, including the ones that cannot be printed, such as electronics.",
+            [TextKey.HelpOptSkipMissingShapes] =
+                "Finish the run even when some parts have no shape in the library. They are left off the plates and the report still lists them.",
             [TextKey.HelpOptWeldTolerance] =
                 "How close two corners have to be to count as the same point, in source units where one unit is 0.4 mm. Not millimetres: corners are merged before the shape is converted.",
             [TextKey.HelpOptLDrawCache] = "Where to keep fetched shape files between runs.",
@@ -523,6 +526,7 @@ public sealed partial class Strings
             [TextKey.LabelOptNoRepair] = "Leave gaps in the surface",
             [TextKey.LabelOptNoSeamRepair] = "Leave seams open",
             [TextKey.LabelOptPrintEverything] = "Print everything",
+            [TextKey.LabelOptSkipMissingShapes] = "Skip parts with no shape",
             [TextKey.LabelOptOffline] = "Work without the network",
             [TextKey.LabelOptNoUnofficial] = "Official library only",
             [TextKey.LabelOptScale] = "Scale",

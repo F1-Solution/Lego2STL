@@ -47,6 +47,8 @@ public sealed record ManifestSettings
 
     public bool NoSeamRepair { get; init; }
 
+    public bool SkipMissingShapes { get; init; }
+
     public double WeldTolerance { get; init; }
 
     public string? LDrawDirectory { get; init; }
@@ -94,6 +96,7 @@ public sealed record ManifestSettings
             ClearanceFrom = settings.ClearanceFrom,
             FillGaps = settings.FillGaps,
             NoSeamRepair = settings.NoSeamRepair,
+            SkipMissingShapes = settings.SkipMissingShapes,
             WeldTolerance = settings.WeldTolerance,
             LDrawDirectory = settings.LDrawDirectory,
             LDrawCache = settings.LDrawCache,
@@ -136,6 +139,7 @@ public sealed record ManifestSettings
             ClearanceFrom = ClearanceFrom,
             FillGaps = FillGaps,
             NoSeamRepair = NoSeamRepair,
+            SkipMissingShapes = SkipMissingShapes,
             WeldTolerance = WeldTolerance,
             LDrawDirectory = LDrawDirectory,
             LDrawCache = LDrawCache,

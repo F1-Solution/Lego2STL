@@ -359,6 +359,9 @@ public enum TextKey
     UiRunCalibration,
     UiContinueFromPartsList,
 
+    /// <summary>The same way on, when what is in the way is parts that produced no shape (#11).</summary>
+    UiContinueWithoutThem,
+
     // Finding a way through the options.
     UiSearchOptions,
     UiChangedOnly,
@@ -436,6 +439,7 @@ public enum TextKey
     HelpOptNoRepair,
     HelpOptNoSeamRepair,
     HelpOptPrintEverything,
+    HelpOptSkipMissingShapes,
     HelpOptWeldTolerance,
     HelpOptLDrawCache,
     HelpOptNoUnofficial,
@@ -464,6 +468,7 @@ public enum TextKey
     LabelOptNoRepair,
     LabelOptNoSeamRepair,
     LabelOptPrintEverything,
+    LabelOptSkipMissingShapes,
     LabelOptOffline,
     LabelOptNoUnofficial,
     LabelOptScale,

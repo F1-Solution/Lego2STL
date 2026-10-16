@@ -73,6 +73,7 @@ public sealed class RunSettingsTests
             KeepOrigin = true,
             AsciiStl = true,
             NoSeamRepair = true,
+            SkipMissingShapes = true,
             Offline = true,
             IncludeUnofficial = false,
             Printer = "A1mini",
@@ -87,6 +88,7 @@ public sealed class RunSettingsTests
         command.Should().Contain("--keep-origin");
         command.Should().Contain("--ascii");
         command.Should().Contain("--no-seam-repair");
+        command.Should().Contain("--skip-missing-shapes");
         command.Should().Contain("--offline");
         command.Should().Contain("--no-unofficial");
         command.Should().Contain("--printer A1mini");
